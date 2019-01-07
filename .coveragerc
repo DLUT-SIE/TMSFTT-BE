@@ -1,0 +1,7 @@
+[run]
+source = .
+omit = 
+    TMSFTT/settings*.py,
+    manage.py,
+    */apps.py,
+    TMSFTT/wsgi.py,
