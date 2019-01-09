@@ -39,7 +39,7 @@ class TestNotification(TestCase):
                 sender, time, recipient, '未读')),
             # Read
             ((time, time), _('由{}于{}发送给{}的通知({})').format(
-            sender, time, recipient, '已读')),
+                sender, time, recipient, '已读')),
         )
         for args, expected_str in test_cases:
             note = Notification(time=args[0], read_time=args[1])
