@@ -1,8 +1,7 @@
+import os.path as osp
+
 from .settings import *
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '0jn@1=-wjx6zt)vg7^s9=g-yads8qrwy5*(r#a$*pbf2o11d(h'
@@ -10,7 +9,7 @@ SECRET_KEY = '0jn@1=-wjx6zt)vg7^s9=g-yads8qrwy5*(r#a$*pbf2o11d(h'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 INTERNAL_IPS = ['127.0.0.1']
 
 # Database
@@ -29,13 +28,18 @@ DATABASES = {
         },
         'TEST': {
             'NAME': 'TMSFTT_TEST',
-            'CHARSET': 'utf8',
-            'COLLATION': 'utf8_general_ci',
+            'CHARSET': 'UTF8MB4',
+            'COLLATION': 'utf8mb4_general_ci',
         }
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = []
+
+# User-uploaded files
+MEDIA_ROOT = osp.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
