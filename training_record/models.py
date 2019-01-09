@@ -140,4 +140,6 @@ class StatusChangeLog(OperationLog):
 
     def __str__(self):
         return _('{}状态于{}由{}变为{}').format(
-            self.record, self.time, self.pre_status, self.post_status)
+            self.record, self.time,
+            self.get_pre_status_display(),
+            self.get_post_status_display())

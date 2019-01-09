@@ -19,7 +19,7 @@ class Department(models.Model):
                                     blank=True)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 
 class UserProfile(models.Model):
@@ -37,3 +37,6 @@ class UserProfile(models.Model):
     department = models.ForeignKey(Department, verbose_name=_('学部学院'),
                                    on_delete=models.PROTECT)
     age = models.PositiveSmallIntegerField(verbose_name=_('年龄'), default=0)
+
+    def __str__(self):
+        return str(self.user)
