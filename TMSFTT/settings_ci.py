@@ -25,8 +25,9 @@ DATABASES = {
         },
         'TEST': {
             'NAME': 'TMSFTT_TEST',
-            'CHARSET': 'utf8',
-            'COLLATION': 'utf8_general_ci',
+            'CHARSET': 'UTF8MB4',
+            'COLLATION': 'utf8mb4_general_ci',
+
         }
     }
 }
