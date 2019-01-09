@@ -5,3 +5,4 @@ exclude =
     settings*.py,
     manage.py,
     wsgi.py,
+    migrations,
