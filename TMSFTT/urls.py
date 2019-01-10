@@ -18,12 +18,21 @@ from django.contrib import admin
 from django.urls import include, path
 
 
+api_urlpatterns = [
+    path('', include('auth.urls')),
+]
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('api/', include(api_urlpatterns)),
 ]
 
 if settings.DEBUG:
     import debug_toolbar
-    urlpatterns = [
+    from rest_framework.documentation import include_docs_urls
+
+    debug_urlpatterns = [
+        path('admin/', admin.site.urls),
         path('__debug__/', include(debug_toolbar.urls)),
-    ] + urlpatterns
+        path('api/', include_docs_urls(title='TMSFTT APIs')),
+    ]
+    urlpatterns.extend(debug_urlpatterns)
