@@ -1,6 +1,8 @@
+'''Define ORM models for training_review module.'''
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.utils.text import format_lazy as _f
 
 from training_record.models import Record
 
@@ -25,5 +27,4 @@ class ReviewNote(models.Model):
     content = models.CharField(verbose_name=_('提示内容'), max_length=128)
 
     def __str__(self):
-        return _('由{}创建的关于{}的审核提示').format(
-            self.user, self.record)
+        return str(_f('由{}创建的关于{}的审核提示', self.user, self.record))

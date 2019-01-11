@@ -1,3 +1,4 @@
+'''Provide useful utilities shared among modules.'''
 import os.path as osp
 import hashlib
 
@@ -7,7 +8,7 @@ from django.utils import timezone
 
 @deconstructible
 class CustomHashPath:
-    """Append hash fingerprint to filename of the uploaded file.
+    '''Append hash fingerprint to filename of the uploaded file.
 
     Multiple uploading will not replace the file with the same filename. Files
     uploaded by the user that has same content and same filename will be saved
@@ -27,7 +28,7 @@ class CustomHashPath:
     by_user: bool
         Whether to use current user in the path, e.g. *uploads/user_<id>/*.
         Default: True.
-    """
+    '''
     def __init__(self, base='uploads', by_date=True, by_user=True):
         self.base = base
         self.by_date = by_date

@@ -1,7 +1,9 @@
+'''Define ORM models for training_record module.'''
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import pre_save
 from django.utils.translation import gettext_lazy as _
+from django.utils.text import format_lazy as _f
 
 from infra.models import OperationLog
 from infra.utils import CustomHashPath
@@ -48,9 +50,7 @@ class Record(models.Model):
     @classmethod
     def check_program_set(cls, sender, instance, **kwargs):
         '''Check one and only one of program_name and program has been set.'''
-        if instance.program_name and not instance.program:
-            return
-        elif not instance.program_name and instance.program:
+        if bool(instance.program_name) != bool(instance.program):
             return
         raise ValueError(
             _('One and only one of program_name and program should be set.'))
@@ -139,7 +139,6 @@ class StatusChangeLog(OperationLog):
                                    max_length=64, blank=True, null=True)
 
     def __str__(self):
-        return _('{}状态于{}由{}变为{}').format(
-            self.record, self.time,
-            self.get_pre_status_display(),
-            self.get_post_status_display())
+        return str(_f('{}状态于{}由{}变为{}', self.record, self.time,
+                      self.get_pre_status_display(),
+                      self.get_post_status_display()))
