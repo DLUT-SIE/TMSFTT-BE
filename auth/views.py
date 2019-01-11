@@ -1,3 +1,4 @@
+'''Provide API views for auth module.'''
 from rest_framework import viewsets
 
 import auth.models

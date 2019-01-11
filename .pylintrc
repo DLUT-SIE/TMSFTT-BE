@@ -1,0 +1,8 @@
+[MASTER]
+load-plugins=pylint_django
+jobs=0
+
+[BASIC]
+ignore=migrations,settings_dev.py,settings_ci.py,settings.py
+good-names=router,urlpatterns,TMSFTT
+disable=too-many-ancestors

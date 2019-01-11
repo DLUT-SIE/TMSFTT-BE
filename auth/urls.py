@@ -1,3 +1,4 @@
+'''Register URL routes in auth module.'''
 from rest_framework import routers
 
 import auth.views

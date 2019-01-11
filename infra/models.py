@@ -1,6 +1,8 @@
+'''Define ORM models for infra module.'''
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.utils.text import format_lazy as _f
 
 
 class OperationLog(models.Model):
@@ -58,6 +60,6 @@ class Notification(models.Model):
                                      blank=True, null=True)
 
     def __str__(self):
-        return _('由{}于{}发送给{}的通知({})').format(
-            self.sender, self.time, self.recipient,
-            '已读' if self.read_time else '未读')
+        return str(_f('由{}于{}发送给{}的通知({})',
+                      self.sender, self.time, self.recipient,
+                      _('已读') if self.read_time else _('未读')))

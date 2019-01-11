@@ -1,3 +1,4 @@
+'''Unit tests for infra utils.'''
 import hashlib
 import os.path as osp
 from itertools import product
@@ -10,7 +11,9 @@ from infra.utils import CustomHashPath
 
 
 class TestCustomHashPath(TestCase):
+    '''Unit tests for class CustomHashPath.'''
     def test_eq(self):
+        '''Should return True if settings of two instances are same.'''
         combinations = list(product(
             ['base0', 'base1'],
             [True, False],
@@ -22,7 +25,8 @@ class TestCustomHashPath(TestCase):
                 hash_path1 = CustomHashPath(*args1)
                 self.assertEqual(hash_path0 == hash_path1, args0 == args1)
 
-    def test_call(self):
+    def test_call(self):  # pylint: disable-msg=too-many-locals
+        '''Should genereate fingerprint-appended path for file.'''
         base = 'uploads'
         filename = 'abc.txt'
         file_content = b'123'
@@ -31,7 +35,7 @@ class TestCustomHashPath(TestCase):
             [True, False],
             [True, False]))
 
-        def generate_path_format(base, by_date, by_user):
+        def generate_path_format(by_date, by_user):
             path_format = '{base}'
             if by_date:
                 path_format = osp.join(path_format, '{date}')
@@ -41,7 +45,7 @@ class TestCustomHashPath(TestCase):
             return path_format
 
         for by_date, by_user in combinations:
-            expected_path_format = generate_path_format(base, by_date, by_user)
+            expected_path_format = generate_path_format(by_date, by_user)
             hasher = hashlib.md5()
             hasher.update(file_content)
             fingerprint = hasher.hexdigest()

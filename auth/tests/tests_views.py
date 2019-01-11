@@ -1,3 +1,4 @@
+'''Unit tests for auth views.'''
 from django.contrib.auth.models import User
 from django.urls import reverse
 from model_mommy import mommy
@@ -8,7 +9,9 @@ import auth.models
 
 
 class TestDepartmentViewSet(APITestCase):
+    '''Unit tests for Department view.'''
     def test_create_department(self):
+        '''Department should be created by POST request.'''
         url = reverse('department-list')
         name = 'department'
         data = {'name': name}
@@ -20,6 +23,7 @@ class TestDepartmentViewSet(APITestCase):
         self.assertEqual(auth.models.Department.objects.get().name, name)
 
     def test_list_department(self):
+        '''Departments list should be accessed by GET request.'''
         url = reverse('department-list')
 
         response = self.client.get(url)
@@ -27,6 +31,7 @@ class TestDepartmentViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_delete_department(self):
+        '''Department should be deleted by DELETE request.'''
         department = mommy.make(auth.models.Department)
         url = reverse('department-detail', args=(department.pk,))
 
@@ -36,6 +41,7 @@ class TestDepartmentViewSet(APITestCase):
         self.assertEqual(auth.models.Department.objects.count(), 0)
 
     def test_get_department(self):
+        '''Department should be accessed by GET request.'''
         department = mommy.make(auth.models.Department)
         url = reverse('department-detail', args=(department.pk,))
         expected_keys = {'id', 'create_time', 'update_time', 'name', 'admins'}
@@ -46,6 +52,7 @@ class TestDepartmentViewSet(APITestCase):
         self.assertEqual(set(response.data.keys()), expected_keys)
 
     def test_update_department(self):
+        '''Department should be updated by PATCH request.'''
         name0 = 'department0'
         name1 = 'department1'
         department = mommy.make(auth.models.Department, name=name0)
@@ -60,7 +67,9 @@ class TestDepartmentViewSet(APITestCase):
 
 
 class TestUserProfileViewSet(APITestCase):
+    '''Unit tests for UserProfile view.'''
     def test_create_user_profile(self):
+        '''UserProfile should be created by POST request.'''
         user = mommy.make(User)
         department = mommy.make(auth.models.Department)
         url = reverse('userprofile-list')
@@ -78,6 +87,7 @@ class TestUserProfileViewSet(APITestCase):
                          department.id)
 
     def test_list_user_profile(self):
+        '''UserProfiles list should be accessed by GET request.'''
         url = reverse('userprofile-list')
 
         response = self.client.get(url)
@@ -85,6 +95,7 @@ class TestUserProfileViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_delete_user_profile(self):
+        '''UserProfile should be deleted by DELETE request.'''
         user_profile = mommy.make(auth.models.UserProfile)
         url = reverse('userprofile-detail', args=(user_profile.pk,))
 
@@ -94,6 +105,7 @@ class TestUserProfileViewSet(APITestCase):
         self.assertEqual(auth.models.UserProfile.objects.count(), 0)
 
     def test_get_user_profile(self):
+        '''UserProfile should be accessed by GET request.'''
         user_profile = mommy.make(auth.models.UserProfile)
         url = reverse('userprofile-detail', args=(user_profile.pk,))
         expected_keys = {'id', 'create_time', 'update_time', 'user',
@@ -105,6 +117,7 @@ class TestUserProfileViewSet(APITestCase):
         self.assertEqual(set(response.data.keys()), expected_keys)
 
     def test_update_user_profile(self):
+        '''UserProfile should be updated by PATCH request.'''
         age0 = 10
         age1 = 15
         user_profile = mommy.make(auth.models.UserProfile, age=age0)

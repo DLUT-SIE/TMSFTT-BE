@@ -1,3 +1,4 @@
+'''Unit tests for auth serializers.'''
 from django.contrib.auth.models import User
 from django.test import TestCase
 
@@ -6,7 +7,9 @@ import auth.models as models
 
 
 class TestUserSerializer(TestCase):
+    '''Unit tests for serializer of User.'''
     def test_fields_equal(self):
+        '''Serializer should return fields of User correctly.'''
         user = User()
         expected_keys = {
             'id', 'last_login', 'first_name', 'last_name', 'email',
@@ -17,7 +20,9 @@ class TestUserSerializer(TestCase):
 
 
 class TestDepartmentSerializer(TestCase):
+    '''Unit tests for serializer of Department.'''
     def test_fields_equal(self):
+        '''Serializer should return fields of Department correctly.'''
         department = models.Department()
         expected_keys = {'id', 'create_time', 'update_time', 'name', 'admins'}
 
@@ -26,7 +31,9 @@ class TestDepartmentSerializer(TestCase):
 
 
 class TestUserProfileSerializer(TestCase):
+    '''Unit tests for serializer of UserProfile.'''
     def test_fields_equal(self):
+        '''Serializer should return fields of UserProfile correctly.'''
         profile = models.UserProfile()
         expected_keys = {'id', 'create_time', 'update_time', 'user',
                          'department', 'age'}
