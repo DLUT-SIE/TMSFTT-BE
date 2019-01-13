@@ -6,5 +6,4 @@ from django.utils.translation import gettext_lazy as _
 class TrainingRecordConfig(AppConfig):
     '''Basic config for our app.'''
     name = 'training_record'
-    label='tmsftt_auth'
-    verbose_name=_('权限')
+    
