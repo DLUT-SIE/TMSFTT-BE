@@ -1,11 +1,14 @@
 '''Unit tests for auth views.'''
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.urls import reverse
 from model_mommy import mommy
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 import auth.models
+
+
+User = get_user_model()
 
 
 class TestDepartmentViewSet(APITestCase):

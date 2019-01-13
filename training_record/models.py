@@ -1,13 +1,12 @@
 '''Define ORM models for training_record module.'''
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.signals import pre_save
 from django.utils.translation import gettext_lazy as _
 from django.utils.text import format_lazy as _f
 
-from infra.models import OperationLog
 from infra.utils import CustomHashPath
-from training_program.models import Program
+from training_event.models import CampusEvent, OffCampusEvent
 
 
 class Record(models.Model):
@@ -29,35 +28,33 @@ class Record(models.Model):
                                        auto_now_add=True)
     update_time = models.DateTimeField(verbose_name=_('最近修改时间'),
                                        auto_now=True)
-    program_name = models.CharField(verbose_name=_('项目名称'),
-                                    max_length=64, blank=True, null=True)
-    program = models.ForeignKey(Program, verbose_name=_('培训项目'),
-                                blank=True, null=True,
-                                on_delete=models.PROTECT)
-    time = models.DateTimeField(verbose_name=_('参加时间'))
-    location = models.CharField(verbose_name=_('参加地点'), max_length=64)
-    num_hours = models.FloatField(verbose_name=_('参加学时'))
-    num_participants = models.PositiveIntegerField(verbose_name=_('参加人数'))
-    user = models.ForeignKey(User, verbose_name=_('参加用户'),
+    campus_event = models.ForeignKey(CampusEvent, verbose_name=_('校内培训活动'),
+                                     blank=True, null=True,
+                                     related_name='campus_event',
+                                     on_delete=models.PROTECT)
+    off_campus_event = models.ForeignKey(
+        OffCampusEvent, verbose_name=_('校外培训活动'), blank=True, null=True,
+        on_delete=models.PROTECT)
+    user = models.ForeignKey(get_user_model(), verbose_name=_('参加用户'),
                              on_delete=models.PROTECT)
     status = models.PositiveSmallIntegerField(verbose_name=_('当前状态'),
                                               choices=STATUS_CHOICES,
                                               default=STATUS_SUBMITTED)
 
     def __str__(self):
-        return '{}({})'.format(self.user, self.program or self.program_name)
+        return '{}({})'.format(self.user,
+                               self.campus_event or self.off_campus_event)
 
     @classmethod
-    def check_program_set(cls, sender, instance, **kwargs):
-        '''Check one and only one of program_name and program has been set.'''
-        if bool(instance.program_name) != bool(instance.program):
+    def check_event_set(cls, sender, instance, **kwargs):
+        '''Check campus_event or off_campus_event has been set.'''
+        if bool(instance.campus_event) != bool(instance.off_campus_event):
             return
-        raise ValueError(
-            _('One and only one of program_name and program should be set.'))
+        raise ValueError(_('有且只有校内培训活动或校外培训活动字段应被设置!'))
 
 
 # Connect to pre_save signal, so the check will happen before saving to db.
-pre_save.connect(Record.check_program_set, sender=Record)
+pre_save.connect(Record.check_event_set, sender=Record)
 
 
 class RecordContent(models.Model):
@@ -121,11 +118,11 @@ class RecordAttachment(models.Model):
         return '{}({})'.format(self.get_attachment_type_display(), self.record)
 
 
-class StatusChangeLog(OperationLog):
+class StatusChangeLog(models.Model):
     '''StatusChangeLog records the status change of the record instance.'''
     class Meta:
-        verbose_name = _('培训及路状态更改日志')
-        verbose_name_plural = _('培训及路状态更改日志')
+        verbose_name = _('培训记录状态更改日志')
+        verbose_name_plural = _('培训记录状态更改日志')
 
     record = models.ForeignKey(Record, verbose_name=_('培训记录'),
                                on_delete=models.CASCADE)
@@ -135,8 +132,9 @@ class StatusChangeLog(OperationLog):
     post_status = models.PositiveSmallIntegerField(
         verbose_name=_('更改后状态'), choices=Record.STATUS_CHOICES,
         blank=True, null=True)
-    description = models.CharField(verbose_name=_('状态更改描述信息'),
-                                   max_length=64, blank=True, null=True)
+    time = models.DateTimeField(verbose_name=_('更改时间'))
+    user = models.ForeignKey(get_user_model(), verbose_name=_('操作用户'),
+                             on_delete=models.PROTECT)
 
     def __str__(self):
         return str(_f('{}状态于{}由{}变为{}', self.record, self.time,

@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'auth.apps.AuthConfig',
     'infra.apps.InfraConfig',
     'training_program.apps.TrainingProgramConfig',
+    'training_event.apps.TrainingEventConfig',
     'training_record.apps.TrainingRecordConfig',
     'training_review.apps.TrainingReviewConfig',
 ]
