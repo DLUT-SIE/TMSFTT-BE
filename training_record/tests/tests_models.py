@@ -11,52 +11,60 @@ from training_record.models import (
 
 class TestRecord(TestCase):
     '''Unit tests for model Record.'''
-    @patch('training_record.models.Record.program')
+    @patch('training_record.models.Record.off_campus_event')
+    @patch('training_record.models.Record.campus_event')
     @patch('training_record.models.Record.user')
-    def test_str(self, mocked_user, mocked_program):
+    def test_str(self, mocked_user,
+                 mocked_campus_event, mocked_off_campus_event):
         '''Should render string correctly.'''
         user = 'user'
         mocked_user.__str__.return_value = user
 
         test_cases = (
-            (None, 'program not in system'),
-            ('program in system', None),
+            (None, 'off campus event'),
+            ('campus event', None),
         )
-        for program, program_name in test_cases:
-            if program:
-                mocked_program.__bool__.return_value = True
-                mocked_program.__str__.return_value = program
+        for campus_event, off_campus_event in test_cases:
+            if campus_event:
+                mocked_campus_event.__bool__.return_value = True
+                mocked_campus_event.__str__.return_value = campus_event
             else:
-                mocked_program.__bool__.return_value = False
-            expected_str = '{}({})'.format(user, program or program_name)
+                mocked_campus_event.__bool__.return_value = False
+                mocked_off_campus_event.__str__.return_value = off_campus_event
+            expected_str = '{}({})'.format(user,
+                                           campus_event or off_campus_event)
 
-            record = Record(program_name=program_name)
+            record = Record()
 
             self.assertEqual(str(record), expected_str)
 
-    def test_check_program_set(self):
+    def test_check_event_set(self):
         '''
-        Should not raise error when only one of program and program name are
-        set, raise error otherwise.
+        Should not raise error when only one of campus_event and
+        off_campus_event if set, raise error otherwise.
         '''
         test_cases = (
             (None, None),
-            (None, 'program not in system'),
-            ('program in system', None),
-            ('program in system', 'program not in system'),
+            (None, 'off campus event'),
+            ('campus event', None),
+            ('campus event', 'off campus event'),
         )
 
-        for program, program_name in test_cases:
+        for campus_event, off_campus_event in test_cases:
             instance = Mock()
-            instance.program_name = program_name
-            instance.program = program
+            instance.campus_event = campus_event
+            instance.off_campus_event = off_campus_event
 
-            if (program and program_name) or not (program or program_name):
-                # Both program and program_name are set or unset, raise error
-                self.assertRaises(ValueError, Record.check_program_set,
+            should_raise_error = (
+                bool(instance.campus_event) == bool(instance.off_campus_event)
+            )
+            if should_raise_error:
+                # Both campus_event and off_campus_event are set or unset,
+                # raise error
+                self.assertRaises(ValueError, Record.check_event_set,
                                   None, instance)
             else:
-                self.assertIsNone(Record.check_program_set(None, instance))
+                self.assertIsNone(Record.check_event_set(None, instance))
 
 
 class TestRecordContent(TestCase):
