@@ -111,13 +111,12 @@ class TestUserProfileViewSet(APITestCase):
         '''UserProfile should be accessed by GET request.'''
         user_profile = mommy.make(auth.models.UserProfile)
         url = reverse('userprofile-detail', args=(user_profile.pk,))
-        expected_keys = {'id', 'create_time', 'update_time', 'user',
-                         'department', 'age'}
 
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(set(response.data.keys()), expected_keys)
+        self.assertIn('id', response.data)
+        self.assertEqual(response.data['id'], user_profile.id)
 
     def test_update_user_profile(self):
         '''UserProfile should be updated by PATCH request.'''

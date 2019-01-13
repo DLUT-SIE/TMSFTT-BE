@@ -5,3 +5,4 @@ omit =
     manage.py,
     */apps.py,
     TMSFTT/wsgi.py,
+    TMSFTT/urls.py,

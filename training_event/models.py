@@ -30,8 +30,9 @@ class CampusEvent(AbstractEvent):
     '''Events that are held inside campus.'''
     program = models.ForeignKey(Program, verbose_name=_('培训项目'),
                                 on_delete=models.PROTECT)
-    num_enrolled = models.PositiveSmallIntegerField(verbose_name=_('报名人数'))
-    description = models.TextField(verbose_name=_('活动描述'))
+    num_enrolled = models.PositiveSmallIntegerField(
+        verbose_name=_('报名人数'), default=0)
+    description = models.TextField(verbose_name=_('活动描述'), default='')
 
 
 class OffCampusEvent(AbstractEvent):
