@@ -8,45 +8,45 @@ import training_program.models
 import auth.models
 
 
-class TestProgramCatgegoryViewSet(APITestCase):
-    '''Unit tests for ProgramCatgegory view.'''
-    def test_create_programcatgegory(self):
-        '''ProgramCatgegory should be created by POST request.'''
-        url = reverse('programcatgegory-list')
-        name = 'programcatgegory'
+class TestProgramCategoryViewSet(APITestCase):
+    '''Unit tests for ProgramCategory view.'''
+    def test_create_programcategory(self):
+        '''ProgramCategory should be created by POST request.'''
+        url = reverse('programcategory-list')
+        name = 'programcategory'
         data = {'name': name}
 
         response = self.client.post(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(training_program.models.ProgramCatgegory.
+        self.assertEqual(training_program.models.ProgramCategory.
                          objects.count(), 1)
-        self.assertEqual(training_program.models.ProgramCatgegory.objects.
+        self.assertEqual(training_program.models.ProgramCategory.objects.
                          get().name, name)
 
     def test_list_programcatgegery(self):
-        '''Programcatgegory list should be accessed by GET request.'''
-        url = reverse('programcatgegory-list')
+        '''Programcategory list should be accessed by GET request.'''
+        url = reverse('programcategory-list')
 
         reponse = self.client.get(url)
 
         self.assertEqual(reponse.status_code, status.HTTP_200_OK)
 
-    def test_delete_programcatgegory(self):
-        '''Programcatgegory list should be deleted by DELETE request.'''
-        programcatgegory = mommy.make(training_program.models.ProgramCatgegory)
-        url = reverse('programcatgegory-detail', args=(programcatgegory.pk,))
+    def test_delete_programcategory(self):
+        '''Programcategory list should be deleted by DELETE request.'''
+        programcategory = mommy.make(training_program.models.ProgramCategory)
+        url = reverse('programcategory-detail', args=(programcategory.pk,))
 
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(training_program.models.ProgramCatgegory.objects.
+        self.assertEqual(training_program.models.ProgramCategory.objects.
                          count(), 0)
 
-    def test_get_programcatgegory(self):
-        '''Programcatgegory list should be GET by GET request.'''
-        programcatgegory = mommy.make(training_program.models.ProgramCatgegory)
-        url = reverse('programcatgegory-detail', args=(programcatgegory.pk,))
+    def test_get_programcategory(self):
+        '''Programcategory list should be GET by GET request.'''
+        programcategory = mommy.make(training_program.models.ProgramCategory)
+        url = reverse('programcategory-detail', args=(programcategory.pk,))
         expected_keys = {'id', 'name'}
 
         response = self.client.get(url)
@@ -54,13 +54,13 @@ class TestProgramCatgegoryViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(set(response.data.keys()), expected_keys)
 
-    def test_update_programcatgegory(self):
-        '''Programcatgegory list should be updated by PATCH request.'''
-        name0 = 'programcatgegory0'
-        name1 = 'programcatgegory1'
-        programcatgegory = mommy.make(training_program.models.ProgramCatgegory,
-                                      name=name0)
-        url = reverse('programcatgegory-detail', args=(programcatgegory.pk, ))
+    def test_update_programcategory(self):
+        '''Programcategory list should be updated by PATCH request.'''
+        name0 = 'programcategory0'
+        name1 = 'programcategory1'
+        programcategory = mommy.make(training_program.models.ProgramCategory,
+                                     name=name0)
+        url = reverse('programcategory-detail', args=(programcategory.pk, ))
         data = {'name': name1}
 
         response = self.client.patch(url, data, format='json')
@@ -138,11 +138,11 @@ class TestProgram(APITestCase):
         '''Program should be created by POST request.'''
         url = reverse('program-list')
         department = mommy.make(auth.models.Department)
-        catgegory = mommy.make(training_program.models.ProgramCatgegory)
+        category = mommy.make(training_program.models.ProgramCategory)
         form = mommy.make(training_program.models.ProgramForm)
         name = 'program'
         data = {'name': name, 'department': department.id,
-                'catgegory': catgegory.id, 'form': [form.id]}
+                'category': category.id, 'form': [form.id]}
 
         response = self.client.post(url, data, format='json')
 
@@ -173,7 +173,7 @@ class TestProgram(APITestCase):
         '''Program list should be GET by GET request.'''
         program = mommy.make(training_program.models.Program)
         url = reverse('program-detail', args=(program.pk,))
-        expected_keys = {'id', 'name', 'department', 'catgegory', 'form'}
+        expected_keys = {'id', 'name', 'department', 'category', 'form'}
 
         response = self.client.get(url)
 
