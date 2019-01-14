@@ -30,9 +30,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'debug_toolbar',
     'rest_framework_bulk',
     'django_filters',
+    'django_cas',
 
     'auth.apps.AuthConfig',
     'infra.apps.InfraConfig',
@@ -50,11 +50,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'django_cas.middleware.CASMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
+    'django_cas.backends.CASBackend',
 ]
 
 REST_FRAMEWORK = {

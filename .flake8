@@ -6,3 +6,4 @@ exclude =
     manage.py,
     wsgi.py,
     migrations,
+    mock_cas,
