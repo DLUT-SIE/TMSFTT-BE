@@ -1,0 +1,25 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <h1>List of users can be logged in</h1>
+        <ul>
+            {% for user in users %}
+            <li>
+                <form action="/api/auth/login/" method="POST">
+                    <input type="hidden" name="ticket" value="{{ user }}">
+                    <input type="hidden" name="service_url" value="http://localhost:8000/api/auth/departments/">
+                    <button type="submit">以 {{ user.username }} 的身份登录</button>
+                </form>
+            </li>
+            {% endfor %}
+            <li>
+                <form action="/api/auth/login/" method="POST">
+                    <input type="hidden" name="ticket" value="invalid">
+                    <input type="hidden" name="service_url" value="http://localhost:8000/api/auth/departments/">
+                    <button type="submit">尝试无效用户登录</button>
+                </form>
+            </li>
+        </ul>
+    </body>
+</html>

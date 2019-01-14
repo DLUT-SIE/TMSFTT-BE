@@ -15,10 +15,7 @@ install:
 before_script:
   - mysql -e 'CREATE DATABASE IF NOT EXISTS TMSFTT character set UTF8;'
 
-script:
-  - flake8
-  - pylint auth infra training_program training_record training_review TMSFTT
-  - coverage run manage.py test -v 2 --debug-mode
+script: ./scripts/presubmit_tests.sh
 
 notifications:
     email: false
