@@ -34,7 +34,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'TMSFTT',
         'USER': 'root',
-        'PASSWORD': 'root',
+        'PASSWORD': 'a',
         'HOST': 'localhost',
         'PORT': '3306',
         'OPTIONS': {
