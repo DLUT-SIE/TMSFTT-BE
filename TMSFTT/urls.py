@@ -21,6 +21,8 @@ from django.urls import include, path
 API_URLPATTERNS = [
     path('auth/', include('auth.urls')),
     path('training_event/', include('training_event.urls')),
+    # 我不知道这个对不对
+    path('infra/', include('infra.urls')),
 ]
 
 urlpatterns = [
