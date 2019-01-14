@@ -41,4 +41,4 @@ class StatusChangeLogSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize StatusChangeLog instance.'''
     class Meta:
         model = training_record.models.StatusChangeLog
-        fields = '__all__'       
+        fields = '__all__'

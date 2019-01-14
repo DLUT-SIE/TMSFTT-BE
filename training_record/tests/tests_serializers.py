@@ -27,8 +27,8 @@ class TestRecordSerializer(TestCase):
     def test_fields_equal(self):
         '''Serializer should return fields of Record correctly.'''
         record = models.Record()
-        expected_keys = {'id', 'create_time', 'update_time', 'campus_event ', 
-                        'off_campus_event','user','status'}
+        expected_keys = {'id', 'create_time', 'update_time', 'campus_event',
+                         'off_campus_event', 'user', 'status'}
 
         keys = set(serializers.RecordSerializer(record).data.keys())
         self.assertEqual(keys, expected_keys)
@@ -39,10 +39,11 @@ class TestRecordContentSerializer(TestCase):
     def test_fields_equal(self):
         '''Serializer should return fields of RecordContent correctly.'''
         recordcontent = models.RecordContent()
-        expected_keys = {'id', 'create_time', 'update_time', 'record', 
-                        'content_type','content'}
+        expected_keys = {'id', 'create_time', 'update_time', 'record',
+                         'content_type', 'content'}
 
-        keys = set(serializers.RecordContentSerializer(recordcontent).data.keys())
+        keys = set(serializers.RecordContentSerializer(recordcontent).
+                   data.keys())
         self.assertEqual(keys, expected_keys)
 
 
@@ -51,10 +52,11 @@ class TestRecordAttachmentSerializer(TestCase):
     def test_fields_equal(self):
         '''Serializer should return fields of RecordAttachment correctly.'''
         recordattachment = models.RecordAttachment()
-        expected_keys = {'id', 'create_time', 'update_time', 'record', 
-                        'attachment_type','path'}
+        expected_keys = {'id', 'create_time', 'update_time', 'record',
+                         'attachment_type', 'path'}
 
-        keys = set(serializers.RecordAttachmentSerializer(recordattachment).data.keys())
+        keys = set(serializers.RecordAttachmentSerializer(recordattachment).
+                   data.keys())
         self.assertEqual(keys, expected_keys)
 
 
@@ -63,7 +65,9 @@ class StatusChangeLogSerializer(TestCase):
     def test_fields_equal(self):
         '''Serializer should return fields of StatusChangeLog correctly.'''
         statuschangelog = models.StatusChangeLog()
-        expected_keys = {'id', 'record', 'pre_status', 'post_status', 'time', 'user'}
+        expected_keys = {'id', 'record', 'pre_status', 'post_status',
+                         'time', 'user'}
 
-        keys = set(serializers.StatusChangeLogSerializer(statuschangelog).data.keys())
+        keys = set(serializers.StatusChangeLogSerializer(statuschangelog).
+                   data.keys())
         self.assertEqual(keys, expected_keys)

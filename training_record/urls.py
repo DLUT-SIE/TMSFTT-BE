@@ -5,8 +5,10 @@ import training_record.views
 
 
 router = routers.SimpleRouter()
-router.register(r'record', auth.views.RecordViewSet)
-router.register(r'recordcontent', auth.views.RecordContentViewSet)
-router.register(r'recordattachment', auth.views.RecordAttachmentViewSet)
-router.register(r'statuschangelog', auth.views.StatusChangeLogViewSet)
+router.register(r'records', training_record.views.RecordViewSet)
+router.register(r'record-contents', training_record.views.RecordContentViewSet)
+router.register(r'record-attachments',
+                training_record.views.RecordAttachmentViewSet)
+router.register(r'status-change-logs',
+                training_record.views.StatusChangeLogViewSet)
 urlpatterns = router.urls
