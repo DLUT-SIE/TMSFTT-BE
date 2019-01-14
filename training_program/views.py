@@ -4,10 +4,10 @@ import training_program.models
 import training_program.serializers
 
 
-class ProgramCatgegoryViewSet(viewsets.ModelViewSet):
-    '''Create API views for ProgramCatgegory.'''
-    queryset = training_program.models.ProgramCatgegory.objects.all()
-    serializer_class = training_program.serializers.ProgramCatgegorySerializer
+class ProgramCategoryViewSet(viewsets.ModelViewSet):
+    '''Create API views for ProgramCategory.'''
+    queryset = training_program.models.ProgramCategory.objects.all()
+    serializer_class = training_program.serializers.ProgramCategorySerializer
 
 
 class ProgramFormViewSet(viewsets.ModelViewSet):

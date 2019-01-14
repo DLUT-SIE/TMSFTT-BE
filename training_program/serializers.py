@@ -4,10 +4,10 @@ from rest_framework import serializers
 import training_program.models
 
 
-class ProgramCatgegorySerializer(serializers.ModelSerializer):
-    '''Indicate how to serialize ProgramCatgegory instance.'''
+class ProgramCategorySerializer(serializers.ModelSerializer):
+    '''Indicate how to serialize ProgramCategory instance.'''
     class Meta:
-        model = training_program.models.ProgramCatgegory
+        model = training_program.models.ProgramCategory
         fields = '__all__'
 
 
