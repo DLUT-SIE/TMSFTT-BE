@@ -16,6 +16,6 @@ _DEFAULTS = {
 }
 
 for key, value in _DEFAULTS.items():
-    if hasattr(settings, key):
+    if hasattr(settings, key):  # pragma: no cover
         continue
     setattr(settings, key, value)
