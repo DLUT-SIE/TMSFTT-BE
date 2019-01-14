@@ -6,6 +6,20 @@ from .settings import *
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '0jn@1=-wjx6zt)vg7^s9=g-yads8qrwy5*(r#a$*pbf2o11d(h'
 
+
+# Application definition
+DEV_INSTALLED_APPS = [
+    'debug_toolbar',
+    'mock_cas',
+]
+INSTALLED_APPS.extend(DEV_INSTALLED_APPS)
+
+DEV_MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+]
+MIDDLEWARE.extend(DEV_MIDDLEWARE)
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -43,3 +57,8 @@ AUTH_PASSWORD_VALIDATORS = []
 # User-uploaded files
 MEDIA_ROOT = osp.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+# CAS dev settings
+CAS_SERVER_URL = 'http://localhost:8000/mock-cas/'
+CAS_IGNORE_REFERER = True
+CAS_REDIRECT_URL = '/'

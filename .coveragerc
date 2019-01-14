@@ -6,3 +6,4 @@ omit =
     */apps.py,
     TMSFTT/wsgi.py,
     TMSFTT/urls.py,
+    mock_cas/*,

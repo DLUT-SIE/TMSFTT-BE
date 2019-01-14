@@ -28,6 +28,10 @@ class AbstractEvent(models.Model):
 
 class CampusEvent(AbstractEvent):
     '''Events that are held inside campus.'''
+    class Meta(AbstractEvent.Meta):
+        verbose_name = _('校内培训活动')
+        verbose_name_plural = _('校内培训活动')
+
     program = models.ForeignKey(Program, verbose_name=_('培训项目'),
                                 on_delete=models.PROTECT)
     num_enrolled = models.PositiveSmallIntegerField(
@@ -37,6 +41,9 @@ class CampusEvent(AbstractEvent):
 
 class OffCampusEvent(AbstractEvent):
     '''Events that are created by individual users.'''
+    class Meta(AbstractEvent.Meta):
+        verbose_name = _('校外培训活动')
+        verbose_name_plural = _('校外培训活动')
 
 
 class Enrollment(models.Model):
@@ -53,6 +60,11 @@ class Enrollment(models.Model):
         (ENROLL_METHOD_EMAIL, _('邮件报名')),
         (ENROLL_METHOD_IMPORT, _('管理员导入')),
     )
+
+    class Meta:
+        verbose_name = _('活动报名记录')
+        verbose_name_plural = _('活动报名记录')
+
     create_time = models.DateTimeField(verbose_name=_('创建时间'),
                                        auto_now_add=True)
     campus_event = models.ForeignKey(CampusEvent, verbose_name=_('校内活动'),

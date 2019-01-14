@@ -37,5 +37,6 @@ if settings.DEBUG:
         path('admin/', admin.site.urls),
         path('__debug__/', include(debug_toolbar.urls)),
         path('api/', include_docs_urls(title='TMSFTT APIs')),
+        path('mock-cas/', include('mock_cas.urls')),
     ]
     urlpatterns.extend(DEBUG_URLPATTERNS)
