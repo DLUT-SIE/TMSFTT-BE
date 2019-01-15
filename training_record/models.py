@@ -5,7 +5,6 @@ from django.db.models.signals import pre_save
 from django.utils.translation import gettext_lazy as _
 from django.utils.text import format_lazy as _f
 
-from infra.utils import CustomHashPath
 from training_event.models import CampusEvent, OffCampusEvent
 
 
@@ -112,7 +111,7 @@ class RecordAttachment(models.Model):
     attachment_type = models.PositiveSmallIntegerField(
         verbose_name=_('附件类型'), choices=ATTACHMENT_TYPE_CHOICES)
     path = models.FileField(verbose_name=_('附件地址'),
-                            upload_to=CustomHashPath('record_attachments'))
+                            upload_to='uploads/%Y/%m/%d/record_attachments')
 
     def __str__(self):
         return '{}({})'.format(self.get_attachment_type_display(), self.record)
