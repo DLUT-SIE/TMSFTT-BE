@@ -43,7 +43,6 @@ class LoginView(APIView):
         user = auth.authenticate(ticket=ticket, service=service_url)
         if user is not None:
             # Generage JWT
-            auth.login(request, user)
             payload = api_settings.JWT_PAYLOAD_HANDLER(user)
             token = api_settings.JWT_ENCODE_HANDLER(payload)
             response_data = api_settings.JWT_RESPONSE_PAYLOAD_HANDLER(
@@ -67,11 +66,11 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     '''Class-based CAS logout view.'''
+
     def get(self, request):
         '''Log a user out.'''
-        auth.logout(request)
         logout(request)
         next_page = request.GET.get('next', get_redirect_url(request))
         if settings.CAS_LOGOUT_COMPLETELY:
-            return HttpResponseRedirect(get_logout_url(request, next_page))
+            next_page = get_logout_url(request, next_page)
         return HttpResponseRedirect(next_page)

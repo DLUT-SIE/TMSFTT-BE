@@ -94,7 +94,6 @@ class TestLoginView(APITestCase):
 
         response = self.client.post(url, data, format='json')
 
-        mocked_auth.login.assert_called()
         self.assertEqual(response.status_code,
                          status.HTTP_200_OK)
 
