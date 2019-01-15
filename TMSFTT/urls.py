@@ -21,6 +21,7 @@ from django.urls import include, path
 API_URLPATTERNS = [
     path('auth/', include('auth.urls')),
     path('training_event/', include('training_event.urls')),
+    path('training_review/', include('training_review.urls'))
 ]
 
 urlpatterns = [
