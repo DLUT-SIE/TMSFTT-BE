@@ -9,19 +9,6 @@ import infra.models as models
 User = get_user_model()
 
 
-class TestUserSerializer(TestCase):
-    '''Unit tests for serializer of User.'''
-    def test_fields_equal(self):
-        '''Serializer should return fields of User correctly.'''
-        user = User()
-        expected_keys = {
-            'id', 'last_login', 'first_name', 'last_name', 'email',
-            'is_active', 'date_joined'}
-
-        keys = set(serializers.UserSerializer(user).data.keys())
-        self.assertEqual(keys, expected_keys)
-
-
 class TestOperationLogSerializer(TestCase):
     '''Unit tests for serializer of operationlog.'''
     def test_fields_equal(self):
