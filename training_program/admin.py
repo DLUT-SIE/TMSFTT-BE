@@ -1,10 +1,10 @@
 '''Define how to register our models in admin console.'''
 from django.contrib import admin
 
-from training_program.models import ProgramCatgegory, ProgramForm, Program
+from training_program.models import ProgramCategory, ProgramForm, Program
 
 
-class ProgramCatgegoryAdmin(admin.ModelAdmin):
+class ProgramCategoryAdmin(admin.ModelAdmin):
     '''Define how to register model ProgramCategory in console.'''
 
 
@@ -17,7 +17,7 @@ class ProgramAdmin(admin.ModelAdmin):
 
 
 REGISTER_ITEMS = [
-    (ProgramCatgegory, ProgramCatgegoryAdmin),
+    (ProgramCategory, ProgramCategoryAdmin),
     (ProgramForm, ProgramFormAdmin),
     (Program, ProgramAdmin),
 ]
