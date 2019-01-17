@@ -9,10 +9,10 @@ class TestProgramCategorySerializer(TestCase):
     '''Unit tests for serializer of programcategory.'''
     def test_fields_equal(self):
         '''Serializer should return fields of ProgramCategory correctly.'''
-        programcategory = models.ProgramCategory()
+        category = models.ProgramCategory()
         expected_keys = {'id', 'name'}
         keys = set(serializers.ProgramCategorySerializer
-                   (programcategory).data.keys())
+                   (category).data.keys())
         self.assertEqual(keys, expected_keys)
 
 
@@ -20,9 +20,9 @@ class TestProgramFormSerializer(TestCase):
     '''Unit tests for serizalizer of programform.'''
     def test_fields_equal(self):
         '''Serializer should return fields of ProgramForm correctly.'''
-        programform = models.ProgramForm()
+        form = models.ProgramForm()
         expected_keys = {'id', 'name'}
-        keys = set(serializers.ProgramFormSerializer(programform).data.keys())
+        keys = set(serializers.ProgramFormSerializer(form).data.keys())
         self.assertEqual(keys, expected_keys)
 
 
@@ -31,7 +31,6 @@ class TestProgramSerializer(TestCase):
     def test_fields_equal(self):
         '''Serializer should return fields of Program correctly.'''
         program = models.Program()
-        expected_keys = models.Program()
         expected_keys = {'id', 'name', 'department', 'category', 'form'}
         keys = set(serializers.ProgramSerializer(program).data.keys())
         self.assertEqual(keys, expected_keys)
