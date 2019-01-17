@@ -10,7 +10,7 @@ import auth.models
 
 class TestProgramCategoryViewSet(APITestCase):
     '''Unit tests for ProgramCategory view.'''
-    def test_create_programcategory(self):
+    def test_create_program_category(self):
         '''ProgramCategory should be created by POST request.'''
         url = reverse('programcategory-list')
         name = 'programcategory'
