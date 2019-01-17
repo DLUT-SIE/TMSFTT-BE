@@ -7,7 +7,6 @@ import infra.views
 
 
 router = routers.SimpleRouter()
-router.register(r'operationlog', infra.views.OperationLogViewSet)
 router.register(r'notification', infra.views.NotificationViewSet)
 urlpatterns = router.urls
 
