@@ -7,7 +7,7 @@ import infra.views
 
 
 router = routers.SimpleRouter()
-router.register(r'notification', infra.views.NotificationViewSet)
+router.register(r'notifications', infra.views.NotificationViewSet)
 urlpatterns = router.urls
 
 # JWT authentication views
