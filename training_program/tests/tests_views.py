@@ -60,7 +60,7 @@ class TestProgramCategoryViewSet(APITestCase):
         name1 = 'category1'
         category = mommy.make(training_program.models.ProgramCategory,
                               name=name0)
-        url = reverse('programcategory-detail', args=(category.pk, ))
+        url = reverse('programcategory-detail', args=(category.pk,))
         data = {'name': name1}
 
         response = self.client.patch(url, data, format='json')
