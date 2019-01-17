@@ -9,7 +9,7 @@ class TestProgramCategorySerializer(TestCase):
     '''Unit tests for serializer of programcategory.'''
     def test_fields_equal(self):
         '''Serializer should return fields of ProgramCategory correctly.'''
-        programcategory = models.ProgramCategory()
+        category = models.ProgramCategory()
         expected_keys = {'id', 'name'}
         keys = set(serializers.ProgramCategorySerializer
                    (programcategory).data.keys())
