@@ -6,25 +6,7 @@ from django.utils.timezone import now
 from django.utils.text import format_lazy as _f
 
 
-from infra.models import OperationLog, Notification
-
-
-class TestOperationLog(TestCase):
-    '''Unit tests for model OperationLog.'''
-    @patch('infra.models.OperationLog.requester')
-    def test_str(self, mocked_requester):
-        '''Should render string correctly.'''
-        time = now()
-        requester = 'requester'
-        method = 1
-        url = 'http://www.foo.bar'
-        mocked_requester.__str__.return_value = requester
-
-        log = OperationLog(
-            time=time, method=method, url=url)
-
-        self.assertEqual(str(log), '{}({} {} {})'.format(
-            time, requester, method, url))
+from infra.models import Notification
 
 
 class TestNotification(TestCase):
