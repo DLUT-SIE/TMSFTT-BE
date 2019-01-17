@@ -1,7 +1,7 @@
 '''Unit tests for training_program models.'''
 from django.test import TestCase
 
-from training_program.models import ProgramCatgegory, ProgramForm, Program
+from training_program.models import ProgramCategory, ProgramForm, Program
 
 
 class TestProgramCategory(TestCase):
@@ -9,7 +9,7 @@ class TestProgramCategory(TestCase):
     def test_str(self):
         '''Should render string correctly.'''
         name = 'name'
-        category = ProgramCatgegory(name=name)
+        category = ProgramCategory(name=name)
 
         self.assertEqual(str(category), name)
 
