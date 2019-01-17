@@ -12,7 +12,7 @@ class TestProgramCategorySerializer(TestCase):
         category = models.ProgramCategory()
         expected_keys = {'id', 'name'}
         keys = set(serializers.ProgramCategorySerializer
-                   (programcategory).data.keys())
+                   (category).data.keys())
         self.assertEqual(keys, expected_keys)
 
 
