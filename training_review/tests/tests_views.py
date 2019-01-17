@@ -17,7 +17,7 @@ class TestReviewNoteViewSet(APITestCase):
     '''Unit tests for ReviewNote view.'''
     def test_create_review_note(self):
         '''ReviewNote should be created by POST request.'''
-        offcampusevent = mommy.make(tevent.OffCampusEvent)
+        off_campus_event = mommy.make(tevent.OffCampusEvent)
         user = mommy.make(User)
         record = mommy.make(trecord.Record, off_campus_event=offcampusevent)
         field_name = 'reviewnote'
