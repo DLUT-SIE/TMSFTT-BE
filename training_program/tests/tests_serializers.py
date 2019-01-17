@@ -22,7 +22,7 @@ class TestProgramFormSerializer(TestCase):
         '''Serializer should return fields of ProgramForm correctly.'''
         programform = models.ProgramForm()
         expected_keys = {'id', 'name'}
-        keys = set(serializers.ProgramFormSerializer(programform).data.keys())
+        keys = set(serializers.ProgramFormSerializer(form).data.keys())
         self.assertEqual(keys, expected_keys)
 
 
