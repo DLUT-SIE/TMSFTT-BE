@@ -18,7 +18,6 @@ DATABASES = {
         'NAME': 'TMSFTT',
         'USER': 'root',
         'PASSWORD': '',
-
         'HOST': 'localhost',
         'PORT': '3306',
         'OPTIONS': {
