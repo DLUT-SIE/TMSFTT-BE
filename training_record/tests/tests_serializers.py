@@ -1,25 +1,8 @@
 '''Unit tests for training_record serializers.'''
-from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 import training_record.serializers as serializers
 import training_record.models as models
-
-
-User = get_user_model()
-
-
-class TestUserSerializer(TestCase):
-    '''Unit tests for serializer of User.'''
-    def test_fields_equal(self):
-        '''Serializer should return fields of User correctly.'''
-        user = User()
-        expected_keys = {
-            'id', 'last_login', 'first_name', 'last_name', 'email',
-            'is_active', 'date_joined'}
-
-        keys = set(serializers.UserSerializer(user).data.keys())
-        self.assertEqual(keys, expected_keys)
 
 
 class TestRecordSerializer(TestCase):
@@ -38,11 +21,11 @@ class TestRecordContentSerializer(TestCase):
     '''Unit tests for serializer of RecordContent.'''
     def test_fields_equal(self):
         '''Serializer should return fields of RecordContent correctly.'''
-        recordcontent = models.RecordContent()
+        record_content = models.RecordContent()
         expected_keys = {'id', 'create_time', 'update_time', 'record',
                          'content_type', 'content'}
 
-        keys = set(serializers.RecordContentSerializer(recordcontent).
+        keys = set(serializers.RecordContentSerializer(record_content).
                    data.keys())
         self.assertEqual(keys, expected_keys)
 
@@ -51,11 +34,11 @@ class TestRecordAttachmentSerializer(TestCase):
     '''Unit tests for serializer of RecordAttachment.'''
     def test_fields_equal(self):
         '''Serializer should return fields of RecordAttachment correctly.'''
-        recordattachment = models.RecordAttachment()
+        record_attachment = models.RecordAttachment()
         expected_keys = {'id', 'create_time', 'update_time', 'record',
                          'attachment_type', 'path'}
 
-        keys = set(serializers.RecordAttachmentSerializer(recordattachment).
+        keys = set(serializers.RecordAttachmentSerializer(record_attachment).
                    data.keys())
         self.assertEqual(keys, expected_keys)
 
@@ -64,10 +47,10 @@ class StatusChangeLogSerializer(TestCase):
     '''Unit tests for serializer of StatusChangeLog.'''
     def test_fields_equal(self):
         '''Serializer should return fields of StatusChangeLog correctly.'''
-        statuschangelog = models.StatusChangeLog()
+        log = models.StatusChangeLog()
         expected_keys = {'id', 'record', 'pre_status', 'post_status',
                          'time', 'user'}
 
-        keys = set(serializers.StatusChangeLogSerializer(statuschangelog).
+        keys = set(serializers.StatusChangeLogSerializer(log).
                    data.keys())
         self.assertEqual(keys, expected_keys)

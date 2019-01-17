@@ -1,19 +1,7 @@
 '''Define how to serialize our models.'''
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 import training_record.models
-
-
-User = get_user_model()
-
-
-class UserSerializer(serializers.ModelSerializer):
-    '''Indicate how to serialize User instance.'''
-    class Meta:
-        model = User
-        fields = ('id', 'last_login', 'first_name', 'last_name', 'email',
-                  'is_active', 'date_joined')
 
 
 class RecordSerializer(serializers.ModelSerializer):
