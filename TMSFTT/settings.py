@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'rest_framework_bulk',
     'django_filters',
     'django_cas',
+    'corsheaders',
 
     'auth.apps.AuthConfig',
     'infra.apps.InfraConfig',
@@ -44,6 +45,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
