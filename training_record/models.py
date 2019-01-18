@@ -10,10 +10,12 @@ from training_event.models import CampusEvent, OffCampusEvent
 
 class Record(models.Model):
     '''Record records the attendance of users.'''
-    STATUS_SUBMITTED = 0
-    STATUS_FACULTY_ADMIN_REVIEWED = 1
-    STATUS_SCHOOL_ADMIN_REVIEWED = 2
+    STATUS_PRESUBMIT = 0
+    STATUS_SUBMITTED = 1
+    STATUS_FACULTY_ADMIN_REVIEWED = 2
+    STATUS_SCHOOL_ADMIN_REVIEWED = 3
     STATUS_CHOICES = (
+        (STATUS_PRESUBMIT, _('预提交')),
         (STATUS_SUBMITTED, _('已提交')),
         (STATUS_FACULTY_ADMIN_REVIEWED, _('院系管理员已审核')),
         (STATUS_SCHOOL_ADMIN_REVIEWED, _('学校管理员已审核')),
