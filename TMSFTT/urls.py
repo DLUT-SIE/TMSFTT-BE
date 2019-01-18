@@ -23,6 +23,7 @@ API_URLPATTERNS = [
     path('infra/', include('infra.urls')),
     path('training-events/', include('training_event.urls')),
     path('training-program/', include('training_program.urls')),
+    path('training-record/', include('training_record.urls'))
 ]
 
 urlpatterns = [
