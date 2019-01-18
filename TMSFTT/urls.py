@@ -20,6 +20,7 @@ from django.urls import include, path
 
 API_URLPATTERNS = [
     path('auth/', include('auth.urls')),
+    path('infra/', include('infra.urls')),
     path('training-events/', include('training_event.urls')),
     path('training-program/', include('training_program.urls')),
     path('training-record/', include('training_record.urls'))

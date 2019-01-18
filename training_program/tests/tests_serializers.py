@@ -11,8 +11,7 @@ class TestProgramCategorySerializer(TestCase):
         '''Serializer should return fields of ProgramCategory correctly.'''
         category = models.ProgramCategory()
         expected_keys = {'id', 'name'}
-        keys = set(serializers.ProgramCategorySerializer
-                   (category).data.keys())
+        keys = set(serializers.ProgramCategorySerializer(category).data.keys())
         self.assertEqual(keys, expected_keys)
 
 
