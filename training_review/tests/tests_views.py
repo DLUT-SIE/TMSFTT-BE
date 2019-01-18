@@ -19,7 +19,7 @@ class TestReviewNoteViewSet(APITestCase):
         '''ReviewNote should be created by POST request.'''
         off_campus_event = mommy.make(tevent.OffCampusEvent)
         user = mommy.make(User)
-        record = mommy.make(trecord.Record, off_campus_event=offcampusevent)
+        record = mommy.make(trecord.Record, off_campus_event=off_campus_event)
         field_name = 'reviewnote'
         content = 'Reviewnote is created.'
         url = reverse('reviewnote-list')
@@ -47,8 +47,8 @@ class TestReviewNoteViewSet(APITestCase):
 
     def test_delete_review_note(self):
         '''ReviewNote should be deleted by DELETE request.'''
-        offcampusevent = mommy.make(tevent.OffCampusEvent)
-        record = mommy.make(trecord.Record, off_campus_event=offcampusevent)
+        off_campus_event = mommy.make(tevent.OffCampusEvent)
+        record = mommy.make(trecord.Record, off_campus_event=off_campus_event)
         review_note = mommy.make(treview.ReviewNote, record=record)
         url = reverse('reviewnote-detail', args=(review_note.pk,))
 
@@ -59,8 +59,8 @@ class TestReviewNoteViewSet(APITestCase):
 
     def test_get_review_note(self):
         '''ReviewNote should be accessed by GET request.'''
-        offcampusevent = mommy.make(tevent.OffCampusEvent)
-        record = mommy.make(trecord.Record, off_campus_event=offcampusevent)
+        off_campus_event = mommy.make(tevent.OffCampusEvent)
+        record = mommy.make(trecord.Record, off_campus_event=off_campus_event)
         review_note = mommy.make(treview.ReviewNote, record=record)
         url = reverse('reviewnote-detail', args=(review_note.pk,))
 
@@ -74,8 +74,8 @@ class TestReviewNoteViewSet(APITestCase):
         '''ReviewNote should be updated by PATCH request.'''
         field_name0 = 'note0'
         field_name1 = 'note1'
-        offcampusevent = mommy.make(tevent.OffCampusEvent)
-        record = mommy.make(trecord.Record, off_campus_event=offcampusevent)
+        off_campus_event = mommy.make(tevent.OffCampusEvent)
+        record = mommy.make(trecord.Record, off_campus_event=off_campus_event)
         review_note = mommy.make(treview.ReviewNote, field_name=field_name0,
                                  record=record)
         url = reverse('reviewnote-detail', args=(review_note.pk,))

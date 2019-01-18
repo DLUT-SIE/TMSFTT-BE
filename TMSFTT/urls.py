@@ -20,8 +20,8 @@ from django.urls import include, path
 
 API_URLPATTERNS = [
     path('auth/', include('auth.urls')),
-    path('training_event/', include('training_event.urls')),
-    path('training-review/', include('training_review.urls'))
+    path('training-event/', include('training_event.urls')),
+    path('training-review/', include('training_review.urls')),
 ]
 
 urlpatterns = [
