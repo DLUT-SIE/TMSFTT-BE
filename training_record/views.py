@@ -1,5 +1,8 @@
 '''Provide API views for training_record module.'''
 from rest_framework import viewsets
+from rest_framework_bulk.mixins import (
+    BulkCreateModelMixin,
+)
 
 import training_record.models
 import training_record.serializers
@@ -11,13 +14,13 @@ class RecordViewSet(viewsets.ModelViewSet):
     serializer_class = training_record.serializers.RecordSerializer
 
 
-class RecordContentViewSet(viewsets.ModelViewSet):
+class RecordContentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
     '''Create API views for RecordContent.'''
     queryset = training_record.models.RecordContent.objects.all()
     serializer_class = training_record.serializers.RecordContentSerializer
 
 
-class RecordAttachmentViewSet(viewsets.ModelViewSet):
+class RecordAttachmentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
     '''Create API views for RecordAttachment.'''
     queryset = training_record.models.RecordAttachment.objects.all()
     serializer_class = training_record.serializers.RecordAttachmentSerializer
