@@ -10,6 +10,7 @@ from training_event.models import CampusEvent, OffCampusEvent
 
 class Record(models.Model):
     '''Record records the attendance of users.'''
+    # TODO(yochen): Add Celery job to cleanup Records in presubmit status.
     STATUS_PRESUBMIT = 0
     STATUS_SUBMITTED = 1
     STATUS_FACULTY_ADMIN_REVIEWED = 2
