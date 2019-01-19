@@ -33,9 +33,9 @@ class Record(models.Model):
                                      blank=True, null=True,
                                      related_name='campus_event',
                                      on_delete=models.PROTECT)
-    off_campus_event = models.ForeignKey(
+    off_campus_event = models.OneToOneField(
         OffCampusEvent, verbose_name=_('校外培训活动'), blank=True, null=True,
-        on_delete=models.PROTECT)
+        on_delete=models.CASCADE)
     user = models.ForeignKey(get_user_model(), verbose_name=_('参加用户'),
                              on_delete=models.PROTECT)
     status = models.PositiveSmallIntegerField(verbose_name=_('当前状态'),
