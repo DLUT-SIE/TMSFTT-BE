@@ -1,6 +1,6 @@
 '''Unit tests for django_cas views.'''
-from datetime import timedelta
-from unittest.mock import patch
+from datetime import datetime, timedelta
+from unittest.mock import patch, Mock
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -86,7 +86,8 @@ class TestLoginView(APITestCase):
         '''Should return JWT when authentication succeed.'''
         url = reverse('cas-login')
         data = {'ticket': 'ticket', 'service_url': 'service_url'}
-        mocked_auth.authenticate.return_value = 'User'
+        user = Mock()
+        mocked_auth.authenticate.return_value = user
         mocked_api_settings.JWT_EXPIRATION_DELTA = timedelta(days=12)
         mocked_api_settings.JWT_AUTH_COOKIE = True
         mocked_api_settings.JWT_AUTH_COOKIE = 'JWT_TOKEN'
@@ -96,6 +97,8 @@ class TestLoginView(APITestCase):
 
         self.assertEqual(response.status_code,
                          status.HTTP_200_OK)
+        self.assertIsInstance(user.last_login, datetime)
+        user.save.assert_called()
 
 
 class TestLogoutView(APITestCase):

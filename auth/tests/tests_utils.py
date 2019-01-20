@@ -1,9 +1,11 @@
 '''Unit tests for auth serializers.'''
+from unittest.mock import Mock
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from model_mommy import mommy
 
-from auth.utils import get_user_secret_key
+from auth.utils import get_user_secret_key, jwt_response_payload_handler
 
 
 class TestGetUserSecretKey(TestCase):
@@ -26,3 +28,15 @@ class TestGetUserSecretKey(TestCase):
         user_secret_key2 = get_user_secret_key(user2)
 
         self.assertNotEqual(user_secret_key1, user_secret_key2)
+
+
+class TestJWTResponsePayloadHandler(TestCase):
+    '''Unit tests for jwt_response_payload_handler().'''
+    def test_should_include_keys(self):
+        user = mommy.make(get_user_model())
+        request = Mock()
+        expected_keys = {'user', 'token'}
+
+        keys = set(jwt_response_payload_handler('', user, request).keys())
+
+        self.assertEqual(keys, expected_keys)

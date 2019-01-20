@@ -15,8 +15,8 @@ class TestUserSerializer(TestCase):
         '''Serializer should return fields of User correctly.'''
         user = User()
         expected_keys = {
-            'id', 'last_login', 'first_name', 'last_name', 'email',
-            'is_active', 'date_joined'}
+            'id', 'username', 'last_login', 'first_name', 'last_name',
+            'email', 'is_active', 'date_joined'}
 
         keys = set(serializers.UserSerializer(user).data.keys())
         self.assertEqual(keys, expected_keys)

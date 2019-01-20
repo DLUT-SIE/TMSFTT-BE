@@ -12,8 +12,8 @@ class UserSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize User instance.'''
     class Meta:
         model = User
-        fields = ('id', 'last_login', 'first_name', 'last_name', 'email',
-                  'is_active', 'date_joined')
+        fields = ('id', 'username', 'last_login', 'first_name', 'last_name',
+                  'email', 'is_active', 'date_joined')
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
