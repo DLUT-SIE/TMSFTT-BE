@@ -52,7 +52,7 @@ class TestLoginView(APITestCase):
         Should return 403 when authentication failed and no retry is allowed.
         '''
         url = reverse('cas-login')
-        data = {'ticket': 'ticket', 'service_url': 'service_url'}
+        data = {'ticket': 'ticket', 'service': 'service'}
         mocked_auth.authenticate.return_value = None
         mocked_settings.CAS_RETRY_LOGIN = False
 
@@ -69,7 +69,7 @@ class TestLoginView(APITestCase):
         Should redirect when authentication failed and retry is allowed.
         '''
         url = reverse('cas-login')
-        data = {'ticket': 'ticket', 'service_url': 'service_url'}
+        data = {'ticket': 'ticket', 'service': 'service'}
         mocked_auth.authenticate.return_value = None
         mocked_settings.CAS_RETRY_LOGIN = True
 
@@ -85,7 +85,7 @@ class TestLoginView(APITestCase):
             self, mocked_auth, _, mocked_api_settings):
         '''Should return JWT when authentication succeed.'''
         url = reverse('cas-login')
-        data = {'ticket': 'ticket', 'service_url': 'service_url'}
+        data = {'ticket': 'ticket', 'service': 'service'}
         user = Mock()
         mocked_auth.authenticate.return_value = user
         mocked_api_settings.JWT_EXPIRATION_DELTA = timedelta(days=12)
