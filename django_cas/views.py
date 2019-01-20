@@ -32,16 +32,16 @@ class LoginView(APIView):
     def post(self, request):
         '''Verify ticket issued by CAS server.
 
-        If the ticket is valid, then issue the JWT. ticket and service_url
+        If the ticket is valid, then issue the JWT. ticket and service
         should be provided by the request to verify the ticket.
         '''
         if request.user.is_authenticated:
             return HttpResponseRedirect(get_redirect_url(request))
         ticket = request.data.get('ticket')
-        service_url = request.data.get('service_url')
-        if not ticket or not service_url:
+        service = request.data.get('service')
+        if not ticket or not service:
             return HttpResponseForbidden()
-        user = auth.authenticate(ticket=ticket, service=service_url)
+        user = auth.authenticate(ticket=ticket, service=service)
         if user is not None:
             user.last_login = now()
             user.save()
@@ -62,7 +62,7 @@ class LoginView(APIView):
         if settings.CAS_RETRY_LOGIN:
             # If the ticket is invalid, require another CAS authentication.
             # Only happens when CAS_RETRY_LOGIN is True.
-            return HttpResponseRedirect(get_login_url(service_url))
+            return HttpResponseRedirect(get_login_url(service))
         # Otherwise, return 403 error.
         return HttpResponseForbidden()
 

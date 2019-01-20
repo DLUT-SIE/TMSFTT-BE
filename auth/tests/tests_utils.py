@@ -33,6 +33,7 @@ class TestGetUserSecretKey(TestCase):
 class TestJWTResponsePayloadHandler(TestCase):
     '''Unit tests for jwt_response_payload_handler().'''
     def test_should_include_keys(self):
+        '''should include key user in response data.'''
         user = mommy.make(get_user_model())
         request = Mock()
         expected_keys = {'user', 'token'}

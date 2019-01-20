@@ -3,21 +3,30 @@
     </head>
     <body>
         <h1>List of users can be logged in</h1>
+        <p>You have to create users yourself first, all users in database will be displayed below.</p>
         <ul>
             {% for user in users %}
             <li>
+                {% if not service %}
                 <form action="/api/auth/login/" method="POST">
-                    <input type="hidden" name="ticket" value="{{ user }}">
-                    <input type="hidden" name="service_url" value="http://localhost:8000/api/auth/departments/">
-                    <button type="submit">以 {{ user.username }} 的身份登录</button>
+                {% else %}
+                <form action="{{ service }}" method="GET">
+                {% endif %}
+                  <input type="hidden" name="ticket" value="{{ user }}">
+                  <input type="hidden" name="service" value="{{ service }}">
+                  <button type="submit">Login as {{ user.username }}</button>
                 </form>
             </li>
             {% endfor %}
             <li>
+                {% if not service %}
                 <form action="/api/auth/login/" method="POST">
-                    <input type="hidden" name="ticket" value="invalid">
-                    <input type="hidden" name="service_url" value="http://localhost:8000/api/auth/departments/">
-                    <button type="submit">尝试无效用户登录</button>
+                {% else %}
+                <form action="{{ service }}" method="GET">
+                {% endif %}
+                  <input type="hidden" name="ticket" value="invalid">
+                  <input type="hidden" name="service" value="{{ service }}">
+                  <button type="submit">Attemp Invalid login</button>
                 </form>
             </li>
         </ul>
