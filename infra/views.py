@@ -10,7 +10,7 @@ class NotificationViewSet(mixins.ListModelMixin,
                           mixins.RetrieveModelMixin,
                           viewsets.GenericViewSet):
     '''Create API views for Notification.'''
-    queryset = infra.models.Notification.objects.all()
+    queryset = infra.models.Notification.objects.all().order_by('-time')
     serializer_class = infra.serializers.NotificationSerializer
 
     def get_queryset(self):
