@@ -61,7 +61,6 @@ AUTHENTICATION_BACKENDS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
@@ -118,4 +117,5 @@ JWT_AUTH = {
     'JWT_AUTH_COOKIE': 'JWT_TOKEN',
     # JWT expires in 18 hours.
     'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=12),
+    'JWT_RESPONSE_PAYLOAD_HANDLER': 'auth.utils.jwt_response_payload_handler',
 }

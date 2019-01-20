@@ -5,6 +5,7 @@ from django.contrib import auth
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.utils.timezone import now
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_jwt.settings import api_settings
@@ -42,6 +43,8 @@ class LoginView(APIView):
             return HttpResponseForbidden()
         user = auth.authenticate(ticket=ticket, service=service_url)
         if user is not None:
+            user.last_login = now()
+            user.save()
             # Generage JWT
             payload = api_settings.JWT_PAYLOAD_HANDLER(user)
             token = api_settings.JWT_ENCODE_HANDLER(payload)

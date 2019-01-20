@@ -4,6 +4,8 @@ import hashlib
 from django.conf import settings
 from django.utils.timezone import now
 
+from auth.serializers import UserSerializer
+
 
 # The time when this module was imported
 # In Debug mode, this would be set to 0
@@ -26,3 +28,11 @@ def get_user_secret_key(user):
     sha1.update(unhashed_key)
     secret_key = sha1.hexdigest()
     return secret_key
+
+
+def jwt_response_payload_handler(token, user=None, request=None):
+    """Returns the response data for both the login and refresh views."""
+    return {
+        'user': UserSerializer(user).data,
+        'token': token
+    }
