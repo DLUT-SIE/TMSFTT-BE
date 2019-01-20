@@ -1,6 +1,7 @@
 [MASTER]
 load-plugins=pylint_django
 jobs=0
+disable=no-member
 
 [BASIC]
 ignore=migrations,settings_dev.py,settings_ci.py,settings.py
