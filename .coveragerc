@@ -7,3 +7,4 @@ omit =
     TMSFTT/wsgi.py,
     TMSFTT/urls.py,
     mock_cas/*,
+    data_migration/*,

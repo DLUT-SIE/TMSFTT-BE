@@ -1,4 +1,5 @@
 #!/bin/sh
+export DJANGO_SETTINGS_MODULE=TMSFTT.settings_ci
 echo "Checking if code meets PEP8 by Flake8."
 python -m flake8
 echo "Checking if code meets lint rules by pylint."

@@ -1,6 +1,9 @@
 '''Unit tests for training_record views.'''
 import io
+import tempfile
+
 from django.contrib.auth import get_user_model
+from django.test import override_settings
 from django.urls import reverse
 from django.utils.timezone import now
 from model_mommy import mommy
@@ -174,6 +177,7 @@ class TestRecordContentViewSet(APITestCase):
         self.assertEqual(response.data['content_type'], content_type1)
 
 
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 class TestRecordAttachmentViewSet(APITestCase):
     '''Unit tests for RecordAttachment view.'''
     def test_create_record_attachment(self):
