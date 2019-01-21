@@ -15,9 +15,9 @@ class NotificationViewSet(mixins.ListModelMixin,
 
     def get_queryset(self):
         '''Filter against current user.'''
-        user = self.request.user
+        user = self.request.user if hasattr(self.request, 'user') else None
         queryset = super().get_queryset()
-        if not user.is_authenticated:
+        if user is None or user.is_authenticated is False:
             return queryset.none()
         return queryset.filter(recipient=user)
 
