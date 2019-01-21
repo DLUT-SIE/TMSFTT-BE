@@ -18,6 +18,8 @@ from training_review.models import ReviewNote
 
 
 faker = Faker('zh_CN')
+faker.seed(0)
+
 
 def _random_datetime(before=True, after=False):
     if before and after:
@@ -42,6 +44,7 @@ def _random_contents(record):
         content=faker.text(100),
     ) for (content_type, _) in RecordContent.CONTENT_TYPE_CHOICES
         if random() > 0.7]
+
 
 def _random_attachments(record):
     return [RecordAttachment.objects.create(
@@ -87,24 +90,31 @@ def _random_review_note(record, admins):
 
 def populate_initial_data(apps, _):  # pylint: disable=all
     '''This function populates models data for development.'''
+    assert settings.DEBUG, (
+        'This migration should only be used during development environment,'
+        ' but found DEBUG=False')
     print('Populate django.contrib.auth')
     print('Populate User')
-    num_users = 20
+    num_users = 200
+    usernames = set([faker.profile()['username'] for _ in range(num_users)])
+    while len(usernames) < num_users:
+        usernames.add(faker.profile()['username'])
+    usernames = list(usernames)
     users = [User.objects.create_user(
-        id=id,
-        username=faker.profile()['username'],
+        id=idx,
+        username=usernames[idx-1],
         first_name=faker.first_name(),
-        last_name=faker.last_name()) for id in range(1, 1 + num_users)]
+        last_name=faker.last_name()) for idx in range(1, 1 + num_users)]
 
     print('Populate auth')
     print('Populate Department')
-    num_departments = 4
+    num_departments = 20
     departments = [Department.objects.create(
         name=faker.company_prefix()) for id in range(num_departments)]
     # Set admins
     admins = []
     for department in departments:
-        _admins = sample(users, randint(1, 3))
+        _admins = sample(users[:50], randint(1, 3))
         department.admins.add(*_admins)
         department.save()
         admins.extend(_admins)
@@ -113,17 +123,17 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     user_profiles = [UserProfile.objects.create(
         user=user,
         department=choice(departments),
-        age=randint(30, 50)) for user in users]
+        age=randint(20, 60)) for user in users]
 
     print('Populate infra')
     print('Populate Notification')
-    num_notifications = 100
+    num_notifications = 1000
     notifications = [Notification.objects.create(
         time=_random_datetime(),
         sender=choice(users),
         recipient=choice(users),
         content=faker.text(100),
-        read_time=now() if idx % 5 == 0 else None,
+        read_time=now() if idx % 4 != 0 else None,
     ) for idx in range(num_notifications)]
 
     print('Populate training_program')
@@ -138,7 +148,7 @@ def populate_initial_data(apps, _):  # pylint: disable=all
         name=form_name) for form_name in form_names]
 
     print('Populate Program')
-    num_programs = 10
+    num_programs = 50
     programs = [Program.objects.create(
         name=faker.text(10),
         department=choice(departments),
@@ -147,7 +157,7 @@ def populate_initial_data(apps, _):  # pylint: disable=all
 
     print('Populate training_event')
     print('Populate CampusEvent')
-    num_campus_events = 20
+    num_campus_events = 200
     campus_events = [CampusEvent.objects.create(
         name=faker.text(10),
         time=_random_datetime(False, True),
@@ -159,7 +169,7 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     ) for _ in range(num_campus_events)]
 
     print('Populate OffCampusEvent')
-    num_off_campus_events = 300
+    num_off_campus_events = 600
     off_campus_events = [OffCampusEvent.objects.create(
         name=faker.text(10),
         time=_random_datetime(False, True),
@@ -170,12 +180,15 @@ def populate_initial_data(apps, _):  # pylint: disable=all
 
     print('Populate Enrollment')
     num_enrollments = 200
-    enrollments = [Enrollment.objects.create(
-        campus_event=choice(campus_events),
-        user=choice(users),
-        enroll_method=choice(Enrollment.ENROLL_METHOD_CHOICES)[0],
-        is_participated=faker.boolean(80),
-    ) for _ in range(num_enrollments)]
+    enrollments = []
+    for campus_event in campus_events:
+        enrolled_users = sample(users, randint(5, 50))
+        enrollments.extend([Enrollment.objects.create(
+            campus_event=campus_event,
+            user=user,
+            enroll_method=choice(Enrollment.ENROLL_METHOD_CHOICES)[0],
+            is_participated=faker.boolean(80),
+        ) for user in enrolled_users])
 
     print('Populate training_record')
     off_campus_event_records = [Record.objects.create(
