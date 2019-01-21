@@ -11,6 +11,8 @@ SECRET_KEY = '0jn@1=-wjx6zt)vg7^s9=g-yads8qrwy5*(r#a$*pbf2o11d(h'
 DEV_INSTALLED_APPS = [
     'debug_toolbar',
     'mock_cas',
+
+    'data_migration',
 ]
 INSTALLED_APPS.extend(DEV_INSTALLED_APPS)
 
