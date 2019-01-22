@@ -41,7 +41,7 @@ class TestNotificationViewSet(APITestCase):
             mommy.make(infra.models.Notification,
                        read_time=now() if index % 4 == 0 else None,
                        recipient=user)
-        url = reverse('notification-read-notifications')
+        url = reverse('notification-read')
 
         self.client.force_authenticate(user)
         response = self.client.get(url)
@@ -56,7 +56,7 @@ class TestNotificationViewSet(APITestCase):
             mommy.make(infra.models.Notification,
                        read_time=now() if index % 4 == 0 else None,
                        recipient=user)
-        url = reverse('notification-unread-notifications')
+        url = reverse('notification-unread')
 
         self.client.force_authenticate(user)
         response = self.client.get(url)
@@ -67,7 +67,7 @@ class TestNotificationViewSet(APITestCase):
     @patch('infra.views.NotificationViewSet.paginate_queryset')
     def test_return_full_if_no_pagination(self, mocked_paginate):
         '''should return full page if no pagination is required.'''
-        url = reverse('notification-unread-notifications')
+        url = reverse('notification-unread')
 
         mocked_paginate.return_value = None
 

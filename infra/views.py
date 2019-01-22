@@ -37,12 +37,12 @@ class NotificationViewSet(mixins.ListModelMixin,
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    @decorators.action(detail=False, url_path='unread-notifications')
-    def unread_notifications(self, request):
+    @decorators.action(detail=False, url_path='unread')
+    def unread(self, request):
         '''Return notifications which are not read yet.'''
         return self._get_read_status_filtered_notifications(request, False)
 
-    @decorators.action(detail=False, url_path='read-notifications')
-    def read_notifications(self, request):
+    @decorators.action(detail=False, url_path='read')
+    def read(self, request):
         '''Return notifications which are already read.'''
         return self._get_read_status_filtered_notifications(request, True)
