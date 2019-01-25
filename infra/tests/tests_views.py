@@ -74,3 +74,34 @@ class TestNotificationViewSet(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class TestNotificationTaskViewSet(APITestCase):
+    '''Unit tests for NotificationTask.'''
+
+    @patch('infra.views.NotificationService')
+    def test_mark_all_notifications_as_read(self, mocked_service):
+        '''Should call mark_user_notifications_as_read.'''
+        user = mommy.make(get_user_model())
+        url = reverse('notification-user-tasks-mark-all-notifications-as-read',
+                      kwargs={'user_pk': user.pk})
+
+        self.client.force_authenticate(user)
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        mocked_service.mark_user_notifications_as_read.assert_called_with(
+            user.pk)
+
+    @patch('infra.views.NotificationService')
+    def test_delete_all_notifications(self, mocked_service):
+        '''Should call delete_user_notifications.'''
+        user = mommy.make(get_user_model())
+        url = reverse('notification-user-tasks-delete-all-notifications',
+                      kwargs={'user_pk': user.pk})
+
+        self.client.force_authenticate(user)
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        mocked_service.delete_user_notifications.assert_called_with(user.pk)

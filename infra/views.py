@@ -1,9 +1,11 @@
 '''Provide API views for infra module.'''
-from rest_framework import mixins, viewsets, decorators
+from rest_framework import mixins, viewsets, decorators, status, permissions
 from rest_framework.response import Response
 
 import infra.models
 import infra.serializers
+from infra.services import NotificationService
+from auth.permissions import CurrentUser
 
 
 class NotificationViewSet(mixins.ListModelMixin,
@@ -37,12 +39,32 @@ class NotificationViewSet(mixins.ListModelMixin,
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    @decorators.action(detail=False, url_path='unread')
+    @decorators.action(detail=False, methods=['GET'], url_path='unread')
     def unread(self, request):
         '''Return notifications which are not read yet.'''
         return self._get_read_status_filtered_notifications(request, False)
 
-    @decorators.action(detail=False, url_path='read')
+    @decorators.action(detail=False, methods=['GET'], url_path='read')
     def read(self, request):
         '''Return notifications which are already read.'''
         return self._get_read_status_filtered_notifications(request, True)
+
+
+# pylint: disable=R0201
+class NotificationUserTaskViewSet(viewsets.ViewSet):
+    '''Create APIs for users tasks related to Notification.'''
+    permission_classes = (permissions.IsAuthenticated, CurrentUser)
+
+    @decorators.action(detail=False, methods=['POST'],
+                       url_path='mark-all-notifications-as-read')
+    def mark_all_notifications_as_read(self, request, user_pk=None):
+        '''Mark all notifications the current user received as read.'''
+        NotificationService.mark_user_notifications_as_read(int(user_pk))
+        return Response(status=status.HTTP_201_CREATED)
+
+    @decorators.action(detail=False, methods=['POST'],
+                       url_path='delete-all-notifications')
+    def delete_all_notifications(self, request, user_pk=None):
+        '''Delete all notifications the current user received.'''
+        NotificationService.delete_user_notifications(int(user_pk))
+        return Response(status=status.HTTP_201_CREATED)

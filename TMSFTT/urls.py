@@ -19,12 +19,12 @@ from django.urls import include, path
 
 
 API_URLPATTERNS = [
-    path('auth/', include('auth.urls')),
-    path('training-event/', include('training_event.urls')),
-    path('training-review/', include('training_review.urls')),
-    path('infra/', include('infra.urls')),
-    path('training-program/', include('training_program.urls')),
-    path('training-record/', include('training_record.urls'))
+    path('', include('auth.urls')),
+    path('', include('training_event.urls')),
+    path('', include('training_review.urls')),
+    path('', include('infra.urls')),
+    path('', include('training_program.urls')),
+    path('', include('training_record.urls'))
 ]
 
 urlpatterns = [

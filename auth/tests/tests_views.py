@@ -69,6 +69,37 @@ class TestDepartmentViewSet(APITestCase):
         self.assertEqual(response.data['name'], name1)
 
 
+class TestUserViewSet(APITestCase):
+    '''Unit tests for User view.'''
+    def test_list_user_as_admin(self):
+        '''Should return all users if user is admin.'''
+        admin = mommy.make(User, is_staff=True)
+        count = 10
+        for _ in range(count):
+            mommy.make(User)
+        url = reverse('user-list')
+
+        self.client.force_authenticate(admin)
+        response = self.client.get(url, {'limit': count + 1})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), count + 1)
+
+    def test_list_user_as_normal_user(self):
+        '''Should return itself if user is not admin.'''
+        user = mommy.make(User, is_staff=False)
+        count = 10
+        for _ in range(count):
+            mommy.make(User)
+        url = reverse('user-list')
+
+        self.client.force_authenticate(user)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 1)
+
+
 class TestUserProfileViewSet(APITestCase):
     '''Unit tests for UserProfile view.'''
     def test_create_user_profile(self):

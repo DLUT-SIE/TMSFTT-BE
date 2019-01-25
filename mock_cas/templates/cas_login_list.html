@@ -8,7 +8,7 @@
             {% for user in users %}
             <li>
                 {% if not service %}
-                <form action="/api/auth/login/" method="POST">
+                <form action="/api/login/" method="POST">
                 {% else %}
                 <form action="{{ service }}" method="GET">
                 {% endif %}
@@ -20,7 +20,7 @@
             {% endfor %}
             <li>
                 {% if not service %}
-                <form action="/api/auth/login/" method="POST">
+                <form action="/api/login/" method="POST">
                 {% else %}
                 <form action="{{ service }}" method="GET">
                 {% endif %}
