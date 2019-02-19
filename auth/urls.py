@@ -11,6 +11,7 @@ router = routers.SimpleRouter()
 router.register(r'users', auth.views.UserViewSet)
 router.register(r'departments', auth.views.DepartmentViewSet)
 router.register(r'user-profiles', auth.views.UserProfileViewSet)
+router.register(r'user-permissions', auth.views.UserPermissionViewSet)
 urlpatterns = router.urls
 
 # JWT authentication and CAS authentication
