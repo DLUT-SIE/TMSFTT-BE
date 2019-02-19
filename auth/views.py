@@ -1,6 +1,10 @@
 '''Provide API views for auth module.'''
 from django.contrib.auth import get_user_model
 from rest_framework import viewsets, mixins, permissions
+from rest_framework_bulk.mixins import (
+    BulkCreateModelMixin,
+    BulkDestroyModelMixin,
+)
 
 import auth.models
 import auth.serializers
@@ -37,3 +41,16 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     '''Create API views for UserProfile.'''
     queryset = auth.models.UserProfile.objects.all()
     serializer_class = auth.serializers.UserProfileSerializer
+
+
+class UserPermissionViewSet(BulkCreateModelMixin,
+                            BulkDestroyModelMixin,
+                            mixins.CreateModelMixin,
+                            mixins.ListModelMixin,
+                            mixins.RetrieveModelMixin,
+                            mixins.DestroyModelMixin,
+                            viewsets.GenericViewSet):
+    '''Create API views for UserPermission.'''
+    queryset = (auth.models.UserPermission.objects.all()
+                .select_related('permission'))
+    serializer_class = auth.serializers.UserPermissionSerializer
