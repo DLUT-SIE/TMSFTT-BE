@@ -1,5 +1,6 @@
 '''Provide API views for auth module.'''
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 from rest_framework import viewsets, mixins, permissions
 from rest_framework_bulk.mixins import (
     BulkCreateModelMixin,
@@ -54,3 +55,11 @@ class UserPermissionViewSet(BulkCreateModelMixin,
     queryset = (auth.models.UserPermission.objects.all()
                 .select_related('permission'))
     serializer_class = auth.serializers.UserPermissionSerializer
+
+
+class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
+    '''Create READ-ONLY APIs for Permission.'''
+    # Exclude Django-admin-related permissions.
+    queryset = Permission.objects.filter(content_type_id__gt=6).all()
+    serializer_class = auth.serializers.PermissionSerializer
+    pagination_class = None
