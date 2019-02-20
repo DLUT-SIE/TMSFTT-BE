@@ -15,7 +15,8 @@ Including another URLconf
 """
 from django.conf import settings
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
+from django.views.static import serve
 
 
 API_URLPATTERNS = [
@@ -34,11 +35,18 @@ urlpatterns = [
 if settings.DEBUG:
     import debug_toolbar
     from rest_framework.documentation import include_docs_urls
+    import infra.views
 
     DEBUG_URLPATTERNS = [
         path('admin/', admin.site.urls),
         path('__debug__/', include(debug_toolbar.urls)),
         path('api/', include_docs_urls(title='TMSFTT APIs')),
         path('mock-cas/', include('mock_cas.urls')),
+        re_path(r'static/(?P<path>.*)', serve,
+                kwargs={'document_root': settings.BASE_DIR + '/static'}),
+        re_path(r'assets/(?P<path>.*)', serve,
+                kwargs={'document_root': settings.BASE_DIR + '/static/assets'}),
+        path('', infra.views.index_view),
+        re_path(r'^(?P<path>.*)/$', infra.views.index_view),
     ]
     urlpatterns.extend(DEBUG_URLPATTERNS)
