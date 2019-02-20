@@ -63,4 +63,4 @@ class UserPermissionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = auth.models.UserPermission
-        fields = ('user', 'permission', 'permission_id')
+        fields = ('id', 'user', 'permission', 'permission_id')

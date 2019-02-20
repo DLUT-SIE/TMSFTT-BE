@@ -2,10 +2,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from rest_framework import viewsets, mixins, permissions
-from rest_framework_bulk.mixins import (
-    BulkCreateModelMixin,
-    BulkDestroyModelMixin,
-)
 
 import auth.models
 import auth.serializers
@@ -26,6 +22,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
     '''Create API views for User.'''
     queryset = User.objects.all()
     serializer_class = auth.serializers.UserSerializer
+    filter_fields = ('username',)
     permission_classes = (permissions.IsAuthenticated,)
 
     def get_queryset(self):
@@ -44,9 +41,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     serializer_class = auth.serializers.UserProfileSerializer
 
 
-class UserPermissionViewSet(BulkCreateModelMixin,
-                            BulkDestroyModelMixin,
-                            mixins.CreateModelMixin,
+class UserPermissionViewSet(mixins.CreateModelMixin,
                             mixins.ListModelMixin,
                             mixins.RetrieveModelMixin,
                             mixins.DestroyModelMixin,
@@ -55,6 +50,8 @@ class UserPermissionViewSet(BulkCreateModelMixin,
     queryset = (auth.models.UserPermission.objects.all()
                 .select_related('permission'))
     serializer_class = auth.serializers.UserPermissionSerializer
+    filter_fields = ('user__username',)
+    pagination_class = None
 
 
 class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
