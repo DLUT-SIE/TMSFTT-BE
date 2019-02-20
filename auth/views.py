@@ -50,7 +50,7 @@ class UserPermissionViewSet(mixins.CreateModelMixin,
     queryset = (auth.models.UserPermission.objects.all()
                 .select_related('permission'))
     serializer_class = auth.serializers.UserPermissionSerializer
-    filter_fields = ('user__username',)
+    filter_fields = ('user',)
     pagination_class = None
 
 
