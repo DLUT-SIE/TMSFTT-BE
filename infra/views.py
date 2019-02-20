@@ -1,6 +1,8 @@
 '''Provide API views for infra module.'''
 from rest_framework import mixins, viewsets, decorators, status, permissions
 from rest_framework.response import Response
+from django.conf import settings
+from django.views.static import serve
 
 import infra.models
 import infra.serializers
@@ -68,3 +70,9 @@ class NotificationUserTaskViewSet(viewsets.ViewSet):
         '''Delete all notifications the current user received.'''
         NotificationService.delete_user_notifications(int(user_pk))
         return Response(status=status.HTTP_201_CREATED)
+
+
+def index_view(request, *args, **kwargs):
+    '''DEBUG-only, return index page.'''
+    return serve(request, 'index.html',
+                 document_root=settings.BASE_DIR + '/static')
