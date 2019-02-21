@@ -107,4 +107,3 @@ venv.bak/
 .vscode/
 *.swp
 media/
-static/
