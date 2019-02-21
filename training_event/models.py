@@ -34,6 +34,7 @@ class CampusEvent(AbstractEvent):
 
     program = models.ForeignKey(Program, verbose_name=_('培训项目'),
                                 on_delete=models.PROTECT)
+    deadline = models.DateTimeField(verbose_name=_('截止报名时间'))
     num_enrolled = models.PositiveSmallIntegerField(
         verbose_name=_('报名人数'), default=0)
     description = models.TextField(verbose_name=_('活动描述'), default='')

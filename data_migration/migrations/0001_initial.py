@@ -165,6 +165,7 @@ def populate_initial_data(apps, _):  # pylint: disable=all
         num_hours=random() * 4,
         num_participants=randint(10, 100),
         program=choice(programs),
+        deadline=now(),
         description=faker.text(100),
     ) for _ in range(num_campus_events)]
 
