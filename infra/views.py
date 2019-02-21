@@ -72,7 +72,7 @@ class NotificationUserTaskViewSet(viewsets.ViewSet):
         return Response(status=status.HTTP_201_CREATED)
 
 
-def index_view(request, *args, **kwargs):  # pragma: no cover
+def index_view(request, *args, **kwargs):
     '''DEBUG-only, return index page.'''
     return serve(request, 'index.html',
                  document_root=settings.BASE_DIR + '/static')
