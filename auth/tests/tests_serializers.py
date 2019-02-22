@@ -1,14 +1,15 @@
 '''Unit tests for auth serializers.'''
+from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 import auth.serializers as serializers
-import auth.models as models
 
 
 User = get_user_model()
 
 
+# pylint: disable=no-self-use
 class TestUserSerializer(TestCase):
     '''Unit tests for serializer of User.'''
     def test_fields_equal(self):
@@ -21,25 +22,14 @@ class TestUserSerializer(TestCase):
         keys = set(serializers.UserSerializer(user).data.keys())
         self.assertEqual(keys, expected_keys)
 
+    @patch('auth.models.UserPermission.objects')
+    @patch('auth.serializers.UserPermissionSerializer')
+    def test_get_user_permissions(self, mocked_serialzier, mocked_objects):
+        '''Serializer should query UserPermissions and serialize them.'''
+        user = User()
+        serializer = serializers.UserSerializer()
 
-class TestDepartmentSerializer(TestCase):
-    '''Unit tests for serializer of Department.'''
-    def test_fields_equal(self):
-        '''Serializer should return fields of Department correctly.'''
-        department = models.Department()
-        expected_keys = {'id', 'create_time', 'update_time', 'name', 'admins'}
+        serializer.get_user_permissions(user)
 
-        keys = set(serializers.DepartmentSerializer(department).data.keys())
-        self.assertEqual(keys, expected_keys)
-
-
-class TestUserProfileSerializer(TestCase):
-    '''Unit tests for serializer of UserProfile.'''
-    def test_fields_equal(self):
-        '''Serializer should return fields of UserProfile correctly.'''
-        profile = models.UserProfile()
-        expected_keys = {'id', 'create_time', 'update_time', 'user',
-                         'department', 'age'}
-
-        keys = set(serializers.UserProfileSerializer(profile).data.keys())
-        self.assertEqual(keys, expected_keys)
+        mocked_serialzier.assert_called()
+        mocked_objects.filter.assert_called_with(user=user)
