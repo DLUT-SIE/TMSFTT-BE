@@ -31,6 +31,7 @@ class TestCampusEventViewSet(APITestCase):
             'num_hours': num_hours,
             'num_participants': num_participants,
             'program': program.pk,
+            'deadline': time,
         }
 
         response = self.client.post(url, data, format='json')
