@@ -10,7 +10,10 @@ import training_record.serializers
 
 class RecordViewSet(viewsets.ModelViewSet):
     '''Create API views for Record.'''
-    queryset = training_record.models.Record.objects.all()
+    queryset = (
+        training_record.models.Record.objects.all()
+        .prefetch_related('contents', 'attachments')
+    )
     serializer_class = training_record.serializers.RecordSerializer
 
 
