@@ -1,6 +1,4 @@
 '''Unit tests for training_event models.'''
-from unittest.mock import patch
-
 from django.test import TestCase
 from django.utils.text import format_lazy as _f
 
@@ -29,15 +27,14 @@ class TestOffCampusEvent(TestCase):
 
 class TestEnrollment(TestCase):
     '''Unit tests for model Enrollment.'''
-    @patch('training_event.models.Enrollment.campus_event')
-    @patch('training_event.models.Enrollment.user')
-    def test_str(self, mocked_user, mocked_campus_event):
+    def test_str(self):
         '''Should render string correctly.'''
-        name = 'event'
-        mocked_campus_event.__str__.return_value = name
-        user = 'user'
-        mocked_user.__str__.return_value = user
-        expected_str = _f('{} 报名 {} 的记录', user, name)
-        enrollment = Enrollment()
+        campus_event_id = 123
+        user_id = 456
+        expected_str = _f('{} 报名 {} 的记录', user_id, campus_event_id)
+        enrollment = Enrollment(
+            campus_event_id=campus_event_id,
+            user_id=user_id,
+        )
 
         self.assertEqual(str(enrollment), expected_str)

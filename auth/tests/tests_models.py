@@ -1,6 +1,4 @@
 '''Unit tests for auth models.'''
-from unittest.mock import patch
-
 from django.test import TestCase
 
 from auth.models import Department, UserProfile, UserPermission
@@ -19,15 +17,13 @@ class TestDepartment(TestCase):
 
 class TestUserProfile(TestCase):
     '''Unit tests for model UserProfile.'''
-    @patch('auth.models.UserProfile.user')
-    def test_str(self, mocked_user):
+    def test_str(self):
         '''Should render string correctly.'''
-        name = 'name'
-        mocked_user.__str__.return_value = name
+        user_id = 123
 
-        profile = UserProfile()
+        profile = UserProfile(user_id=user_id)
 
-        self.assertEqual(str(profile), name)
+        self.assertEqual(str(profile), str(user_id))
 
 
 class TestUserPermission(TestCase):

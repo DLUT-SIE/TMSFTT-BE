@@ -233,7 +233,7 @@ class Migration(migrations.Migration):
         ('tmsftt_auth', '0001_initial'),
         ('infra', '0001_initial'),
         ('training_program', '0001_initial'),
-        ('training_event', '0001_initial'),
+        ('training_event', '0002_campusevent_deadline'),
         ('training_record', '0001_initial'),
         ('training_review', '0001_initial'),
     ]

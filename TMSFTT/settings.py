@@ -70,6 +70,7 @@ REST_FRAMEWORK = {
     'UPLOADED_FILES_USE_URL': False,
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 10,
+    'HTML_SELECT_CUTOFF': 100,
 }
 
 ROOT_URLCONF = 'TMSFTT.urls'

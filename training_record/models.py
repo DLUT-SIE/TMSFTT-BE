@@ -44,8 +44,8 @@ class Record(models.Model):
                                               default=STATUS_SUBMITTED)
 
     def __str__(self):
-        return '{}({})'.format(self.user,
-                               self.campus_event or self.off_campus_event)
+        return '{}({})'.format(
+            self.user_id, self.campus_event_id or self.off_campus_event_id)
 
     @classmethod
     def check_event_set(cls, sender, instance, **kwargs):
@@ -85,7 +85,7 @@ class RecordContent(models.Model):
     content = models.TextField(verbose_name=_('内容'))
 
     def __str__(self):
-        return '{}({})'.format(self.get_content_type_display(), self.record)
+        return '{}({})'.format(self.get_content_type_display(), self.record_id)
 
 
 class RecordAttachment(models.Model):
@@ -118,7 +118,8 @@ class RecordAttachment(models.Model):
                             upload_to='uploads/%Y/%m/%d/record_attachments')
 
     def __str__(self):
-        return '{}({})'.format(self.get_attachment_type_display(), self.record)
+        return '{}({})'.format(self.get_attachment_type_display(),
+                               self.record_id)
 
 
 class StatusChangeLog(models.Model):
@@ -140,6 +141,6 @@ class StatusChangeLog(models.Model):
                              on_delete=models.PROTECT)
 
     def __str__(self):
-        return str(_f('{}状态于{}由{}变为{}', self.record, self.time,
+        return str(_f('{}状态于{}由{}变为{}', self.record_id, self.time,
                       self.get_pre_status_display(),
                       self.get_post_status_display()))

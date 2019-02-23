@@ -1,5 +1,5 @@
 '''Unit tests for training_record models.'''
-from unittest.mock import patch, Mock
+from unittest.mock import Mock
 
 from django.test import TestCase
 from django.utils.timezone import now
@@ -11,30 +11,23 @@ from training_record.models import (
 
 class TestRecord(TestCase):
     '''Unit tests for model Record.'''
-    @patch('training_record.models.Record.off_campus_event')
-    @patch('training_record.models.Record.campus_event')
-    @patch('training_record.models.Record.user')
-    def test_str(self, mocked_user,
-                 mocked_campus_event, mocked_off_campus_event):
+    def test_str(self):
         '''Should render string correctly.'''
-        user = 'user'
-        mocked_user.__str__.return_value = user
+        user_id = 123
 
         test_cases = (
-            (None, 'off campus event'),
-            ('campus event', None),
+            (None, 456),
+            (789, None),
         )
-        for campus_event, off_campus_event in test_cases:
-            if campus_event:
-                mocked_campus_event.__bool__.return_value = True
-                mocked_campus_event.__str__.return_value = campus_event
-            else:
-                mocked_campus_event.__bool__.return_value = False
-                mocked_off_campus_event.__str__.return_value = off_campus_event
-            expected_str = '{}({})'.format(user,
-                                           campus_event or off_campus_event)
+        for campus_event_id, off_campus_event_id in test_cases:
+            record = Record(
+                user_id=user_id,
+                campus_event_id=campus_event_id,
+                off_campus_event_id=off_campus_event_id,
+            )
 
-            record = Record()
+            expected_str = '{}({})'.format(
+                user_id, campus_event_id or off_campus_event_id)
 
             self.assertEqual(str(record), expected_str)
 
@@ -69,46 +62,44 @@ class TestRecord(TestCase):
 
 class TestRecordContent(TestCase):
     '''Unit tests for model RecordContent.'''
-    @patch('training_record.models.RecordContent.record')
-    def test_str(self, mocked_record):
+    def test_str(self):
         '''Should render string correctly.'''
-        record = 'record'
-        mocked_record.__str__.return_value = record
+        record_id = 123
         for content_type, msg in RecordContent.CONTENT_TYPE_CHOICES:
-            content = RecordContent(content_type=content_type)
-            expected_str = '{}({})'.format(msg, record)
+            content = RecordContent(content_type=content_type,
+                                    record_id=record_id)
+
+            expected_str = '{}({})'.format(msg, record_id)
 
             self.assertEqual(str(content), expected_str)
 
 
 class TestRecordAttachment(TestCase):
     '''Unit tests for model RecordAttachment.'''
-    @patch('training_record.models.RecordAttachment.record')
-    def test_str(self, mocked_record):
+    def test_str(self):
         '''Should render string correctly.'''
-        record = 'record'
-        mocked_record.__str__.return_value = record
+        record_id = 123
         for attachment_type, msg in RecordAttachment.ATTACHMENT_TYPE_CHOICES:
-            attachment = RecordAttachment(attachment_type=attachment_type)
-            expected_str = '{}({})'.format(msg, record)
+            attachment = RecordAttachment(attachment_type=attachment_type,
+                                          record_id=record_id)
+            expected_str = '{}({})'.format(msg, record_id)
 
             self.assertEqual(str(attachment), expected_str)
 
 
 class TestStatusChangeLog(TestCase):
     '''Unit tests for model StatusChangeLog.'''
-    @patch('training_record.models.StatusChangeLog.record')
-    def test_str(self, mocked_record):
+    def test_str(self):
         '''Should render string correctly.'''
-        record = 'record'
         time = now()
-        mocked_record.__str__.return_value = record
+        record_id = 123
         for pre_status, pre_msg in Record.STATUS_CHOICES:
             for post_status, post_msg in Record.STATUS_CHOICES:
                 expected_str = _f('{}状态于{}由{}变为{}',
-                                  record, time, pre_msg, post_msg)
+                                  record_id, time, pre_msg, post_msg)
                 change_log = StatusChangeLog(pre_status=pre_status,
                                              post_status=post_status,
-                                             time=time)
+                                             time=time,
+                                             record_id=record_id)
 
                 self.assertEqual(str(change_log), str(expected_str))

@@ -79,4 +79,4 @@ class Enrollment(models.Model):
                                           default=False)
 
     def __str__(self):
-        return str(_f('{} 报名 {} 的记录', self.user, self.campus_event))
+        return str(_f('{} 报名 {} 的记录', self.user_id, self.campus_event_id))

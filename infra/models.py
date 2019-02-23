@@ -41,7 +41,7 @@ class OperationLog(models.Model):
                                   max_length=256)
 
     def __str__(self):
-        return '{}({} {} {})'.format(self.time, self.requester,
+        return '{}({} {} {})'.format(self.time, self.requester_id,
                                      self.method, self.url)
 
 
@@ -64,5 +64,5 @@ class Notification(models.Model):
 
     def __str__(self):
         return str(_f('由{}于{}发送给{}的通知({})',
-                      self.sender, self.time, self.recipient,
+                      self.sender_id, self.time, self.recipient_id,
                       _('已读') if self.read_time else _('未读')))
