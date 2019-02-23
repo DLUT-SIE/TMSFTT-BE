@@ -1,6 +1,7 @@
 '''Unit tests for training_record views.'''
 import io
 import tempfile
+import json
 
 from django.contrib.auth import get_user_model
 from django.test import override_settings
@@ -23,19 +24,34 @@ class TestRecordViewSet(APITestCase):
     '''Unit tests for Record view.'''
     def test_create_record(self):
         '''Record should be created by POST request.'''
-
-        campus_event = mommy.make(training_event.models.CampusEvent)
         user = mommy.make(User)
         url = reverse('record-list')
-        data = {'campus_event': campus_event.id, 'user': user.id}
+        off_campus_event_data = {
+            'name': 'abc',
+            'time': '0122-12-31T15:54:17.000Z',
+            'location': 'loc',
+            'num_hours': 5,
+            'num_participants': 30,
+        }
+        attachments_data = [io.BytesIO(b'some content') for _ in range(3)]
+        contents_data = [
+            json.dumps({'content_type': x[0], 'content': 'abc'})
+            for x in RecordContent.CONTENT_TYPE_CHOICES]
+        data = {
+            'off_campus_event_data': json.dumps(off_campus_event_data),
+            'user': user.id,
+            'contents_data': contents_data,
+            'attachments_data': attachments_data,
+        }
 
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format='multipart')
+        event = training_event.models.OffCampusEvent.objects.get()
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(training_record.models.Record.objects.count(), 1)
         self.assertEqual(
-            training_record.models.Record.objects.get().campus_event.id,
-            campus_event.id)
+            training_record.models.Record.objects.get().off_campus_event.id,
+            event.id)
         self.assertEqual(
             training_record.models.Record.objects.get().user.id, user.id)
 
@@ -66,7 +82,8 @@ class TestRecordViewSet(APITestCase):
                             campus_event=campus_event)
         url = reverse('record-detail', args=(record.pk,))
         expected_keys = {'id', 'create_time', 'update_time', 'campus_event',
-                         'off_campus_event', 'user', 'status'}
+                         'off_campus_event', 'user', 'status', 'contents',
+                         'attachments'}
 
         response = self.client.get(url)
 

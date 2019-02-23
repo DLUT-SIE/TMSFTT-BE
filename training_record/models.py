@@ -6,17 +6,15 @@ from django.utils.translation import gettext_lazy as _
 from django.utils.text import format_lazy as _f
 
 from training_event.models import CampusEvent, OffCampusEvent
+from training_record.utils import infer_attachment_type
 
 
 class Record(models.Model):
     '''Record records the attendance of users.'''
-    # TODO(yochen): Add Celery job to cleanup Records in presubmit status.
-    STATUS_PRESUBMIT = 0
     STATUS_SUBMITTED = 1
     STATUS_FACULTY_ADMIN_REVIEWED = 2
     STATUS_SCHOOL_ADMIN_REVIEWED = 3
     STATUS_CHOICES = (
-        (STATUS_PRESUBMIT, _('预提交')),
         (STATUS_SUBMITTED, _('已提交')),
         (STATUS_FACULTY_ADMIN_REVIEWED, _('院系管理员已审核')),
         (STATUS_SCHOOL_ADMIN_REVIEWED, _('学校管理员已审核')),
@@ -79,6 +77,8 @@ class RecordContent(models.Model):
     update_time = models.DateTimeField(verbose_name=_('最近修改时间'),
                                        auto_now=True)
     record = models.ForeignKey(Record, verbose_name=_('培训记录'),
+                               related_name='contents',
+                               db_index=True,
                                on_delete=models.CASCADE)
     content_type = models.PositiveSmallIntegerField(
         verbose_name=_('内容类型'), choices=CONTENT_TYPE_CHOICES)
@@ -94,6 +94,7 @@ class RecordAttachment(models.Model):
     ATTACHMENT_TYPE_SUMMARY = 1
     ATTACHMENT_TYPE_FEEDBACK = 2
     ATTACHMENT_TYPE_OTHERS = 3
+    ATTACHMENT_TYPE_NOTSET = 4
     ATTACHMENT_TYPE_CHOICES = (
         (ATTACHMENT_TYPE_CONTENT, _('培训内容')),
         (ATTACHMENT_TYPE_SUMMARY, _('培训总结')),
@@ -110,16 +111,31 @@ class RecordAttachment(models.Model):
     update_time = models.DateTimeField(verbose_name=_('最近修改时间'),
                                        auto_now=True)
     record = models.ForeignKey(Record, verbose_name=_('培训记录'),
+                               related_name='attachments',
+                               db_index=True,
                                on_delete=models.CASCADE)
     attachment_type = models.PositiveSmallIntegerField(
         verbose_name=_('附件类型'), choices=ATTACHMENT_TYPE_CHOICES,
-        default=ATTACHMENT_TYPE_OTHERS)
+        default=ATTACHMENT_TYPE_NOTSET)
     path = models.FileField(verbose_name=_('附件地址'),
                             upload_to='uploads/%Y/%m/%d/record_attachments')
 
     def __str__(self):
         return '{}({})'.format(self.get_attachment_type_display(),
                                self.record_id)
+
+    # pylint:disable=unused-argument
+    @classmethod
+    def infer_attachment_type(cls, sender, instance, **kwargs):
+        '''Check campus_event or off_campus_event has been set.'''
+        if instance.attachment_type == cls.ATTACHMENT_TYPE_NOTSET:
+            instance.attachment_type = infer_attachment_type(
+                instance.path.name)
+
+
+# Infer attachment_type on save.
+pre_save.connect(RecordAttachment.infer_attachment_type,
+                 sender=RecordAttachment)
 
 
 class StatusChangeLog(models.Model):

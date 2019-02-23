@@ -1,4 +1,4 @@
-'''Provide services for infra module.'''
+'''Provide services of infra module.'''
 from django.utils.timezone import now
 
 from infra.models import Notification

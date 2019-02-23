@@ -6,16 +6,10 @@ from rest_framework_bulk import (
 )
 
 import training_record.models as record_models
-from training_record.utils import (
-    infer_attachment_type,
+from training_record.services import RecordService
+from training_event.serializers import (
+    CampusEventSerializer, OffCampusEventSerializer
 )
-
-
-class RecordSerializer(serializers.ModelSerializer):
-    '''Indicate how to serialize Record instance.'''
-    class Meta:
-        model = record_models.Record
-        fields = '__all__'
 
 
 class RecordContentSerializer(BulkSerializerMixin,
@@ -35,13 +29,35 @@ class RecordAttachmentSerializer(BulkSerializerMixin,
         fields = '__all__'
         list_serializer_class = BulkListSerializer
 
-    def validate(self, attrs):
-        '''Object-level validation.'''
-        if 'attachment_type' not in attrs:
-            # Infer attachment_type
-            attrs['attachment_type'] = infer_attachment_type(
-                attrs['path'].name)
-        return super().validate(attrs)
+
+class RecordSerializer(serializers.ModelSerializer):
+    '''Indicate how to serialize Record instance.'''
+    # Write-Only fields
+    off_campus_event_data = serializers.JSONField(binary=True, write_only=True)
+    contents_data = serializers.ListField(
+        child=serializers.JSONField(binary=True),
+        write_only=True,
+        required=False,
+    )
+    attachments_data = serializers.ListField(
+        child=serializers.FileField(),
+        write_only=True,
+        required=False,
+    )
+
+    # Read-Only fields
+    campus_event = CampusEventSerializer(read_only=True)
+    off_campus_event = OffCampusEventSerializer(read_only=True)
+    attachments = RecordAttachmentSerializer(many=True, read_only=True)
+    contents = RecordContentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = record_models.Record
+        fields = '__all__'
+
+    def create(self, validated_data):
+        return RecordService.create_off_campus_record_from_raw_data(
+            **validated_data)
 
 
 class StatusChangeLogSerializer(serializers.ModelSerializer):

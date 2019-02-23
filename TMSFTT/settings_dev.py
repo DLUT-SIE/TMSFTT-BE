@@ -1,5 +1,3 @@
-import os.path as osp
-
 from .settings import *
 
 
@@ -57,7 +55,7 @@ DATABASES = {
 AUTH_PASSWORD_VALIDATORS = []
 
 # User-uploaded files
-MEDIA_ROOT = osp.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 # CAS dev settings
