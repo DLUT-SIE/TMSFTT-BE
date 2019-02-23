@@ -44,7 +44,7 @@ class UserProfile(models.Model):
     age = models.PositiveSmallIntegerField(verbose_name=_('年龄'), default=0)
 
     def __str__(self):
-        return str(self.user)
+        return str(self.user_id)
 
 
 class UserPermission(models.Model):

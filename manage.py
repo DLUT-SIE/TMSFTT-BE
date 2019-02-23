@@ -3,7 +3,7 @@ import os
 import sys
 
 if __name__ == '__main__':
-    if sys.argv[1] == 'test':
+    if len(sys.argv) > 1 and sys.argv[1] == 'test':
         os.environ['DJANGO_SETTINGS_MODULE'] = 'TMSFTT.settings_ci'
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'TMSFTT.settings_dev')
     try:

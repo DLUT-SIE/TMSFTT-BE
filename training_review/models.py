@@ -30,4 +30,4 @@ class ReviewNote(models.Model):
     content = models.CharField(verbose_name=_('提示内容'), max_length=128)
 
     def __str__(self):
-        return str(_f('由{}创建的关于{}的审核提示', self.user, self.record))
+        return str(_f('由{}创建的关于{}的审核提示', self.user_id, self.record_id))
