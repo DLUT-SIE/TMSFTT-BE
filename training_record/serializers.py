@@ -5,7 +5,10 @@ from rest_framework_bulk import (
     BulkSerializerMixin,
 )
 
-import training_record.models as record_models
+from infra.utils import format_file_size
+from training_record.models import (
+    Record, RecordAttachment, RecordContent, StatusChangeLog
+)
 from training_record.services import RecordService
 from training_event.serializers import (
     CampusEventSerializer, OffCampusEventSerializer
@@ -16,7 +19,7 @@ class RecordContentSerializer(BulkSerializerMixin,
                               serializers.ModelSerializer):
     '''Indicate how to serialize RecordContent instance.'''
     class Meta:
-        model = record_models.RecordContent
+        model = RecordContent
         fields = '__all__'
         list_serializer_class = BulkListSerializer
 
@@ -25,7 +28,7 @@ class RecordAttachmentSerializer(BulkSerializerMixin,
                                  serializers.ModelSerializer):
     '''Indicate how to serialize RecordAttachment instance.'''
     class Meta:
-        model = record_models.RecordAttachment
+        model = RecordAttachment
         fields = '__all__'
         list_serializer_class = BulkListSerializer
 
@@ -37,12 +40,12 @@ class RecordSerializer(serializers.ModelSerializer):
     contents_data = serializers.ListField(
         child=serializers.JSONField(binary=True),
         write_only=True,
-        required=False,
+        default=lambda: [],
     )
     attachments_data = serializers.ListField(
         child=serializers.FileField(),
         write_only=True,
-        required=False,
+        default=lambda: [],
     )
 
     # Read-Only fields
@@ -52,16 +55,29 @@ class RecordSerializer(serializers.ModelSerializer):
     contents = RecordContentSerializer(many=True, read_only=True)
 
     class Meta:
-        model = record_models.Record
+        model = Record
         fields = '__all__'
 
     def create(self, validated_data):
         return RecordService.create_off_campus_record_from_raw_data(
             **validated_data)
 
+    def validate_attachments_data(self, data):  # pylint: disable=no-self-use
+        '''Validate attachments data.'''
+        # TODO(youchen): Use global configs
+        if len(data) > 3:
+            raise serializers.ValidationError('最多允许上传3个附件')
+        size_bytes = sum(x.size for x in data)
+        # TODO(youchen): Use global configs
+        if size_bytes > 10 * 1024 * 1024:  # 10 MB
+            raise serializers.ValidationError(
+                '上传附件过大，请修改后再上传。(附件大小: {})'.format(
+                    format_file_size(size_bytes)))
+        return data
+
 
 class StatusChangeLogSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize StatusChangeLog instance.'''
     class Meta:
-        model = record_models.StatusChangeLog
+        model = StatusChangeLog
         fields = '__all__'
