@@ -2,8 +2,6 @@
 import re
 
 
-
-
 def infer_attachment_type(fname):
     '''Infer attachment_type from file name.'''
     import training_record.models as record_models
