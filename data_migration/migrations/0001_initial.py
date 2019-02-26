@@ -77,7 +77,7 @@ def _random_status_change_logs(record):
 
 
 def _random_review_note(record, admins):
-    if record.status in (Record.STATUS_SUBMITTED, Record.STATUS_PRESUBMIT):
+    if record.status in [Record.STATUS_SUBMITTED]:
         return []
     fields = ('name', 'time', 'location', 'num_hours', 'num_participants')
     return [ReviewNote.objects.create(
