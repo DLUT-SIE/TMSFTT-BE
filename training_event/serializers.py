@@ -7,7 +7,8 @@ from training_program.serializers import ProgramSerializer
 
 class CampusEventSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize CampusEvent instance.'''
-    program_detail = ProgramSerializer(source='program',read_only=True)
+    program_detail = ProgramSerializer(source='program', read_only=True)
+
     class Meta:
         model = training_event.models.CampusEvent
         fields = '__all__'
