@@ -1,25 +1,33 @@
 '''Define how to serialize our models.'''
 from rest_framework import serializers
 
-import training_program.models
+from training_program.models import (
+    Program, ProgramCategory, ProgramForm
+)
+from auth.serializers import DepartmentSerializer
 
 
 class ProgramCategorySerializer(serializers.ModelSerializer):
     '''Indicate how to serialize ProgramCategory instance.'''
     class Meta:
-        model = training_program.models.ProgramCategory
+        model = ProgramCategory
         fields = '__all__'
 
 
 class ProgramFormSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize ProgramForm instance.'''
     class Meta:
-        model = training_program.models.ProgramForm
+        model = ProgramForm
         fields = '__all__'
 
 
 class ProgramSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize Program instance.'''
+    department_detail = DepartmentSerializer(source='department',
+                                             read_only=True)
+    category_detail = ProgramCategorySerializer(source='category',
+                                                read_only=True)
+
     class Meta:
-        model = training_program.models.Program
+        model = Program
         fields = '__all__'
