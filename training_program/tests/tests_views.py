@@ -140,6 +140,7 @@ class TestProgram(APITestCase):
         department = mommy.make(auth.models.Department)
         category = mommy.make(training_program.models.ProgramCategory)
         form = mommy.make(training_program.models.ProgramForm)
+
         name = 'program'
         data = {'name': name, 'department': department.id,
                 'category': category.id, 'form': [form.id]}
@@ -173,7 +174,8 @@ class TestProgram(APITestCase):
         '''Program list should be GET by GET request.'''
         program = mommy.make(training_program.models.Program)
         url = reverse('program-detail', args=(program.pk,))
-        expected_keys = {'id', 'name', 'department', 'category', 'form'}
+        expected_keys = {'id', 'name', 'department', 'category',
+                         'department_detail', 'category_detail', 'form'}
 
         response = self.client.get(url)
 
