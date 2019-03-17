@@ -13,7 +13,7 @@ def get_user_secret_key(user):
     This way we can invalidate all tokens when the server is restart to ensure
     security.
     '''
-    unhashed_key = '{}.{}.{}'.format(
+    unhashed_key = '{}.{}'.format(
         settings.SECRET_KEY,  # Django secret key
         user.password,  # User password
         ).encode()
