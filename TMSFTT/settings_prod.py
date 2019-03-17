@@ -48,11 +48,8 @@ DATABASES = {
 CONN_MAX_AGE = 10
 
 # DRF settings
-REST_FRAMEWORK.update(
-    'DEFAULT_RENDERER_CLASSES',
-    (
-        'rest_framework.renderers.JSONRenderer',
-    )
+REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = (
+    'rest_framework.renderers.JSONRenderer',
 )
 
 
