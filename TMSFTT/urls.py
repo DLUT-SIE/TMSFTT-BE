@@ -39,6 +39,9 @@ if settings.DEBUG:
         path('admin/', admin.site.urls),
         path('__debug__/', include(debug_toolbar.urls)),
         path('api/', include_docs_urls(title='TMSFTT APIs')),
-        path('mock-cas/', include('mock_cas.urls')),
     ]
     urlpatterns.extend(DEBUG_URLPATTERNS)
+
+# TODO(youchen): Remove mock-cas
+if 'mock_cas' in settings.INSTALLED_APPS:
+    urlpatterns.append(path('mock-cas/', include('mock_cas.urls')))
