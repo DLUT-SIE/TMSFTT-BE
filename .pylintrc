@@ -4,7 +4,7 @@ jobs=0
 disable=no-member
 
 [BASIC]
-ignore=migrations,settings_dev.py,settings_ci.py,settings.py
+ignore=migrations,settings.py,settings_dev.py,settings_ci.py,settings_prod.py
 good-names=router,urlpatterns,TMSFTT,User
 disable=too-many-ancestors
 
