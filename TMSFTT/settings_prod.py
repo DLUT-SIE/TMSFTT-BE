@@ -13,6 +13,12 @@ def get_secret_from_file(file_env_name, default=None):
     with open(path) as f:
         return f.read().strip()
 
+# TODO(youchen): Remove mock_cas app
+DEV_INSTALLED_APPS = [
+    'mock_cas',
+]
+INSTALLED_APPS.extend(DEV_INSTALLED_APPS)
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_secret_from_file('SECRET_KEY_FILE')
