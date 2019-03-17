@@ -2,14 +2,8 @@
 import hashlib
 
 from django.conf import settings
-from django.utils.timezone import now
 
 from auth.serializers import UserSerializer
-
-
-# The time when this module was imported
-# In Debug mode, this would be set to 0
-__MODULE_IMPORT_TIME = now() if not settings.DEBUG else 0
 
 
 def get_user_secret_key(user):
@@ -22,7 +16,6 @@ def get_user_secret_key(user):
     unhashed_key = '{}.{}.{}'.format(
         settings.SECRET_KEY,  # Django secret key
         user.password,  # User password
-        __MODULE_IMPORT_TIME,
         ).encode()
     sha1 = hashlib.new('sha1')
     sha1.update(unhashed_key)
