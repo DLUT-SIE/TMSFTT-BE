@@ -3,6 +3,7 @@ from rest_framework import mixins, viewsets
 
 import training_event.models
 import training_event.serializers
+import training_event.filters
 
 
 class CampusEventViewSet(viewsets.ModelViewSet):
@@ -15,6 +16,7 @@ class OffCampusEventViewSet(viewsets.ModelViewSet):
     '''Create API views for OffCampusEvent.'''
     queryset = training_event.models.OffCampusEvent.objects.all()
     serializer_class = training_event.serializers.OffCampusEventSerializer
+    filter_class = training_event.filters.OffCampusEventFilter
 
 
 class EnrollmentViewSet(mixins.CreateModelMixin,
