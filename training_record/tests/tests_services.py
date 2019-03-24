@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from model_mommy import mommy
 
-
+from infra.exceptions import BadRequest
 from training_record.models import RecordContent, RecordAttachment
 from training_record.services import RecordService
 
@@ -33,13 +33,13 @@ class TestRecordService(TestCase):
     def test_create_off_campus_record_no_event_data(self):
         '''Should raise ValueError if no off-campus event data.'''
         with self.assertRaisesMessage(
-                ValueError, 'The off_campus_event_data is invalid'):
+                BadRequest, '校外培训活动数据格式无效'):
             RecordService.create_off_campus_record_from_raw_data()
 
     def test_create_off_campus_record_no_user(self):
         '''Should raise ValueError if no user.'''
         with self.assertRaisesMessage(
-                ValueError, 'The user is invalid'):
+                BadRequest, '用户无效'):
             RecordService.create_off_campus_record_from_raw_data({})
 
     def test_create_off_campus_record_no_contents_and_attachments(self):
