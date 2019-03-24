@@ -2,6 +2,7 @@
 from rest_framework import serializers
 
 import training_event.models
+from training_event.services import EnrollmentService
 from training_program.serializers import ProgramSerializer
 
 
@@ -27,3 +28,7 @@ class EnrollmentSerailizer(serializers.ModelSerializer):
     class Meta:
         model = training_event.models.Enrollment
         fields = '__all__'
+        read_only_fields = ('is_participated',)
+
+    def create(self, validated_data):
+        return EnrollmentService.create_enrollment(validated_data)

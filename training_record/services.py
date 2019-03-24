@@ -1,7 +1,8 @@
-'''Provide services of traing event module.'''
+'''Provide services of training record module.'''
 from django.db import transaction
 from django.contrib.auth.models import User
 
+from infra.exceptions import BadRequest
 from training_event.models import OffCampusEvent
 from training_record.models import Record, RecordContent, RecordAttachment
 
@@ -32,9 +33,9 @@ class RecordService:
         record: Record
         '''
         if off_campus_event_data is None:
-            raise ValueError('The off_campus_event_data is invalid')
+            raise BadRequest('校外培训活动数据格式无效')
         if user is None or not isinstance(user, User):
-            raise ValueError('The user is invalid')
+            raise BadRequest('用户无效')
         if contents_data is None:
             contents_data = []
         if attachments_data is None:

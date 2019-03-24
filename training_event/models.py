@@ -65,6 +65,7 @@ class Enrollment(models.Model):
     class Meta:
         verbose_name = _('活动报名记录')
         verbose_name_plural = _('活动报名记录')
+        unique_together = (('campus_event', 'user'),)
 
     create_time = models.DateTimeField(verbose_name=_('创建时间'),
                                        auto_now_add=True)
