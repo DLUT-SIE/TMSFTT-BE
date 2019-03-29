@@ -26,6 +26,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 class DepartmentSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize Department instance.'''
+    admins_detail = UserSerializer(source='admins',
+                                   many=True)
     class Meta:
         model = auth.models.Department
         fields = '__all__'
