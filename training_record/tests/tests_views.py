@@ -83,7 +83,7 @@ class TestRecordViewSet(APITestCase):
         url = reverse('record-detail', args=(record.pk,))
         expected_keys = {'id', 'create_time', 'update_time', 'campus_event',
                          'off_campus_event', 'user', 'status', 'contents',
-                         'attachments'}
+                         'attachments', 'status_str'}
 
         response = self.client.get(url)
 
