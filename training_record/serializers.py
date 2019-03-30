@@ -49,6 +49,7 @@ class RecordSerializer(serializers.ModelSerializer):
     )
 
     # Read-Only fields
+    status_str = serializers.SerializerMethodField()
     campus_event = CampusEventSerializer(read_only=True)
     off_campus_event = OffCampusEventSerializer(read_only=True)
     attachments = RecordAttachmentSerializer(many=True, read_only=True)
@@ -57,6 +58,22 @@ class RecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = Record
         fields = '__all__'
+
+    def get_status_str(self, obj):  # pylint: disable=no-self-use
+        '''Return status represented by Chinese chars.'''
+        status = obj.status
+        status_char = ''
+        if status == 0:
+            status_char = '未提交'
+        elif status == 1:
+            status_char = '已提交'
+        elif status == 2:
+            status_char = '院系管理员已审核'
+        elif status == 3:
+            status_char = '学校管理员已审核'
+        else:
+            status_char = '未知状态'
+        return status_char
 
     def create(self, validated_data):
         return RecordService.create_off_campus_record_from_raw_data(
