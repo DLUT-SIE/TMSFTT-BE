@@ -33,13 +33,3 @@ class TestRecordSerializer(TestCase):
                 serializers.ValidationError,
                 '上传附件过大，请修改后再上传。(附件大小: 100 MB)'):
             serializer.validate_attachments_data(data)
-
-    def test_should_return_status_character_correctly(self):
-        '''Should return correct status char.'''
-        serializer = RecordSerializer()
-        data = [Mock(status=i) for i in range(5)]
-        self.assertEqual(serializer.get_status_str(data[0]), '未提交')
-        self.assertEqual(serializer.get_status_str(data[1]), '已提交')
-        self.assertEqual(serializer.get_status_str(data[2]), '院系管理员已审核')
-        self.assertEqual(serializer.get_status_str(data[3]), '学校管理员已审核')
-        self.assertEqual(serializer.get_status_str(data[4]), '未知状态')
