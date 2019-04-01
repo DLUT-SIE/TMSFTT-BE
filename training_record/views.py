@@ -1,8 +1,11 @@
 '''Provide API views for training_record module.'''
-from rest_framework import viewsets
+from django.db.models import Q
+from rest_framework import viewsets, decorators
+from rest_framework.response import Response
 from rest_framework_bulk.mixins import (
     BulkCreateModelMixin,
 )
+
 
 import training_record.models
 import training_record.serializers
@@ -15,6 +18,28 @@ class RecordViewSet(viewsets.ModelViewSet):
         .prefetch_related('contents', 'attachments')
     )
     serializer_class = training_record.serializers.RecordSerializer
+
+# TODO: rename this action
+    def _get_reviewed_status_filtered_records(self, request, is_reviewed):
+        '''Return filtered records based on status.'''
+        queryset = self.filter_queryset(self.get_queryset())
+        queryset = queryset.filter(
+            Q(status=training_record.models.Record
+              .STATUS_SCHOOL_ADMIN_REVIEWED) |
+            Q(campus_event__isnull=False))
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @decorators.action(detail=False, methods=['GET'], url_path='reviewed')
+    def reviewed(self, request):
+        '''Return records which are already reviewed.'''
+        return self._get_reviewed_status_filtered_records(request, True)
 
 
 class RecordContentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):

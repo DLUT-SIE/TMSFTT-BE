@@ -2,6 +2,7 @@
 import io
 import tempfile
 import json
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.test import override_settings
@@ -58,6 +59,31 @@ class TestRecordViewSet(APITestCase):
     def test_list_record(self):
         '''Record list should be accessed by GET request.'''
         url = reverse('record-list')
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_list_reviewed_record(self):
+        '''should return records which are already reviewed.'''
+        url = reverse('record-reviewed')
+        for index in range(10):
+            off_campus_event = mommy.make(training_event.models.OffCampusEvent)
+            mommy.make(Record,
+                       off_campus_event=off_campus_event,
+                       status=Record.STATUS_SCHOOL_ADMIN_REVIEWED
+                       if index % 4 == 0 else Record.STATUS_SUBMITTED)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 3)
+
+    @patch('training_record.views.RecordViewSet.paginate_queryset')
+    def test_return_full_if_no_pagination(self, mocked_paginate):
+        '''should return full page if no pagination is required.'''
+        url = reverse('record-reviewed')
+
+        mocked_paginate.return_value = None
 
         response = self.client.get(url)
 
