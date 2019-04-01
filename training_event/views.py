@@ -8,7 +8,8 @@ import training_event.filters
 
 class CampusEventViewSet(viewsets.ModelViewSet):
     '''Create API views for CampusEvent.'''
-    queryset = training_event.models.CampusEvent.objects.all()
+    queryset = training_event.models.CampusEvent.objects.all().order_by(
+        '-time')
     serializer_class = training_event.serializers.CampusEventSerializer
 
 
