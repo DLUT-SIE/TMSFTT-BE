@@ -9,7 +9,7 @@ from training_record.serializers import RecordSerializer
 
 # pylint: disable=no-self-use
 class TestRecordSerializer(TestCase):
-    '''Unit tests for serializer of User.'''
+    '''Unit tests for serializer of Record.'''
     def test_validate_attachments_data_too_much_attachments(self):
         '''Should raise ValidationError if there are too much attachments.'''
         serializer = RecordSerializer()

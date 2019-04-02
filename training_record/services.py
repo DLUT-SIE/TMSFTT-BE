@@ -1,10 +1,13 @@
 '''Provide services of training record module.'''
 from django.db import transaction
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 from infra.exceptions import BadRequest
 from training_event.models import OffCampusEvent
 from training_record.models import Record, RecordContent, RecordAttachment
+
+
+User = get_user_model()
 
 
 # pylint: disable=too-few-public-methods

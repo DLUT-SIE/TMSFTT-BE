@@ -1,11 +1,14 @@
 '''Unit tests for training_event services.'''
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from model_mommy import mommy
 
 from infra.exceptions import BadRequest
 from training_event.models import CampusEvent, Enrollment
 from training_event.services import EnrollmentService
+
+
+User = get_user_model()
 
 
 class TestEnrollmentService(TestCase):

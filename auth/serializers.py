@@ -26,18 +26,11 @@ class UserSerializer(serializers.ModelSerializer):
 
 class DepartmentSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize Department instance.'''
-    admins_detail = UserSerializer(source='admins', read_only=True,
-                                   many=True)
+    users = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
+    admins = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
 
     class Meta:
         model = auth.models.Department
-        fields = '__all__'
-
-
-class UserProfileSerializer(serializers.ModelSerializer):
-    '''Indicate how to serialize UserProfile instance.'''
-    class Meta:
-        model = auth.models.UserProfile
         fields = '__all__'
 
 
