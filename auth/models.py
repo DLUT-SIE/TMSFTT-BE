@@ -13,7 +13,7 @@ class User(AbstractUser):
     update_time = models.DateTimeField(verbose_name=_('最近修改时间'),
                                        auto_now=True)
     department = models.ForeignKey(
-        'Department', verbose_name=_('学部学院'), on_delete=models.PROTECT,
+        'Department', verbose_name=_('所属学部学院'), on_delete=models.PROTECT,
         blank=True, null=True,
         related_name='users')
     adminship_department = models.ForeignKey(
