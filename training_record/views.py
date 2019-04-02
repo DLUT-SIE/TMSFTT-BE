@@ -9,6 +9,7 @@ from rest_framework_bulk.mixins import (
 
 import training_record.models
 import training_record.serializers
+import training_record.filters
 
 
 class RecordViewSet(viewsets.ModelViewSet):
@@ -18,6 +19,7 @@ class RecordViewSet(viewsets.ModelViewSet):
         .prefetch_related('contents', 'attachments')
     )
     serializer_class = training_record.serializers.RecordSerializer
+    filter_class = training_record.filters.RecordFilter
 
 # TODO: rename this action
     def _get_reviewed_status_filtered_records(self, request, is_reviewed):
