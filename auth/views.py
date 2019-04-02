@@ -35,12 +35,6 @@ class UserViewSet(mixins.RetrieveModelMixin,
         return queryset.filter(pk=user.pk)
 
 
-class UserProfileViewSet(viewsets.ModelViewSet):
-    '''Create API views for UserProfile.'''
-    queryset = auth.models.UserProfile.objects.all()
-    serializer_class = auth.serializers.UserProfileSerializer
-
-
 class UserPermissionViewSet(mixins.CreateModelMixin,
                             mixins.ListModelMixin,
                             mixins.RetrieveModelMixin,

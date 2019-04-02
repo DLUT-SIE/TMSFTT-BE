@@ -1,7 +1,7 @@
 '''Unit tests for auth models.'''
 from django.test import TestCase
 
-from auth.models import Department, UserProfile, UserPermission
+from auth.models import Department, UserPermission
 
 
 class TestDepartment(TestCase):
@@ -13,17 +13,6 @@ class TestDepartment(TestCase):
         department = Department(name=name)
 
         self.assertEqual(str(department), name)
-
-
-class TestUserProfile(TestCase):
-    '''Unit tests for model UserProfile.'''
-    def test_str(self):
-        '''Should render string correctly.'''
-        user_id = 123
-
-        profile = UserProfile(user_id=user_id)
-
-        self.assertEqual(str(profile), str(user_id))
 
 
 class TestUserPermission(TestCase):

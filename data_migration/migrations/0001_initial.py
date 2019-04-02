@@ -5,10 +5,10 @@ from datetime import timedelta
 from faker import Faker
 from django.db import migrations
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 
-from auth.models import Department, UserProfile
+from auth.models import Department
 from infra.models import Notification
 from training_program.models import ProgramCategory, ProgramForm, Program
 from training_event.models import CampusEvent, OffCampusEvent, Enrollment
@@ -17,6 +17,7 @@ from training_record.models import (
 from training_review.models import ReviewNote
 
 
+User = get_user_model()
 faker = Faker('zh_CN')
 faker.seed(0)
 
@@ -93,9 +94,14 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     assert settings.DEBUG, (
         'This migration should only be used during development environment,'
         ' but found DEBUG=False')
-    print('Populate django.contrib.auth')
+    print('Populate auth')
+    print('Populate Department')
+    num_departments = 5
+    departments = [Department.objects.create(
+        name=faker.company_prefix()) for id in range(num_departments)]
+
     print('Populate User')
-    num_users = 200
+    num_users = 20
     usernames = set([faker.profile()['username'] for _ in range(num_users)])
     while len(usernames) < num_users:
         usernames.add(faker.profile()['username'])
@@ -103,31 +109,15 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     users = [User.objects.create_user(
         id=idx,
         username=usernames[idx-1],
+        department=departments[idx] if idx < num_departments else choice(departments),
+        adminship_department=departments[idx] if idx < num_departments else None, 
+        age=randint(20, 60),
         first_name=faker.first_name(),
         last_name=faker.last_name()) for idx in range(1, 1 + num_users)]
 
-    print('Populate auth')
-    print('Populate Department')
-    num_departments = 20
-    departments = [Department.objects.create(
-        name=faker.company_prefix()) for id in range(num_departments)]
-    # Set admins
-    admins = []
-    for department in departments:
-        _admins = sample(users[:50], randint(1, 3))
-        department.admins.add(*_admins)
-        department.save()
-        admins.extend(_admins)
-
-    print('Populate UserProfile')
-    user_profiles = [UserProfile.objects.create(
-        user=user,
-        department=choice(departments),
-        age=randint(20, 60)) for user in users]
-
     print('Populate infra')
     print('Populate Notification')
-    num_notifications = 1000
+    num_notifications = 200
     notifications = [Notification.objects.create(
         time=_random_datetime(),
         sender=choice(users),
@@ -148,7 +138,7 @@ def populate_initial_data(apps, _):  # pylint: disable=all
         name=form_name) for form_name in form_names]
 
     print('Populate Program')
-    num_programs = 50
+    num_programs = 15
     programs = [Program.objects.create(
         name=faker.text(10),
         department=choice(departments),
@@ -157,7 +147,7 @@ def populate_initial_data(apps, _):  # pylint: disable=all
 
     print('Populate training_event')
     print('Populate CampusEvent')
-    num_campus_events = 200
+    num_campus_events = 30
     campus_events = [CampusEvent.objects.create(
         name=faker.text(10),
         time=_random_datetime(False, True),
@@ -170,7 +160,7 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     ) for _ in range(num_campus_events)]
 
     print('Populate OffCampusEvent')
-    num_off_campus_events = 600
+    num_off_campus_events = 50
     off_campus_events = [OffCampusEvent.objects.create(
         name=faker.text(10),
         time=_random_datetime(False, True),
@@ -180,10 +170,10 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     ) for _ in range(num_off_campus_events)]
 
     print('Populate Enrollment')
-    num_enrollments = 200
+    num_enrollments = 20
     enrollments = []
     for campus_event in campus_events:
-        enrolled_users = sample(users, randint(5, 50))
+        enrolled_users = sample(users, randint(2, num_users - 5))
         enrollments.extend([Enrollment.objects.create(
             campus_event=campus_event,
             user=user,
@@ -223,7 +213,7 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     print('Populate ReviewNote')
     review_notes = []
     for record in records:
-        review_notes.extend(_random_review_note(record, admins))
+        review_notes.extend(_random_review_note(record, users[:num_departments]))
 
 
 class Migration(migrations.Migration):
@@ -231,9 +221,9 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('tmsftt_auth', '0001_initial'),
-        ('infra', '0001_initial'),
+        ('infra', '0002_auto_20190402_1649'),
         ('training_program', '0001_initial'),
-        ('training_event', '0002_campusevent_deadline'),
+        ('training_event', '0001_initial'),
         ('training_record', '0001_initial'),
         ('training_review', '0001_initial'),
     ]

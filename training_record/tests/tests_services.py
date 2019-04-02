@@ -1,13 +1,16 @@
 '''Unit tests for training_record services.'''
 import io
 from django.test import TestCase
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from model_mommy import mommy
 
 from infra.exceptions import BadRequest
 from training_record.models import RecordContent, RecordAttachment
 from training_record.services import RecordService
+
+
+User = get_user_model()
 
 
 class TestRecordService(TestCase):

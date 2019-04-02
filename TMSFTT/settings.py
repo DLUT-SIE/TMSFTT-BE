@@ -60,6 +60,8 @@ AUTHENTICATION_BACKENDS = [
     'django_cas.backends.CASBackend',
 ]
 
+AUTH_USER_MODEL = 'tmsftt_auth.User'
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
