@@ -22,7 +22,7 @@ class User(AbstractUser):
     age = models.PositiveSmallIntegerField(verbose_name=_('年龄'), default=0)
 
     def __str__(self):
-        return str(self.user_id)
+        return str(self.username)
 
 
 class Department(Group):
