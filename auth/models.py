@@ -29,7 +29,7 @@ class Role(models.Model):
     ROLE_TEACHER = 1
     ROLE_DEPT_ADMIN = 2
     # Superadmin is in business logic level, not a system level, so superadmin
-    # still has no access to perform some critical operations. 
+    # still has no access to perform some critical operations.
     ROLE_SUPERADMIN = 3
     ROLE_CHOICES = (
         (ROLE_TEACHER, '专任教师'),
