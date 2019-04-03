@@ -27,7 +27,6 @@ class UserSerializer(serializers.ModelSerializer):
 class DepartmentSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize Department instance.'''
     users = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
-    admins = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
 
     class Meta:
         model = auth.models.Department
