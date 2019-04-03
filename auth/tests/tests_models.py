@@ -45,8 +45,7 @@ class TestRole(TestCase):
     '''Unit tests for model Role.'''
     def test_str(self):
         '''Should render string correctly.'''
-        type, name = Role.ROLE_CHOICES[0]
-        role = Role(type=type)
+        role_type, name = Role.ROLE_CHOICES[0]
+        role = Role(type=role_type)
 
         self.assertEqual(str(role), name)
-
