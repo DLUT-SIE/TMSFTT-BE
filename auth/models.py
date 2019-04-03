@@ -10,19 +10,37 @@ class User(AbstractUser):
         verbose_name = _('用户')
         verbose_name_plural = _('用户')
 
-    update_time = models.DateTimeField(verbose_name=_('最近修改时间'),
-                                       auto_now=True)
     department = models.ForeignKey(
         'Department', verbose_name=_('所属学部学院'), on_delete=models.PROTECT,
         blank=True, null=True,
         related_name='users')
-    adminship_department = models.ForeignKey(
-        'Department', verbose_name=_('管辖学部学院'), on_delete=models.PROTECT,
-        blank=True, null=True, related_name='admins')
+    roles = models.ManyToManyField('Role', related_name='users')
     age = models.PositiveSmallIntegerField(verbose_name=_('年龄'), default=0)
 
     def __str__(self):
         return str(self.username)
+
+
+class Role(models.Model):
+    '''
+    The Role entries are managed by the system, automatically created via a
+    Django data migration.
+    '''
+    ROLE_TEACHER = 1
+    ROLE_DEPT_ADMIN = 2
+    # Superadmin is in business logic level, not a system level, so superadmin
+    # still has no access to perform some critical operations. 
+    ROLE_SUPERADMIN = 3
+    ROLE_CHOICES = (
+        (ROLE_TEACHER, '专任教师'),
+        (ROLE_DEPT_ADMIN, '部门管理员'),
+        (ROLE_SUPERADMIN, '学校管理员'),
+    )
+
+    type = models.PositiveSmallIntegerField(choices=ROLE_CHOICES)
+
+    def __str__(self):
+        return self.get_type_display()
 
 
 class Department(Group):

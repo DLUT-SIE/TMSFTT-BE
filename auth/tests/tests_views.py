@@ -48,7 +48,7 @@ class TestDepartmentViewSet(APITestCase):
         department = mommy.make(auth.models.Department)
         url = reverse('department-detail', args=(department.pk,))
         expected_keys = {'id', 'create_time', 'update_time', 'name',
-                         'permissions', 'users', 'admins'}
+                         'permissions', 'users'}
 
         response = self.client.get(url)
 

@@ -110,7 +110,6 @@ def populate_initial_data(apps, _):  # pylint: disable=all
         id=idx,
         username=usernames[idx-1],
         department=departments[idx] if idx < num_departments else choice(departments),
-        adminship_department=departments[idx] if idx < num_departments else None, 
         age=randint(20, 60),
         first_name=faker.first_name(),
         last_name=faker.last_name()) for idx in range(1, 1 + num_users)]
@@ -221,7 +220,7 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('tmsftt_auth', '0001_initial'),
-        ('infra', '0002_auto_20190402_1649'),
+        ('infra', '0002_auto_20190403_1353'),
         ('training_program', '0001_initial'),
         ('training_event', '0001_initial'),
         ('training_record', '0001_initial'),

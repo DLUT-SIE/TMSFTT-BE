@@ -5,7 +5,6 @@ from rest_framework.response import Response
 import infra.models
 import infra.serializers
 from infra.services import NotificationService
-from auth.permissions import CurrentUser
 
 
 class NotificationViewSet(mixins.ListModelMixin,
@@ -14,13 +13,12 @@ class NotificationViewSet(mixins.ListModelMixin,
     '''Create API views for Notification.'''
     queryset = infra.models.Notification.objects.all().order_by('-time')
     serializer_class = infra.serializers.NotificationSerializer
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get_queryset(self):
         '''Filter against current user.'''
-        user = self.request.user if hasattr(self.request, 'user') else None
         queryset = super().get_queryset()
-        if user is None or user.is_authenticated is False:
-            return queryset.none()
+        user = self.request.user
         return queryset.filter(recipient=user)
 
     def _get_read_status_filtered_notifications(self, request, is_read):
@@ -50,21 +48,22 @@ class NotificationViewSet(mixins.ListModelMixin,
         return self._get_read_status_filtered_notifications(request, True)
 
 
-# pylint: disable=R0201
-class NotificationUserTaskViewSet(viewsets.ViewSet):
-    '''Create APIs for users tasks related to Notification.'''
-    permission_classes = (permissions.IsAuthenticated, CurrentUser)
+# pylint: disable=no-self-use
+class NotificationActionViewSet(viewsets.ViewSet):
+    '''Define actions for users to manipulate Notification objects.'''
+    permission_classes = (permissions.IsAuthenticated,)
 
     @decorators.action(detail=False, methods=['POST'],
-                       url_path='mark-all-notifications-as-read')
-    def mark_all_notifications_as_read(self, request, user_pk=None):
-        '''Mark all notifications the current user received as read.'''
-        NotificationService.mark_user_notifications_as_read(int(user_pk))
-        return Response(status=status.HTTP_201_CREATED)
+                       url_path='read-all')
+    def read_all(self, request):
+        '''Mark all notifications as done for user.'''
+        count = NotificationService.mark_user_notifications_as_read(
+            request.user)
+        return Response({'count': count}, status=status.HTTP_201_CREATED)
 
     @decorators.action(detail=False, methods=['POST'],
-                       url_path='delete-all-notifications')
-    def delete_all_notifications(self, request, user_pk=None):
-        '''Delete all notifications the current user received.'''
-        NotificationService.delete_user_notifications(int(user_pk))
-        return Response(status=status.HTTP_201_CREATED)
+                       url_path='delete-all')
+    def delete_all(self, request):
+        '''Delete all notifications for user.'''
+        count = NotificationService.delete_user_notifications(request.user)
+        return Response({'count': count}, status=status.HTTP_201_CREATED)
