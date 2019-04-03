@@ -11,6 +11,7 @@ class CampusEventViewSet(viewsets.ModelViewSet):
     queryset = training_event.models.CampusEvent.objects.all().order_by(
         '-time')
     serializer_class = training_event.serializers.CampusEventSerializer
+    filter_class = training_event.filters.CampusEventFilter
 
 
 class OffCampusEventViewSet(viewsets.ModelViewSet):
