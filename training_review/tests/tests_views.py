@@ -15,6 +15,13 @@ User = get_user_model()
 
 class TestReviewNoteViewSet(APITestCase):
     '''Unit tests for ReviewNote view.'''
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = mommy.make(User)
+
+    def setUp(self):
+        self.client.force_authenticate(self.user)
+
     def test_create_review_note(self):
         '''ReviewNote should be created by POST request.'''
         off_campus_event = mommy.make(tevent.OffCampusEvent)

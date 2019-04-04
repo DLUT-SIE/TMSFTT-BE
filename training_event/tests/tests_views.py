@@ -15,6 +15,13 @@ User = get_user_model()
 
 class TestCampusEventViewSet(APITestCase):
     '''Unit tests for CampusEvent view.'''
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = mommy.make(User)
+
+    def setUp(self):
+        self.client.force_authenticate(self.user)
+
     def test_create_campus_event(self):
         '''CampusEvent should be created by POST request.'''
         program = mommy.make(training_program.models.Program)
@@ -88,6 +95,13 @@ class TestCampusEventViewSet(APITestCase):
 
 class TestOffCampusEventViewSet(APITestCase):
     '''Unit tests for OffCampusEvent view.'''
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = mommy.make(User)
+
+    def setUp(self):
+        self.client.force_authenticate(self.user)
+
     def test_create_off_campus_event(self):
         '''OffCampusEvent should be created by POST request.'''
         url = reverse('offcampusevent-list')
@@ -160,6 +174,13 @@ class TestOffCampusEventViewSet(APITestCase):
 
 class TestEnrollmentViewSet(APITestCase):
     '''Unit tests for Enrollment view.'''
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = mommy.make(User)
+
+    def setUp(self):
+        self.client.force_authenticate(self.user)
+
     def test_create_enrollment(self):
         '''Enrollment should be created by POST request.'''
         user = mommy.make(User)

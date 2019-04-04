@@ -1,5 +1,6 @@
 '''Unit tests for training_program views.'''
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 from model_mommy import mommy
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -8,8 +9,18 @@ import training_program.models
 import auth.models
 
 
+User = get_user_model()
+
+
 class TestProgramCategoryViewSet(APITestCase):
     '''Unit tests for ProgramCategory view.'''
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = mommy.make(User)
+
+    def setUp(self):
+        self.client.force_authenticate(self.user)
+
     def test_create_program_category(self):
         '''ProgramCategory should be created by POST request.'''
         url = reverse('programcategory-list')
@@ -72,6 +83,13 @@ class TestProgramCategoryViewSet(APITestCase):
 
 class TestProgramForm(APITestCase):
     '''Unit tests for ProgramForm view.'''
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = mommy.make(User)
+
+    def setUp(self):
+        self.client.force_authenticate(self.user)
+
     def test_create_program_form(self):
         '''ProgramForm should be created by POST request.'''
         url = reverse('programform-list')
@@ -134,6 +152,13 @@ class TestProgramForm(APITestCase):
 
 class TestProgram(APITestCase):
     '''Unit tests for Program view.'''
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = mommy.make(User)
+
+    def setUp(self):
+        self.client.force_authenticate(self.user)
+
     def test_create_program(self):
         '''Program should be created by POST request.'''
         url = reverse('program-list')
