@@ -16,7 +16,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'last_login', 'first_name', 'last_name',
-                  'email', 'is_active', 'date_joined', 'user_permissions')
+                  'email', 'is_active', 'date_joined', 'user_permissions',
+                  'is_teacher', 'is_dept_admin', 'is_superadmin')
 
     def get_user_permissions(self, obj):  # pylint: disable=no-self-use
         '''Populate user's permissions list.'''

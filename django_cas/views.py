@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
+from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_jwt.settings import api_settings
@@ -23,7 +24,7 @@ __all__ = ['LoginView', 'LogoutView']
 
 class LoginView(APIView):
     '''CAS login view, adapted to Django REST framework and JWT.'''
-    authentication_classes = ()
+    permission_classes = (permissions.AllowAny,)
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):

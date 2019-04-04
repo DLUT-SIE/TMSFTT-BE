@@ -23,6 +23,13 @@ User = get_user_model()
 
 class TestRecordViewSet(APITestCase):
     '''Unit tests for Record view.'''
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = mommy.make(User)
+
+    def setUp(self):
+        self.client.force_authenticate(self.user)
+
     def test_create_record(self):
         '''Record should be created by POST request.'''
         user = mommy.make(User)
@@ -135,6 +142,13 @@ class TestRecordViewSet(APITestCase):
 
 class TestRecordContentViewSet(APITestCase):
     '''Unit tests for RecordContent view.'''
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = mommy.make(User)
+
+    def setUp(self):
+        self.client.force_authenticate(self.user)
+
     def test_create_record_content(self):
         '''RecordContent should be created by POST request.'''
         url = reverse('recordcontent-list')
@@ -223,6 +237,13 @@ class TestRecordContentViewSet(APITestCase):
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 class TestRecordAttachmentViewSet(APITestCase):
     '''Unit tests for RecordAttachment view.'''
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = mommy.make(User)
+
+    def setUp(self):
+        self.client.force_authenticate(self.user)
+
     def test_create_record_attachment(self):
         '''RecordAttachment should be created by POST request.'''
         url = reverse('recordattachment-list')
@@ -302,6 +323,13 @@ class TestRecordAttachmentViewSet(APITestCase):
 
 class TestStatusChangeLogViewSet(APITestCase):
     '''Unit tests for StatusChangeLog view.'''
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = mommy.make(User)
+
+    def setUp(self):
+        self.client.force_authenticate(self.user)
+
     def test_create_status_change_log(self):
         '''StatusChangeLog should be created by POST request.'''
         url = reverse('statuschangelog-list')

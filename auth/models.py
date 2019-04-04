@@ -2,6 +2,7 @@
 from django.contrib.auth.models import Permission, AbstractUser, Group
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.utils.functional import cached_property
 
 
 class User(AbstractUser):
@@ -20,12 +21,41 @@ class User(AbstractUser):
     def __str__(self):
         return str(self.username)
 
+    @cached_property
+    def _roles(self):
+        '''Retrieve the role types of the current user, and cache it.
+
+        Return
+        ------
+        <QuerySet [{'type': 1}, {'type': 2}, {'type': 3}]>
+        '''
+        return self.roles.all().values('type')
+
+    @property
+    def is_teacher(self):
+        '''Field to indicate whether the user is a teacher.'''
+        return {'type': Role.ROLE_TEACHER} in self._roles
+
+    @property
+    def is_dept_admin(self):
+        '''Field to indicate whether the user is a department admin.'''
+        return {'type': Role.ROLE_DEPT_ADMIN} in self._roles
+
+    @property
+    def is_superadmin(self):
+        '''Field to indicate whether the user is a superadmin.'''
+        return {'type': Role.ROLE_SUPERADMIN} in self._roles
+
 
 class Role(models.Model):
     '''
     The Role entries are managed by the system, automatically created via a
     Django data migration.
     '''
+    class Meta:
+        verbose_name = '身份'
+        verbose_name_plural = '身份'
+
     ROLE_TEACHER = 1
     ROLE_DEPT_ADMIN = 2
     # Superadmin is in business logic level, not a system level, so superadmin

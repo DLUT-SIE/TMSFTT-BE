@@ -1,10 +1,11 @@
 '''Provide API views for auth module.'''
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
-from rest_framework import viewsets, mixins, permissions
+from rest_framework import viewsets, mixins
 
 import auth.models
 import auth.serializers
+import auth.permissions
 
 
 User = get_user_model()
@@ -14,6 +15,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     '''Create API views for Department.'''
     queryset = auth.models.Department.objects.all()
     serializer_class = auth.serializers.DepartmentSerializer
+    permission_classes = (auth.permissions.SuperAdminOnlyPermission,)
 
 
 class UserViewSet(mixins.RetrieveModelMixin,
@@ -22,17 +24,8 @@ class UserViewSet(mixins.RetrieveModelMixin,
     '''Create API views for User.'''
     queryset = User.objects.all()
     serializer_class = auth.serializers.UserSerializer
+    permission_classes = (auth.permissions.SuperAdminOnlyPermission,)
     filter_fields = ('username',)
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def get_queryset(self):
-        '''Filter queryset against role.'''
-        user = self.request.user
-        queryset = super().get_queryset()
-        # TODO(youchen): Should we check based on other info
-        if user.is_staff:
-            return queryset
-        return queryset.filter(pk=user.pk)
 
 
 class UserPermissionViewSet(mixins.CreateModelMixin,
@@ -44,6 +37,7 @@ class UserPermissionViewSet(mixins.CreateModelMixin,
     queryset = (auth.models.UserPermission.objects.all()
                 .select_related('permission'))
     serializer_class = auth.serializers.UserPermissionSerializer
+    permission_classes = (auth.permissions.SuperAdminOnlyPermission,)
     filter_fields = ('user',)
     pagination_class = None
 
@@ -53,4 +47,5 @@ class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
     # Exclude Django-admin-related permissions.
     queryset = Permission.objects.filter(content_type_id__gt=6).all()
     serializer_class = auth.serializers.PermissionSerializer
+    permission_classes = (auth.permissions.SuperAdminOnlyPermission,)
     pagination_class = None

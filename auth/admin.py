@@ -1,7 +1,7 @@
 '''Define how to register our models in admin console.'''
 from django.contrib import admin
 
-from auth.models import Department, User, UserPermission
+from auth.models import Department, User, UserPermission, Role
 
 
 class DepartmentAdmin(admin.ModelAdmin):
@@ -12,6 +12,10 @@ class UserAdmin(admin.ModelAdmin):
     '''Define how to register model User in console.'''
 
 
+class RoleAdmin(admin.ModelAdmin):
+    '''Define how to register model Role in console.'''
+
+
 class UserPermissionAdmin(admin.ModelAdmin):
     '''Define how to register model UserPermission in console.'''
     list_select_related = ('permission', 'user')
@@ -19,6 +23,7 @@ class UserPermissionAdmin(admin.ModelAdmin):
 
 REGISTER_ITEMS = [
     (User, UserAdmin),
+    (Role, RoleAdmin),
     (Department, DepartmentAdmin),
     (UserPermission, UserPermissionAdmin),
 ]

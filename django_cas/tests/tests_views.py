@@ -1,19 +1,21 @@
 '''Unit tests for django_cas views.'''
 from datetime import datetime, timedelta
 from unittest.mock import patch, Mock
-
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+from model_mommy import mommy
+
+
+User = get_user_model()
 
 
 class TestLoginView(APITestCase):
     '''Unit tests for Login view.'''
     @classmethod
     def setUpTestData(cls):
-        cls.user = get_user_model().objects.create_user(
-            username='test', password='test')
+        cls.user = mommy.make(User)
 
     def test_get_should_not_be_allowed(self):
         '''Should return 405 when accessing LoginView via GET.'''
@@ -35,7 +37,7 @@ class TestLoginView(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_302_FOUND)
 
     def test_post_missing_data(self):
-        '''Should redirect when user is already authenticated.'''
+        '''Should return 403 if some data is missing.'''
         url = reverse('cas-login')
         data = {'ticket': 'ticket'}
 
@@ -103,6 +105,13 @@ class TestLoginView(APITestCase):
 
 class TestLogoutView(APITestCase):
     '''Unit tests for LogoutView.'''
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = mommy.make(User)
+
+    def setUp(self):
+        self.client.force_authenticate(self.user)
+
     @patch('django_cas.views.settings')
     @patch('django_cas.views.auth')
     def test_normal_logout_with_next_page(self, _, mocked_settings):
