@@ -1,5 +1,6 @@
 '''Provide API views for mock_cas module.'''
 from django.contrib.auth import get_user_model
+from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
@@ -8,7 +9,7 @@ from rest_framework.renderers import TemplateHTMLRenderer
 class MockedCASLoginView(APIView):
     '''Provide a list of users can be authenticated as.'''
     renderer_classes = (TemplateHTMLRenderer,)
-    authentication_classes = ()
+    permission_classes = (permissions.AllowAny,)
 
     def get(self, request, *args, **kwargs):
         '''Render a list of users.'''
@@ -22,7 +23,7 @@ class MockedCASLoginView(APIView):
 class MockedCASValidateView(APIView):
     '''Provides mocked authentication logic when ticket is given.'''
     renderer_classes = (TemplateHTMLRenderer,)
-    authentication_classes = ()
+    permission_classes = (permissions.AllowAny,)
 
     def get(self, request, *args, **kwargs):
         '''Provide authentication result.'''
