@@ -11,4 +11,6 @@ router.register(r'record-attachments',
                 training_record.views.RecordAttachmentViewSet)
 router.register(r'status-change-logs',
                 training_record.views.StatusChangeLogViewSet)
+router.register(r'records/actions', training_record.views.RecordActionViewSet,
+                base_name='batch-submit')
 urlpatterns = router.urls
