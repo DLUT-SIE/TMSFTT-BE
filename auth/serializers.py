@@ -9,22 +9,6 @@ import auth.models
 User = get_user_model()
 
 
-class UserSerializer(serializers.ModelSerializer):
-    '''Indicate how to serialize User instance.'''
-    user_permissions = serializers.SerializerMethodField(read_only=True)
-
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'last_login', 'first_name', 'last_name',
-                  'email', 'is_active', 'date_joined', 'user_permissions',
-                  'is_teacher', 'is_dept_admin', 'is_superadmin')
-
-    def get_user_permissions(self, obj):  # pylint: disable=no-self-use
-        '''Populate user's permissions list.'''
-        permissions = auth.models.UserPermission.objects.filter(user=obj)
-        return UserPermissionSerializer(permissions, many=True).data
-
-
 class DepartmentSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize Department instance.'''
     users = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
@@ -45,18 +29,20 @@ class PermissionSerializer(serializers.ModelSerializer):
 
 class UserPermissionSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize UserPermission instance.'''
-    user = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(),
-        style={'base_template': 'input.html'},
-    )
-    permission = PermissionSerializer(read_only=True)
-    permission_id = serializers.PrimaryKeyRelatedField(
-        queryset=Permission.objects.all(),
-        style={'base_template': 'input.html'},
-        write_only=True,
-        source='permission',
-    )
 
     class Meta:
         model = auth.models.UserPermission
-        fields = ('id', 'user', 'permission', 'permission_id')
+        fields = ('id', 'user', 'permission')
+
+
+class UserSerializer(serializers.ModelSerializer):
+    '''Indicate how to serialize User instance.'''
+    department_str = serializers.CharField(
+        source='department.name', read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'last_login', 'first_name', 'last_name',
+                  'email', 'is_active', 'date_joined', 'user_permissions',
+                  'department', 'department_str', 'user_permissions',
+                  'is_teacher', 'is_department_admin', 'is_superadmin')

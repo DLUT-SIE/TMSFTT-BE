@@ -17,7 +17,8 @@ class DepartmentAdminOnlyPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         '''Check department admin role.'''
-        return request.user.is_authenticated and request.user.is_dept_admin
+        return (request.user.is_authenticated
+                and request.user.is_department_admin)
 
 
 class TeacherOnlyPermission(permissions.BasePermission):
