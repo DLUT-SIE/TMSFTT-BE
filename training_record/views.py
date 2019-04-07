@@ -12,6 +12,7 @@ import training_record.serializers
 import training_record.filters
 from training_record.services import RecordService
 
+
 class RecordViewSet(viewsets.ModelViewSet):
     '''Create API views for Record.'''
     queryset = (
@@ -44,13 +45,15 @@ class RecordViewSet(viewsets.ModelViewSet):
         return self._get_reviewed_status_filtered_records(request, True)
 
 
-
+# pylint: disable=no-self-use
 class RecordActionViewSet(viewsets.ViewSet):
     '''Define actions for admins to batch submit Records of campus event.'''
     @decorators.action(detail=False, methods=['POST'],
                        url_path='batch-submit')
     def batch_submit(self, request):
-        count = RecordService.create_campus_records_from_excel(request)
+        '''Return count of records which are created.'''
+        excel = request.FILES.get('file').read()
+        count = RecordService.create_campus_records_from_excel(excel)
         return Response({'count': count}, status=status.HTTP_201_CREATED)
 
 

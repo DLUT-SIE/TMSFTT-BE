@@ -140,6 +140,24 @@ class TestRecordViewSet(APITestCase):
         self.assertEqual(response.data['status'], status1)
 
 
+class TestRecordActionViewSet(APITestCase):
+    '''Unit tests for RecordActionViewSet'''
+
+    @patch('training_record.views.RecordService')
+    def test_batch_submit(self, mocked_service):
+        '''Should batch create records according to request.'''
+        user = mommy.make(get_user_model())
+        url = reverse('record-actions-batch-submit')
+        file_data = io.BytesIO(b'some numbers')
+        mocked_service.create_campus_records_from_excel.return_value = 3
+
+        self.client.force_authenticate(user)
+        response = self.client.post(url, {'file': file_data})
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('count', response.data)
+
+
 class TestRecordContentViewSet(APITestCase):
     '''Unit tests for RecordContent view.'''
     @classmethod
