@@ -3,7 +3,7 @@ import io
 import tempfile
 import xlwt
 
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from model_mommy import mommy
@@ -17,7 +17,6 @@ from training_event.models import CampusEvent
 User = get_user_model()
 
 
-@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 class TestRecordService(TestCase):
     '''Test services provided by RecordService.'''
     @classmethod
