@@ -27,21 +27,16 @@ class TestReviewNoteViewSet(APITestCase):
         off_campus_event = mommy.make(tevent.OffCampusEvent)
         user = mommy.make(User)
         record = mommy.make(trecord.Record, off_campus_event=off_campus_event)
-        field_name = 'reviewnote'
         content = 'Reviewnote is created.'
         url = reverse('reviewnote-list')
-        data = {'user': user.pk, 'record': record.pk,
-                'field_name': field_name, 'content': content}
+        data = {'user': user.pk, 'record': record.pk, 'content': content}
 
         response = self.client.post(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(treview.ReviewNote.objects.count(), 1)
         self.assertEqual(treview.ReviewNote.objects.get().user.pk, user.pk)
-        self.assertEqual(treview.ReviewNote.objects.get().record.pk,
-                         record.pk)
-        self.assertEqual(treview.ReviewNote.objects.get().field_name,
-                         field_name)
+        self.assertEqual(treview.ReviewNote.objects.get().record.pk, record.pk)
         self.assertEqual(treview.ReviewNote.objects.get().content, content)
 
     def test_list_review_note(self):
@@ -76,20 +71,3 @@ class TestReviewNoteViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('id', response.data)
         self.assertEqual(response.data['id'], review_note.id)
-
-    def test_update_review_note(self):
-        '''ReviewNote should be updated by PATCH request.'''
-        field_name0 = 'note0'
-        field_name1 = 'note1'
-        off_campus_event = mommy.make(tevent.OffCampusEvent)
-        record = mommy.make(trecord.Record, off_campus_event=off_campus_event)
-        review_note = mommy.make(treview.ReviewNote, field_name=field_name0,
-                                 record=record)
-        url = reverse('reviewnote-detail', args=(review_note.pk,))
-        data = {'field_name': field_name1}
-
-        response = self.client.patch(url, data, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('field_name', response.data)
-        self.assertEqual(response.data['field_name'], field_name1)
