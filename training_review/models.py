@@ -24,7 +24,6 @@ class ReviewNote(models.Model):
                                        auto_now_add=True)
     record = models.ForeignKey(Record, verbose_name=_('培训记录'),
                                on_delete=models.CASCADE)
-    field_name = models.CharField(verbose_name=_('字段名称'), max_length=32)
     user = models.ForeignKey(User, verbose_name=_('创建用户'),
                              on_delete=models.CASCADE)
     content = models.CharField(verbose_name=_('提示内容'), max_length=128)
