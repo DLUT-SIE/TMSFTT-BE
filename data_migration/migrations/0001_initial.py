@@ -80,13 +80,11 @@ def _random_status_change_logs(record):
 def _random_review_note(record, admins):
     if record.status in [Record.STATUS_SUBMITTED]:
         return []
-    fields = ('name', 'time', 'location', 'num_hours', 'num_participants')
     return [ReviewNote.objects.create(
         record=record,
-        field_name=field_name,
         user=choice(admins),
         content=faker.text(20),
-    ) for field_name in fields if random() < 0.3]
+    )]
 
 
 def populate_initial_data(apps, _):  # pylint: disable=all
@@ -224,7 +222,7 @@ class Migration(migrations.Migration):
         ('training_program', '0001_initial'),
         ('training_event', '0001_initial'),
         ('training_record', '0001_initial'),
-        ('training_review', '0001_initial'),
+        ('training_review', '0002_remove_reviewnote_field_name'),
     ]
 
     operations = [
