@@ -1,5 +1,8 @@
 '''Unit tests for training_record services.'''
 import io
+import tempfile
+import xlwt
+
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -8,6 +11,7 @@ from model_mommy import mommy
 from infra.exceptions import BadRequest
 from training_record.models import RecordContent, RecordAttachment
 from training_record.services import RecordService
+from training_event.models import CampusEvent
 
 
 User = get_user_model()
@@ -32,6 +36,9 @@ class TestRecordService(TestCase):
         cls.contents_data = [
             {'content_type': x[0], 'content': 'abc'}
             for x in RecordContent.CONTENT_TYPE_CHOICES]
+
+        cls.campus_event = mommy.make(CampusEvent)
+        cls.user = mommy.make(User)
 
     def test_create_off_campus_record_no_event_data(self):
         '''Should raise ValueError if no off-campus event data.'''
@@ -80,3 +87,52 @@ class TestRecordService(TestCase):
         self.assertEqual(
             RecordAttachment.objects.all().count(), len(self.attachments_data),
         )
+
+    def test_create_campus_records_bad_file(self):
+        '''Should raise Error if get invalid file.'''
+        tup = tempfile.mkstemp()
+        with self.assertRaisesMessage(
+                BadRequest, '无效的表格'):
+            RecordService.create_campus_records_from_excel(tup[0])
+
+    def test_create_campus_records_bad_event_id(self):
+        '''Should raise Error if get invalid event id.'''
+        tup = tempfile.mkstemp()
+        work_book = xlwt.Workbook()
+        sheet = work_book.add_sheet(u'sheet1', cell_overwrite_ok=True)
+        sheet.write(0, 0, self.campus_event.id+1)
+        work_book.save(tup[1])
+        with open(tup[0], 'rb') as work_book:
+            excel = work_book.read()
+        with self.assertRaisesMessage(
+                BadRequest, '编号为'+str(self.campus_event.id+1)+'的活动不存在'):
+            RecordService.create_campus_records_from_excel(excel)
+
+    def test_create_campus_records_bad_user_id(self):
+        '''Should raise Error if get invalid user id.'''
+        tup = tempfile.mkstemp()
+        work_book = xlwt.Workbook()
+        sheet = work_book.add_sheet(u'sheet1', cell_overwrite_ok=True)
+        sheet.write(0, 0, self.campus_event.id)
+        sheet.write(1, 0, self.user.id+1)
+        work_book.save(tup[1])
+        with open(tup[0], 'rb') as work_book:
+            excel = work_book.read()
+        with self.assertRaisesMessage(
+                BadRequest, '编号为'+str(self.user.id+1)+'的用户不存在'):
+            RecordService.create_campus_records_from_excel(excel)
+
+    def test_create_campus_records(self):
+        '''Should return the number of created records.'''
+        tup = tempfile.mkstemp()
+        work_book = xlwt.Workbook()
+        sheet = work_book.add_sheet(u'sheet1', cell_overwrite_ok=True)
+        sheet.write(0, 0, self.campus_event.id)
+        sheet.write(1, 0, self.user.id)
+        work_book.save(tup[1])
+        with open(tup[0], 'rb') as work_book:
+            excel = work_book.read()
+
+        count = RecordService.create_campus_records_from_excel(excel)
+
+        self.assertEqual(count, 1)

@@ -62,7 +62,7 @@ class TestDepartmentAdminOnlyPermission(TestCase):
         request = Mock()
         request.user = Mock()
         request.user.is_authenticated = True
-        request.user.is_dept_admin = False
+        request.user.is_department_admin = False
         permission = permissions.DepartmentAdminOnlyPermission()
 
         has_permission = permission.has_permission(request, None)
@@ -74,7 +74,7 @@ class TestDepartmentAdminOnlyPermission(TestCase):
         request = Mock()
         request.user = Mock()
         request.user.is_authenticated = True
-        request.user.is_dept_admin = True
+        request.user.is_department_admin = True
         permission = permissions.DepartmentAdminOnlyPermission()
 
         has_permission = permission.has_permission(request, None)

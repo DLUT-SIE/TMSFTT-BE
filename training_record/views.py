@@ -1,6 +1,6 @@
 '''Provide API views for training_record module.'''
 from django.db.models import Q
-from rest_framework import viewsets, decorators
+from rest_framework import viewsets, status, decorators
 from rest_framework.response import Response
 from rest_framework_bulk.mixins import (
     BulkCreateModelMixin,
@@ -10,6 +10,7 @@ from rest_framework_bulk.mixins import (
 import training_record.models
 import training_record.serializers
 import training_record.filters
+from training_record.services import RecordService
 
 
 class RecordViewSet(viewsets.ModelViewSet):
@@ -42,6 +43,18 @@ class RecordViewSet(viewsets.ModelViewSet):
     def reviewed(self, request):
         '''Return records which are already reviewed.'''
         return self._get_reviewed_status_filtered_records(request, True)
+
+
+# pylint: disable=no-self-use
+class RecordActionViewSet(viewsets.ViewSet):
+    '''Define actions for admins to batch submit Records of campus event.'''
+    @decorators.action(detail=False, methods=['POST'],
+                       url_path='batch-submit')
+    def batch_submit(self, request):
+        '''Return count of records which are created.'''
+        excel = request.FILES.get('file').read()
+        count = RecordService.create_campus_records_from_excel(excel)
+        return Response({'count': count}, status=status.HTTP_201_CREATED)
 
 
 class RecordContentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):

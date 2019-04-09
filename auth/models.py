@@ -37,7 +37,7 @@ class User(AbstractUser):
         return {'type': Role.ROLE_TEACHER} in self._roles
 
     @property
-    def is_dept_admin(self):
+    def is_department_admin(self):
         '''Field to indicate whether the user is a department admin.'''
         return {'type': Role.ROLE_DEPT_ADMIN} in self._roles
 

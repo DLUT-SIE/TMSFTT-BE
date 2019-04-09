@@ -22,7 +22,10 @@ class UserViewSet(mixins.RetrieveModelMixin,
                   mixins.ListModelMixin,
                   viewsets.GenericViewSet):
     '''Create API views for User.'''
-    queryset = User.objects.all()
+    queryset = (User.objects
+                .select_related('department')
+                .prefetch_related('roles', 'user_permissions')
+                .all())
     serializer_class = auth.serializers.UserSerializer
     permission_classes = (auth.permissions.SuperAdminOnlyPermission,)
     filter_fields = ('username',)
@@ -34,8 +37,9 @@ class UserPermissionViewSet(mixins.CreateModelMixin,
                             mixins.DestroyModelMixin,
                             viewsets.GenericViewSet):
     '''Create API views for UserPermission.'''
-    queryset = (auth.models.UserPermission.objects.all()
-                .select_related('permission'))
+    queryset = (auth.models.UserPermission.objects
+                .select_related('permission', 'user')
+                .all())
     serializer_class = auth.serializers.UserPermissionSerializer
     permission_classes = (auth.permissions.SuperAdminOnlyPermission,)
     filter_fields = ('user',)
