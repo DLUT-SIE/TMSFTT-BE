@@ -55,6 +55,13 @@ class RecordActionViewSet(viewsets.ViewSet):
         excel = request.FILES.get('file').read()
         count = RecordService.create_campus_records_from_excel(excel)
         return Response({'count': count}, status=status.HTTP_201_CREATED)
+    
+    @decorators.action(detail=False, methods=['POST'], url_path='status_update')
+    def status_update(self, request):
+        recordID = request.POST.get('recordID')
+        feedback = request.POST.get('feedback')
+        RecordService.status_update(recordID, feedback)
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class RecordContentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
@@ -73,3 +80,9 @@ class StatusChangeLogViewSet(viewsets.ModelViewSet):
     '''Create API views for StatusChangeLog.'''
     queryset = training_record.models.StatusChangeLog.objects.all()
     serializer_class = training_record.serializers.StatusChangeLogSerializer
+
+
+class CampusEventFeedbackViewSet(viewsets.ModelViewSet):
+    '''Create API views for CampusEventFeedback.'''
+    queryset = training_record.models.CampusEventFeedback.objects.all()
+    serializer_class = training_record.serializers.CampusEventFeedbackSerializer

@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 
 from infra.exceptions import BadRequest
 from training_event.models import OffCampusEvent, CampusEvent
-from training_record.models import Record, RecordContent, RecordAttachment
+from training_record.models import Record, RecordContent, RecordAttachment, CampusEventFeedback
 
 
 User = get_user_model()
@@ -126,3 +126,10 @@ class RecordService:
                 records.add(record)
 
         return len(records)
+
+    @staticmethod
+    def status_update(record_id,feedback):
+        record = Record.objects.get(pk=record_id)
+        CampusEventFeedback.objects.create(record=record, feedback=feedback)
+        record.status = Record.STATUS_WITH_FEEDBACK
+        record.save()
