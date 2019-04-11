@@ -12,10 +12,14 @@ class Record(models.Model):
     STATUS_SUBMITTED = 1
     STATUS_FACULTY_ADMIN_REVIEWED = 2
     STATUS_SCHOOL_ADMIN_REVIEWED = 3
+    STATUS_FEEDBACK_REQUIRED = 4
+    STATUS_FEEDBACK_SUBMITTED = 5
     STATUS_CHOICES = (
         (STATUS_SUBMITTED, '已提交'),
         (STATUS_FACULTY_ADMIN_REVIEWED, '院系管理员已审核'),
         (STATUS_SCHOOL_ADMIN_REVIEWED, '学校管理员已审核'),
+        (STATUS_FEEDBACK_REQUIRED, '培训反馈待提交'),
+        (STATUS_FEEDBACK_SUBMITTED, '培训反馈已提交'),
     )
 
     class Meta:
@@ -189,3 +193,18 @@ class StatusChangeLog(models.Model):
         return '{}状态于{}由{}变为{}'.format(
             self.record_id, self.time, self.get_pre_status_display(),
             self.get_post_status_display())
+
+
+class CampusEventFeedback(models.Model):
+    '''CampusEventFeedback stores text-like feedback for records.'''
+    class Meta:
+        verbose_name = '培训活动反馈'
+        verbose_name_plural = '培训活动反馈'
+
+    create_time = models.DateTimeField(verbose_name= '创建时间',
+                                       auto_now_add=True)
+    record = models.ForeignKey(Record, verbose_name= '培训记录',
+                               related_name='feedback',
+                               db_index=True,
+                               on_delete=models.CASCADE)
+    feedback = models.TextField(verbose_name= '反馈内容')

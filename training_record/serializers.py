@@ -7,7 +7,7 @@ from rest_framework_bulk import (
 
 from infra.utils import format_file_size
 from training_record.models import (
-    Record, RecordAttachment, RecordContent, StatusChangeLog
+    Record, RecordAttachment, RecordContent, StatusChangeLog,  CampusEventFeedback
 )
 from training_record.services import RecordService
 from training_event.serializers import (
@@ -33,6 +33,13 @@ class RecordAttachmentSerializer(BulkSerializerMixin,
         list_serializer_class = BulkListSerializer
 
 
+class CampusEventFeedbackSerializer(serializers.ModelSerializer):
+    '''Indicate how to serialize CampusEventFeedback instance.'''
+    class Meta:
+        model =  CampusEventFeedback
+        fields = '__all__'
+
+
 class RecordSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize Record instance.'''
     # Write-Only fields
@@ -55,6 +62,7 @@ class RecordSerializer(serializers.ModelSerializer):
     off_campus_event = OffCampusEventSerializer(read_only=True)
     attachments = RecordAttachmentSerializer(many=True, read_only=True)
     contents = RecordContentSerializer(many=True, read_only=True)
+    feedback = CampusEventFeedbackSerializer(many=True, read_only=True)
 
     class Meta:
         model = Record
