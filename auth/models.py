@@ -10,12 +10,19 @@ class User(AbstractUser):
     class Meta:
         verbose_name = _('用户')
         verbose_name_plural = _('用户')
+        default_permissions = ()
+        permissions = (
+            ('add_user', '允许添加用户'),
+            ('view_user', '允许查看用户'),
+            ('change_user', '允许修改用户'),
+            ('delete_user', '允许删除用户'),
+        )
 
     department = models.ForeignKey(
         'Department', verbose_name=_('所属学部学院'), on_delete=models.PROTECT,
         blank=True, null=True,
         related_name='users')
-    roles = models.ManyToManyField('Role', related_name='users')
+    roles = models.ManyToManyField('Role', related_name='users', blank=True)
     age = models.PositiveSmallIntegerField(verbose_name=_('年龄'), default=0)
 
     def __str__(self):
@@ -55,6 +62,13 @@ class Role(models.Model):
     class Meta:
         verbose_name = '身份'
         verbose_name_plural = '身份'
+        default_permissions = ()
+        permissions = (
+            ('add_role', '允许添加身份'),
+            ('view_role', '允许查看身份'),
+            ('change_role', '允许修改身份'),
+            ('delete_role', '允许删除身份'),
+        )
 
     ROLE_TEACHER = 1
     ROLE_DEPT_ADMIN = 2
@@ -78,6 +92,13 @@ class Department(Group):
     class Meta:
         verbose_name = _('学部学院')
         verbose_name_plural = _('学部学院')
+        default_permissions = ()
+        permissions = (
+            ('add_department', '允许添加学部学院'),
+            ('view_department', '允许查看学部学院'),
+            ('change_department', '允许修改学部学院'),
+            ('delete_department', '允许删除学部学院'),
+        )
 
     create_time = models.DateTimeField(verbose_name=_('创建时间'),
                                        auto_now_add=True)
@@ -95,6 +116,13 @@ class UserPermission(models.Model):
         verbose_name_plural = _('用户权限')
         managed = False  # This model is managed by Django.
         db_table = 'tmsftt_auth_user_user_permissions'
+        default_permissions = ()
+        permissions = (
+            ('add_userpermission', '允许添加用户权限'),
+            ('view_userpermission', '允许查看用户权限'),
+            ('change_userpermission', '允许修改用户权限'),
+            ('delete_userpermission', '允许删除用户权限'),
+        )
 
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, verbose_name=_('用户'),

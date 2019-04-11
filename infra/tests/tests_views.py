@@ -9,6 +9,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 import infra.models
+from auth.utils import assign_perm
 
 
 class TestNotificationViewSet(APITestCase):
@@ -16,6 +17,7 @@ class TestNotificationViewSet(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = mommy.make(get_user_model())
+        assign_perm('infra.view_notification', cls.user)
 
     def test_list_notification(self):
         '''notification list should be accessed by GET request.'''
@@ -30,6 +32,7 @@ class TestNotificationViewSet(APITestCase):
         '''notification should be accessed by GET request.'''
         user = self.user
         notification = mommy.make(infra.models.Notification, recipient=user)
+        assign_perm('infra.view_notification', user, notification)
         url = reverse('notification-detail', args=(notification.pk,))
 
         self.client.force_authenticate(user)
@@ -43,9 +46,11 @@ class TestNotificationViewSet(APITestCase):
         '''should return notifications which are already read.'''
         user = self.user
         for index in range(10):
-            mommy.make(infra.models.Notification,
-                       read_time=now() if index % 4 == 0 else None,
-                       recipient=user)
+            notification = mommy.make(
+                infra.models.Notification,
+                read_time=now() if index % 4 == 0 else None,
+                recipient=user)
+            assign_perm('infra.view_notification', user, notification)
         url = reverse('notification-read')
 
         self.client.force_authenticate(user)
@@ -58,9 +63,11 @@ class TestNotificationViewSet(APITestCase):
         '''should return notifications which are already read.'''
         user = self.user
         for index in range(10):
-            mommy.make(infra.models.Notification,
-                       read_time=now() if index % 4 == 0 else None,
-                       recipient=user)
+            notification = mommy.make(
+                infra.models.Notification,
+                read_time=now() if index % 4 == 0 else None,
+                recipient=user)
+            assign_perm('view_notification', user, notification)
         url = reverse('notification-unread')
 
         self.client.force_authenticate(user)

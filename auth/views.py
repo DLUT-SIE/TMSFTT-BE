@@ -49,7 +49,7 @@ class UserPermissionViewSet(mixins.CreateModelMixin,
 class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
     '''Create READ-ONLY APIs for Permission.'''
     # Exclude Django-admin-related permissions.
-    queryset = Permission.objects.filter(content_type_id__gt=6).all()
+    queryset = Permission.objects.filter(content_type_id__gt=7).all()
     serializer_class = auth.serializers.PermissionSerializer
     permission_classes = (auth.permissions.SuperAdminOnlyPermission,)
     pagination_class = None

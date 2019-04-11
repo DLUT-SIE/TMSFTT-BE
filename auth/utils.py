@@ -1,6 +1,7 @@
 '''Utility functions provided by auth module.'''
 import hashlib
 
+import guardian.shortcuts
 from django.conf import settings
 
 from auth.serializers import UserSerializer
@@ -29,3 +30,13 @@ def jwt_response_payload_handler(token, user=None, request=None):
         'user': UserSerializer(user).data,
         'token': token
     }
+
+
+def assign_perm(perm_name, user_or_group, obj=None):
+    '''Re-export assign_perm from django-guardian.'''
+    return guardian.shortcuts.assign_perm(perm_name, user_or_group, obj)
+
+
+def remove_perm(perm_name, user_or_group, obj=None):
+    '''Re-export remove_perm from django-guardian.'''
+    return guardian.shortcuts.remove_perm(perm_name, user_or_group, obj)

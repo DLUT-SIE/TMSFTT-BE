@@ -19,6 +19,13 @@ class ReviewNote(models.Model):
     class Meta:
         verbose_name = _('培训记录审核提示')
         verbose_name_plural = _('培训记录审核提示')
+        default_permissions = ()
+        permissions = (
+            ('add_reviewnote', '允许添加培训记录审核提示'),
+            ('view_reviewnote', '允许查看培训记录审核提示'),
+            ('change_reviewnote', '允许修改培训记录审核提示'),
+            ('delete_reviewnote', '允许删除培训记录审核提示'),
+        )
 
     create_time = models.DateTimeField(verbose_name=_('创建时间'),
                                        auto_now_add=True)

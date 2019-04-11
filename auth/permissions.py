@@ -28,3 +28,23 @@ class TeacherOnlyPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         '''Check teacher role.'''
         return request.user.is_authenticated and request.user.is_teacher
+
+
+class DjangoModelPermissions(permissions.DjangoModelPermissions):
+    '''Require model permissions for resources.'''
+    perms_map = permissions.DjangoModelPermissions.perms_map
+    perms_map.update({
+        'GET': ['%(app_label)s.view_%(model_name)s'],
+        'OPTIONS': ['%(app_label)s.view_%(model_name)s'],
+        'HEAD': ['%(app_label)s.view_%(model_name)s'],
+    })
+
+
+class DjangoObjectPermissions(permissions.DjangoObjectPermissions):
+    '''Require object permissions for resources.'''
+    perms_map = permissions.DjangoObjectPermissions.perms_map
+    perms_map.update({
+        'GET': ['%(app_label)s.view_%(model_name)s'],
+        'OPTIONS': ['%(app_label)s.view_%(model_name)s'],
+        'HEAD': ['%(app_label)s.view_%(model_name)s'],
+    })

@@ -1,10 +1,11 @@
 '''Define how to register our models in admin console.'''
 from django.contrib import admin
+from guardian.admin import GuardedModelAdmin
 
 from training_review.models import ReviewNote
 
 
-class ReviewNoteAdmin(admin.ModelAdmin):
+class ReviewNoteAdmin(GuardedModelAdmin):
     '''Define how to register model ReviewNote in console.'''
 
 

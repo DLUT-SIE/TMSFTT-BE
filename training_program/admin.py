@@ -1,18 +1,19 @@
 '''Define how to register our models in admin console.'''
 from django.contrib import admin
+from guardian.admin import GuardedModelAdmin
 
 from training_program.models import ProgramCategory, ProgramForm, Program
 
 
-class ProgramCategoryAdmin(admin.ModelAdmin):
+class ProgramCategoryAdmin(GuardedModelAdmin):
     '''Define how to register model ProgramCategory in console.'''
 
 
-class ProgramFormAdmin(admin.ModelAdmin):
+class ProgramFormAdmin(GuardedModelAdmin):
     '''Define how to register model ProgramForm in console.'''
 
 
-class ProgramAdmin(admin.ModelAdmin):
+class ProgramAdmin(GuardedModelAdmin):
     '''Define how to register model Program in console.'''
 
 

@@ -1,23 +1,24 @@
 '''Define how to register our models in admin console.'''
 from django.contrib import admin
+from guardian.admin import GuardedModelAdmin
 
 from training_record.models import (
     Record, RecordContent, RecordAttachment, StatusChangeLog)
 
 
-class RecordAdmin(admin.ModelAdmin):
+class RecordAdmin(GuardedModelAdmin):
     '''Define how to register model Record in console.'''
 
 
-class RecordContentAdmin(admin.ModelAdmin):
+class RecordContentAdmin(GuardedModelAdmin):
     '''Define how to register model RecordContent in console.'''
 
 
-class RecordAttachmentAdmin(admin.ModelAdmin):
+class RecordAttachmentAdmin(GuardedModelAdmin):
     '''Define how to register model RecordAttachment in console.'''
 
 
-class StatusChangeLogAdmin(admin.ModelAdmin):
+class StatusChangeLogAdmin(GuardedModelAdmin):
     '''Define how to register model StatusChangeLog in console.'''
 
 
