@@ -33,7 +33,8 @@ INSTALLED_APPS = [
     'rest_framework_bulk',
     'django_filters',
     'django_cas',
-    'corsheaders',
+    'corsheaders',  # TODO(youchen): Remove this in production server
+    "guardian",
 
     'auth.apps.AuthConfig',
     'infra.apps.InfraConfig',
@@ -58,6 +59,7 @@ MIDDLEWARE = [
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'django_cas.backends.CASBackend',
+    'guardian.backends.ObjectPermissionBackend',
 ]
 
 AUTH_USER_MODEL = 'tmsftt_auth.User'

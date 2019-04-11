@@ -1,18 +1,19 @@
 '''Define how to register our models in admin console.'''
 from django.contrib import admin
+from guardian.admin import GuardedModelAdmin
 
 from training_event.models import (CampusEvent, OffCampusEvent, Enrollment)
 
 
-class CampusEventAdmin(admin.ModelAdmin):
+class CampusEventAdmin(GuardedModelAdmin):
     '''Define how to register model CampusEvent in console.'''
 
 
-class OffCampusEventAdmin(admin.ModelAdmin):
+class OffCampusEventAdmin(GuardedModelAdmin):
     '''Define how to register model OffCampusEvent in console.'''
 
 
-class EnrollmentAdmin(admin.ModelAdmin):
+class EnrollmentAdmin(GuardedModelAdmin):
     '''Define how to register model Enrollment in console.'''
 
 

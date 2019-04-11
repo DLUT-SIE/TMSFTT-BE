@@ -16,8 +16,8 @@ class TestDepartmentViewSet(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = mommy.make(User)
-        cls.user.roles.add(auth.models.Role.objects.get(
-            type=auth.models.Role.ROLE_SUPERADMIN))
+        cls.user.roles.add(auth.models.Role.objects.get_or_create(
+            type=auth.models.Role.ROLE_SUPERADMIN)[0])
 
     def test_create_department(self):
         '''Department should be created by POST request.'''
@@ -86,8 +86,8 @@ class TestUserViewSet(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = mommy.make(User)
-        cls.user.roles.add(auth.models.Role.objects.get(
-            type=auth.models.Role.ROLE_SUPERADMIN))
+        cls.user.roles.add(auth.models.Role.objects.get_or_create(
+            type=auth.models.Role.ROLE_SUPERADMIN)[0])
 
     def test_list_user(self):
         '''Should return all users if user is admin.'''

@@ -23,6 +23,13 @@ class Record(models.Model):
     class Meta:
         verbose_name = _('培训记录')
         verbose_name_plural = _('培训记录')
+        default_permissions = ()
+        permissions = (
+            ('add_record', '允许添加培训记录'),
+            ('view_record', '允许查看培训记录'),
+            ('change_record', '允许修改培训记录'),
+            ('delete_record', '允许删除培训记录'),
+        )
 
     create_time = models.DateTimeField(verbose_name=_('创建时间'),
                                        auto_now_add=True)
@@ -71,6 +78,13 @@ class RecordContent(models.Model):
     class Meta:
         verbose_name = _('培训记录内容')
         verbose_name_plural = _('培训记录内容')
+        default_permissions = ()
+        permissions = (
+            ('add_recordcontent', '允许添加培训记录内容'),
+            ('view_recordcontent', '允许查看培训记录内容'),
+            ('change_recordcontent', '允许修改培训记录内容'),
+            ('delete_recordcontent', '允许删除培训记录内容'),
+        )
 
     create_time = models.DateTimeField(verbose_name=_('创建时间'),
                                        auto_now_add=True)
@@ -105,6 +119,13 @@ class RecordAttachment(models.Model):
     class Meta:
         verbose_name = _('培训记录附件')
         verbose_name_plural = _('培训记录附件')
+        default_permissions = ()
+        permissions = (
+            ('add_recordattachment', '允许添加培训记录附件'),
+            ('view_recordattachment', '允许查看培训记录附件'),
+            ('change_recordattachment', '允许修改培训记录附件'),
+            ('delete_recordattachment', '允许删除培训记录附件'),
+        )
 
     create_time = models.DateTimeField(verbose_name=_('创建时间'),
                                        auto_now_add=True)
@@ -143,6 +164,13 @@ class StatusChangeLog(models.Model):
     class Meta:
         verbose_name = _('培训记录状态更改日志')
         verbose_name_plural = _('培训记录状态更改日志')
+        default_permissions = ()
+        permissions = (
+            ('add_statuschangelog', '允许添加培训记录状态更改日志'),
+            ('view_statuschangelog', '允许查看培训记录状态更改日志'),
+            ('change_statuschangelog', '允许修改培训记录状态更改日志'),
+            ('delete_statuschangelog', '允许删除培训记录状态更改日志'),
+        )
 
     record = models.ForeignKey(Record, verbose_name=_('培训记录'),
                                on_delete=models.CASCADE)

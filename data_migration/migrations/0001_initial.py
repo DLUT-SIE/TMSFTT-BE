@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 
-from auth.models import Department
+from auth.models import Department, Role
 from infra.models import Notification
 from training_program.models import ProgramCategory, ProgramForm, Program
 from training_event.models import CampusEvent, OffCampusEvent, Enrollment
@@ -98,19 +98,32 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     departments = [Department.objects.create(
         name=faker.company_prefix()) for id in range(num_departments)]
 
+    print('Populate Role')
+    roles = [Role.objects.create(
+        type=role,
+    ) for role, name in Role.ROLE_CHOICES]
+
     print('Populate User')
     num_users = 20
+    admin = User.objects.create_superuser(
+        id=1,
+        username='root',
+        password='root',
+        email='root@root.com',
+        department=departments[0],
+    )
+    admin.roles.set(roles)
     usernames = set([faker.profile()['username'] for _ in range(num_users)])
     while len(usernames) < num_users:
         usernames.add(faker.profile()['username'])
     usernames = list(usernames)
     users = [User.objects.create_user(
         id=idx,
-        username=usernames[idx-1],
+        username=usernames[idx-2],
         department=departments[idx] if idx < num_departments else choice(departments),
         age=randint(20, 60),
         first_name=faker.first_name(),
-        last_name=faker.last_name()) for idx in range(1, 1 + num_users)]
+        last_name=faker.last_name()) for idx in range(2, 2 + num_users)]
 
     print('Populate infra')
     print('Populate Notification')
@@ -218,11 +231,11 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('tmsftt_auth', '0001_initial'),
-        ('infra', '0002_auto_20190403_1353'),
+        ('infra', '0002_auto_20190411_1702'),
         ('training_program', '0001_initial'),
         ('training_event', '0001_initial'),
         ('training_record', '0001_initial'),
-        ('training_review', '0002_remove_reviewnote_field_name'),
+        ('training_review', '0001_initial'),
     ]
 
     operations = [

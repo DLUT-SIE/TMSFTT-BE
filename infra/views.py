@@ -1,7 +1,9 @@
 '''Provide API views for infra module.'''
 from rest_framework import mixins, viewsets, decorators, status, permissions
 from rest_framework.response import Response
+from rest_framework_guardian import filters
 
+import auth.permissions
 import infra.models
 import infra.serializers
 from infra.services import NotificationService
@@ -13,13 +15,11 @@ class NotificationViewSet(mixins.ListModelMixin,
     '''Create API views for Notification.'''
     queryset = infra.models.Notification.objects.all().order_by('-time')
     serializer_class = infra.serializers.NotificationSerializer
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def get_queryset(self):
-        '''Filter against current user.'''
-        queryset = super().get_queryset()
-        user = self.request.user
-        return queryset.filter(recipient=user)
+    filter_backends = (filters.DjangoObjectPermissionsFilter,)
+    permission_classes = (
+        auth.permissions.DjangoModelPermissions,
+        auth.permissions.DjangoObjectPermissions,
+    )
 
     def _get_read_status_filtered_notifications(self, request, is_read):
         '''Return filtered notifications based on read status.'''

@@ -31,6 +31,13 @@ class CampusEvent(AbstractEvent):
     class Meta(AbstractEvent.Meta):
         verbose_name = _('校内培训活动')
         verbose_name_plural = _('校内培训活动')
+        default_permissions = ()
+        permissions = (
+            ('add_campusevent', '允许添加校内培训活动'),
+            ('view_campusevent', '允许查看校内培训活动'),
+            ('change_campusevent', '允许修改校内培训活动'),
+            ('delete_campusevent', '允许删除校内培训活动'),
+        )
 
     program = models.ForeignKey(Program, verbose_name=_('培训项目'),
                                 on_delete=models.PROTECT)
@@ -45,6 +52,13 @@ class OffCampusEvent(AbstractEvent):
     class Meta(AbstractEvent.Meta):
         verbose_name = _('校外培训活动')
         verbose_name_plural = _('校外培训活动')
+        default_permissions = ()
+        permissions = (
+            ('add_offcampusevent', '允许添加校外培训活动'),
+            ('view_offcampusevent', '允许查看校外培训活动'),
+            ('change_offcampusevent', '允许修改校外培训活动'),
+            ('delete_offcampusevent', '允许删除校外培训活动'),
+        )
 
 
 class Enrollment(models.Model):
@@ -66,6 +80,13 @@ class Enrollment(models.Model):
         verbose_name = _('活动报名记录')
         verbose_name_plural = _('活动报名记录')
         unique_together = (('campus_event', 'user'),)
+        default_permissions = ()
+        permissions = (
+            ('add_enrollment', '允许添加活动报名记录'),
+            ('view_enrollment', '允许查看活动报名记录'),
+            ('change_enrollment', '允许修改活动报名记录'),
+            ('delete_enrollment', '允许删除活动报名记录'),
+        )
 
     create_time = models.DateTimeField(verbose_name=_('创建时间'),
                                        auto_now_add=True)

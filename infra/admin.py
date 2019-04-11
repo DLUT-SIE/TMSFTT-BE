@@ -1,14 +1,15 @@
 '''Define how to register our models in admin console.'''
 from django.contrib import admin
+from guardian.admin import GuardedModelAdmin
 
 from infra.models import OperationLog, Notification
 
 
-class OperationLogAdmin(admin.ModelAdmin):
+class OperationLogAdmin(GuardedModelAdmin):
     '''Define how to register model OperationLog in console.'''
 
 
-class NotificationAdmin(admin.ModelAdmin):
+class NotificationAdmin(GuardedModelAdmin):
     '''Define how to register model Notification in console.'''
 
 
