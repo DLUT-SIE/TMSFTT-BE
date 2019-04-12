@@ -12,10 +12,19 @@ User = get_user_model()
 class DepartmentSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize Department instance.'''
     users = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
+    admins = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = auth.models.Department
         fields = '__all__'
+
+    def get_admins(self, obj):
+        '''Get department admin ids.'''
+        users = (User.objects
+                 .filter(department_id=obj.id)
+                 .filter(roles__type__in=[auth.models.Role.ROLE_DEPT_ADMIN])
+                 .values_list('id', flat=True))
+        return users
 
 
 class PermissionSerializer(serializers.ModelSerializer):
