@@ -10,7 +10,7 @@ from model_mommy import mommy
 
 from infra.exceptions import BadRequest
 from training_record.models import RecordContent, RecordAttachment, CampusEventFeedback, Record
-from training_record.services import RecordService
+from training_record.services import RecordService, CampusEventFeedbackService
 from training_event.models import CampusEvent
 
 
@@ -137,12 +137,15 @@ class TestRecordService(TestCase):
 
         self.assertEqual(count, 1)
 
+
+class TestCampusEventFeedbackService(TestCase):
+    '''Test services provided by CampusEventFeedbackService.'''
     def test_create_feedback(self):
         '''Should create feedback and update the status.'''
-        campus_event = mommy.make(training_event.models.CampusEvent)
-        record = mommy.make(training_record.models.Record,
-                            campus_event=campus_event)
-        RecordService.create_feedback(record_id,'123')
+        campus_event = mommy.make(CampusEvent)
+        record = mommy.make(Record, campus_event=campus_event)
+        CampusEventFeedbackService.create_feedback(record, '123')
+        record = Record.objects.get(pk=record.id)
 
         self.assertEqual(CampusEventFeedback.objects.all().count(), 1)
         self.assertEqual(record.status, Record.STATUS_WITH_FEEDBACK)

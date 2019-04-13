@@ -47,7 +47,7 @@ class RecordViewSet(viewsets.ModelViewSet):
 
 # pylint: disable=no-self-use
 class RecordActionViewSet(viewsets.ViewSet):
-    '''Define actions for admins to batch submit Records of campus event.'''
+    '''Define actions for admins to manipulate Record objects.'''
     @decorators.action(detail=False, methods=['POST'],
                        url_path='batch-submit')
     def batch_submit(self, request):
@@ -55,13 +55,6 @@ class RecordActionViewSet(viewsets.ViewSet):
         excel = request.FILES.get('file').read()
         count = RecordService.create_campus_records_from_excel(excel)
         return Response({'count': count}, status=status.HTTP_201_CREATED)
-    
-    @decorators.action(detail=False, methods=['POST'], url_path='status_update')
-    def status_update(self, request):
-        recordID = request.POST.get('recordID')
-        feedback = request.POST.get('feedback')
-        RecordService.create_feedback(recordID, feedback)
-        return Response(status=status.HTTP_201_CREATED)
 
 
 class RecordContentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
