@@ -60,7 +60,7 @@ class RecordActionViewSet(viewsets.ViewSet):
     def status_update(self, request):
         recordID = request.POST.get('recordID')
         feedback = request.POST.get('feedback')
-        RecordService.status_update(recordID, feedback)
+        RecordService.create_feedback(recordID, feedback)
         return Response(status=status.HTTP_201_CREATED)
 
 
