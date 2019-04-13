@@ -157,6 +157,15 @@ class TestRecordActionViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('count', response.data)
 
+    @patch('training_record.views.RecordService')
+    def test_status_update(self, mocked_service):
+        '''Should create feedback and update status.'''
+        url = reverse('record-actions-status-update')
+
+        response = self.client.post(url, {'recordID': 1, 'feedback': '123'})
+        
+        mocked_service.create_feedback.assert_called()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 class TestRecordContentViewSet(APITestCase):
     '''Unit tests for RecordContent view.'''

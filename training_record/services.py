@@ -128,7 +128,7 @@ class RecordService:
         return len(records)
 
     @staticmethod
-    def status_update(record_id,feedback):
+    def create_feedback(record_id,feedback):
         record = Record.objects.get(pk=record_id)
         CampusEventFeedback.objects.create(record=record, feedback=feedback)
         record.status = Record.STATUS_WITH_FEEDBACK

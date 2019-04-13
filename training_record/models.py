@@ -201,10 +201,13 @@ class CampusEventFeedback(models.Model):
         verbose_name = '培训活动反馈'
         verbose_name_plural = '培训活动反馈'
 
-    create_time = models.DateTimeField(verbose_name= '创建时间',
+    create_time = models.DateTimeField(verbose_name='创建时间',
                                        auto_now_add=True)
-    record = models.ForeignKey(Record, verbose_name= '培训记录',
+    record = models.ForeignKey(Record, verbose_name='培训记录',
                                related_name='feedback',
                                db_index=True,
                                on_delete=models.CASCADE)
-    feedback = models.TextField(verbose_name= '反馈内容')
+    feedback = models.TextField(verbose_name='反馈内容')
+
+    def __str__(self):
+        return '反馈内容({})'.format(self.record_id)

@@ -6,7 +6,7 @@ from django.utils.timezone import now
 from django.utils.text import format_lazy as _f
 
 from training_record.models import (
-    Record, RecordContent, RecordAttachment, StatusChangeLog)
+    Record, RecordContent, RecordAttachment, StatusChangeLog, CampusEventFeedback)
 
 
 class TestRecord(TestCase):
@@ -103,3 +103,14 @@ class TestStatusChangeLog(TestCase):
                                              record_id=record_id)
 
                 self.assertEqual(str(change_log), str(expected_str))
+
+
+class TestCampusEventFeedback(TestCase):
+    '''Unit tests for model CampusEventFeedback.'''
+    def test_str(self):
+        '''Should render string correctly.'''
+        record_id = 123
+        expected_str = '反馈内容({})'.format(self.record_id)
+        campus_event_feedback = CampusEventFeedback(record_id=record_id,
+                                                    feedback='')
+        self.assertEqual(str(campus_event_feedback), str(expected_str))

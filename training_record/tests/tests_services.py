@@ -9,7 +9,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from model_mommy import mommy
 
 from infra.exceptions import BadRequest
-from training_record.models import RecordContent, RecordAttachment
+from training_record.models import RecordContent, RecordAttachment, CampusEventFeedback, Record
 from training_record.services import RecordService
 from training_event.models import CampusEvent
 
@@ -136,3 +136,16 @@ class TestRecordService(TestCase):
         count = RecordService.create_campus_records_from_excel(excel)
 
         self.assertEqual(count, 1)
+
+    def test_create_feedback(self):
+        '''Should create feedback and update the status.'''
+        campus_event = mommy.make(training_event.models.CampusEvent)
+        record = mommy.make(training_record.models.Record,
+                            campus_event=campus_event)
+        RecordService.create_feedback(record_id,'123')
+
+        self.assertEqual(CampusEventFeedback.objects.all().count(), 1)
+        self.assertEqual(record.status, Record.STATUS_WITH_FEEDBACK)
+
+
+
