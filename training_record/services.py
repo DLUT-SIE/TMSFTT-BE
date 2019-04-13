@@ -127,9 +127,13 @@ class RecordService:
 
         return len(records)
 
+
+class CampusEventFeedbackService:
+    '''Provide services for Record.'''
     @staticmethod
-    def create_feedback(record_id,feedback):
-        record = Record.objects.get(pk=record_id)
-        CampusEventFeedback.objects.create(record=record, feedback=feedback)
-        record.status = Record.STATUS_WITH_FEEDBACK
-        record.save()
+    def create_feedback(record, feedback):
+        related_record = Record.objects.get(pk=record.id)
+        feedback = CampusEventFeedback.objects.create(record=record, feedback=feedback)
+        related_record.status = Record.STATUS_WITH_FEEDBACK
+        related_record.save()
+        return feedback

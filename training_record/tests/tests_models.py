@@ -110,7 +110,7 @@ class TestCampusEventFeedback(TestCase):
     def test_str(self):
         '''Should render string correctly.'''
         record_id = 123
-        expected_str = '反馈内容({})'.format(self.record_id)
+        expected_str = '反馈内容({})'.format(record_id)
         campus_event_feedback = CampusEventFeedback(record_id=record_id,
                                                     feedback='')
         self.assertEqual(str(campus_event_feedback), str(expected_str))

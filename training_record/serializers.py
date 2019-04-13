@@ -9,7 +9,7 @@ from infra.utils import format_file_size
 from training_record.models import (
     Record, RecordAttachment, RecordContent, StatusChangeLog,  CampusEventFeedback
 )
-from training_record.services import RecordService
+from training_record.services import RecordService, CampusEventFeedbackService
 from training_event.serializers import (
     CampusEventSerializer, OffCampusEventSerializer
 )
@@ -38,6 +38,10 @@ class CampusEventFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model =  CampusEventFeedback
         fields = '__all__'
+
+    def create(self, validated_data):
+        return CampusEventFeedbackService.create_feedback(
+            **validated_data)
 
 
 class RecordSerializer(serializers.ModelSerializer):

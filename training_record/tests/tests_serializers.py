@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 from django.test import TestCase
 from rest_framework import serializers
 
-from training_record.serializers import RecordSerializer
+from training_record.serializers import RecordSerializer, CampusEventFeedbackSerializer
 
 
 # pylint: disable=no-self-use
@@ -33,3 +33,16 @@ class TestRecordSerializer(TestCase):
                 serializers.ValidationError,
                 '上传附件过大，请修改后再上传。(附件大小: 100 MB)'):
             serializer.validate_attachments_data(data)
+
+
+class TestCampusEventFeedbackSerializer(TestCase):
+    '''Unit tests for serializer of CampusEventFeedback.'''
+    @patch('training_record.serializers.CampusEventFeedbackService')
+    def test_create(self, mocked_service):
+        '''Should create feedback'''
+        serializer = CampusEventFeedbackSerializer()
+
+        mocked_service.create_feedback.return_value = '1'
+
+        self.assertEqual(serializer.create({}), '1')
+
