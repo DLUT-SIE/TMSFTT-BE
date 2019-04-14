@@ -9,7 +9,8 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from model_mommy import mommy
 
 from infra.exceptions import BadRequest
-from training_record.models import RecordContent, RecordAttachment, CampusEventFeedback, Record
+from training_record.models import (
+    RecordContent, RecordAttachment, CampusEventFeedback, Record)
 from training_record.services import RecordService, CampusEventFeedbackService
 from training_event.models import CampusEvent
 
@@ -149,6 +150,3 @@ class TestCampusEventFeedbackService(TestCase):
 
         self.assertEqual(CampusEventFeedback.objects.all().count(), 1)
         self.assertEqual(record.status, Record.STATUS_WITH_FEEDBACK)
-
-
-

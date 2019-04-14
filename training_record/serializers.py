@@ -7,7 +7,11 @@ from rest_framework_bulk import (
 
 from infra.utils import format_file_size
 from training_record.models import (
-    Record, RecordAttachment, RecordContent, StatusChangeLog,  CampusEventFeedback
+    Record,
+    RecordAttachment,
+    RecordContent,
+    StatusChangeLog,
+    CampusEventFeedback,
 )
 from training_record.services import RecordService, CampusEventFeedbackService
 from training_event.serializers import (
@@ -36,7 +40,7 @@ class RecordAttachmentSerializer(BulkSerializerMixin,
 class CampusEventFeedbackSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize CampusEventFeedback instance.'''
     class Meta:
-        model =  CampusEventFeedback
+        model = CampusEventFeedback
         fields = '__all__'
 
     def create(self, validated_data):

@@ -4,7 +4,8 @@ from unittest.mock import Mock, patch
 from django.test import TestCase
 from rest_framework import serializers
 
-from training_record.serializers import RecordSerializer, CampusEventFeedbackSerializer
+from training_record.serializers import (
+    RecordSerializer, CampusEventFeedbackSerializer)
 
 
 # pylint: disable=no-self-use
@@ -45,4 +46,3 @@ class TestCampusEventFeedbackSerializer(TestCase):
         mocked_service.create_feedback.return_value = '1'
 
         self.assertEqual(serializer.create({}), '1')
-
