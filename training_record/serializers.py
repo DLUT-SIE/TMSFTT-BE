@@ -70,7 +70,6 @@ class RecordSerializer(serializers.ModelSerializer):
     off_campus_event = OffCampusEventSerializer(read_only=True)
     attachments = RecordAttachmentSerializer(many=True, read_only=True)
     contents = RecordContentSerializer(many=True, read_only=True)
-    feedback = CampusEventFeedbackSerializer(many=True, read_only=True)
 
     class Meta:
         model = Record

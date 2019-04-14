@@ -205,7 +205,6 @@ class CampusEventFeedback(models.Model):
                                        auto_now_add=True)
     record = models.ForeignKey(Record, verbose_name='培训记录',
                                related_name='feedback',
-                               db_index=True,
                                on_delete=models.CASCADE)
     feedback = models.TextField(verbose_name='反馈内容')
 

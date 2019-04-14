@@ -48,7 +48,7 @@ class RecordViewSet(viewsets.ModelViewSet):
 
 # pylint: disable=no-self-use
 class RecordActionViewSet(viewsets.ViewSet):
-    '''Define actions for admins to manipulate Record objects.'''
+    '''Create extra actions for Record objects.'''
     @decorators.action(detail=False, methods=['POST'],
                        url_path='batch-submit')
     def batch_submit(self, request):
