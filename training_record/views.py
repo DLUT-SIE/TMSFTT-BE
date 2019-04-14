@@ -11,6 +11,7 @@ import training_record.models
 import training_record.serializers
 import training_record.filters
 from training_record.services import RecordService
+from training_record.serializers import CampusEventFeedbackSerializer
 
 
 class RecordViewSet(viewsets.ModelViewSet):
@@ -78,4 +79,4 @@ class StatusChangeLogViewSet(viewsets.ModelViewSet):
 class CampusEventFeedbackViewSet(viewsets.ModelViewSet):
     '''Create API views for CampusEventFeedback.'''
     queryset = training_record.models.CampusEventFeedback.objects.all()
-    serializer_class = training_record.serializers.CampusEventFeedbackSerializer
+    serializer_class = CampusEventFeedbackSerializer

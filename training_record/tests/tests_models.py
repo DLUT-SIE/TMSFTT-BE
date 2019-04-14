@@ -6,7 +6,9 @@ from django.utils.timezone import now
 from django.utils.text import format_lazy as _f
 
 from training_record.models import (
-    Record, RecordContent, RecordAttachment, StatusChangeLog, CampusEventFeedback)
+    Record, RecordContent, RecordAttachment,
+    StatusChangeLog, CampusEventFeedback,
+)
 
 
 class TestRecord(TestCase):

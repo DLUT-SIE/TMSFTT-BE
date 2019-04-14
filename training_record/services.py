@@ -7,7 +7,9 @@ from django.contrib.auth import get_user_model
 
 from infra.exceptions import BadRequest
 from training_event.models import OffCampusEvent, CampusEvent
-from training_record.models import Record, RecordContent, RecordAttachment, CampusEventFeedback
+from training_record.models import (
+    Record, RecordContent, RecordAttachment, CampusEventFeedback,
+)
 
 
 User = get_user_model()
@@ -132,8 +134,10 @@ class CampusEventFeedbackService:
     '''Provide services for Record.'''
     @staticmethod
     def create_feedback(record, feedback):
+        '''Create feedback for campus-event'''
         related_record = Record.objects.get(pk=record.id)
-        feedback = CampusEventFeedback.objects.create(record=record, feedback=feedback)
+        feedback = CampusEventFeedback.objects.create(record=record,
+                                                      feedback=feedback)
         related_record.status = Record.STATUS_WITH_FEEDBACK
         related_record.save()
         return feedback
