@@ -43,6 +43,6 @@ class TestCampusEventFeedbackSerializer(TestCase):
         '''Should create feedback'''
         serializer = CampusEventFeedbackSerializer()
 
-        mocked_service.create_feedback.return_value = '1'
+        serializer.create({})
 
-        self.assertEqual(serializer.create({}), '1')
+        mocked_service.create_feedback.assert_called()
