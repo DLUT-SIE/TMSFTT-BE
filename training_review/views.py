@@ -8,6 +8,7 @@ import training_review.filters
 
 class ReviewNoteViewSet(viewsets.ModelViewSet):
     '''Create API views for ReviewNote.'''
-    queryset = training_review.models.ReviewNote.objects.all()
+    queryset = training_review.models.ReviewNote.objects.all().order_by(
+        '-create_time')
     serializer_class = training_review.serializers.ReviewNoteSerializer
     filter_class = training_review.filters.ReviewNoteFilter
