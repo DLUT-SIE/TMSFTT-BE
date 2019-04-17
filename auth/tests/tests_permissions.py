@@ -2,7 +2,6 @@
 from unittest.mock import Mock
 from django.test import TestCase
 
-
 import auth.permissions as permissions
 
 

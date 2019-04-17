@@ -4,8 +4,6 @@ import hashlib
 import guardian.shortcuts
 from django.conf import settings
 
-from auth.serializers import UserSerializer
-
 
 def get_user_secret_key(user):
     '''Generate a secret key for a user.'''
@@ -21,6 +19,7 @@ def get_user_secret_key(user):
 
 def jwt_response_payload_handler(token, user=None, request=None):
     """Returns the response data for both the login and refresh views."""
+    from auth.serializers import UserSerializer
     return {
         'user': UserSerializer(user).data,
         'token': token

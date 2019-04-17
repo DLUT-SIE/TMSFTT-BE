@@ -15,7 +15,8 @@ def format_file_size(size_in_bytes):
     return '{:.2f} {}'.format(val, units[unit_idx])
 
 
-class BrowsableAPIRendererWithoutForms(BrowsableAPIRenderer):
+class BrowsableAPIRendererWithoutForms(
+        BrowsableAPIRenderer):  # pragma: no cover
     """Renders the browsable api, but excludes the forms."""
 
     # pylint: disable=arguments-differ
@@ -29,7 +30,7 @@ class BrowsableAPIRendererWithoutForms(BrowsableAPIRenderer):
         return False
 
     def get_rendered_html_form(self, data, view, method, request):
-        """Why render _any_ forms at all. This method should return 
+        """Why render _any_ forms at all. This method should return
         rendered HTML, so let's simply return an empty string.
         """
         return ''

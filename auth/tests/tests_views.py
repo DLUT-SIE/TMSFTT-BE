@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 import auth.models
+from auth.utils import assign_perm
 
 
 User = get_user_model()
@@ -16,8 +17,10 @@ class TestDepartmentViewSet(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = mommy.make(User)
-        cls.user.roles.add(auth.models.Role.objects.get_or_create(
-            type=auth.models.Role.ROLE_SUPERADMIN)[0])
+        assign_perm('tmsftt_auth.add_department', cls.user)
+        assign_perm('tmsftt_auth.delete_department', cls.user)
+        assign_perm('tmsftt_auth.change_department', cls.user)
+        assign_perm('tmsftt_auth.view_department', cls.user)
 
     def test_create_department(self):
         '''Department should be created by POST request.'''
@@ -47,6 +50,7 @@ class TestDepartmentViewSet(APITestCase):
         url = reverse('department-detail', args=(department.pk,))
 
         self.client.force_authenticate(self.user)
+        assign_perm('delete_department', self.user, department)
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -56,10 +60,10 @@ class TestDepartmentViewSet(APITestCase):
         '''Department should be accessed by GET request.'''
         department = mommy.make(auth.models.Department)
         url = reverse('department-detail', args=(department.pk,))
-        expected_keys = {'id', 'create_time', 'update_time', 'name',
-                         'permissions', 'users'}
+        expected_keys = {'id', 'name', 'users', 'admins', 'roles'}
 
         self.client.force_authenticate(self.user)
+        assign_perm('view_department', self.user, department)
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -67,13 +71,14 @@ class TestDepartmentViewSet(APITestCase):
 
     def test_update_department(self):
         '''Department should be updated by PATCH request.'''
-        name0 = 'department0'
-        name1 = 'department1'
+        name0 = 'department0123'
+        name1 = 'department1123'
         department = mommy.make(auth.models.Department, name=name0)
         url = reverse('department-detail', args=(department.pk,))
         data = {'name': name1}
 
         self.client.force_authenticate(self.user)
+        assign_perm('change_department', self.user, department)
         response = self.client.patch(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -85,19 +90,17 @@ class TestUserViewSet(APITestCase):
     '''Unit tests for User view.'''
     @classmethod
     def setUpTestData(cls):
-        cls.user = mommy.make(User)
-        cls.user.roles.add(auth.models.Role.objects.get_or_create(
-            type=auth.models.Role.ROLE_SUPERADMIN)[0])
+        cls.user = mommy.make(User, is_staff=True)
+        assign_perm('tmsftt_auth.add_user', cls.user)
+        assign_perm('tmsftt_auth.delete_user', cls.user)
+        assign_perm('tmsftt_auth.change_user', cls.user)
+        assign_perm('tmsftt_auth.view_user', cls.user)
 
     def test_list_user(self):
         '''Should return all users if user is admin.'''
-        count = 10
-        for _ in range(count):
-            mommy.make(User)
         url = reverse('user-list')
 
         self.client.force_authenticate(self.user)
-        response = self.client.get(url, {'limit': count + 1})
+        response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), count + 1)
