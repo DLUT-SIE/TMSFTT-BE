@@ -17,10 +17,10 @@ class Department(models.Model):
         verbose_name_plural = _('院系')
         default_permissions = ()
         permissions = (
-            ('add_department', '允许添加学部学院'),
-            ('view_department', '允许查看学部学院'),
-            ('change_department', '允许修改学部学院'),
-            ('delete_department', '允许删除学部学院'),
+            ('add_department', '允许添加院系'),
+            ('view_department', '允许查看院系'),
+            ('change_department', '允许修改院系'),
+            ('delete_department', '允许删除院系'),
         )
 
     name = models.CharField(verbose_name=_('院系'), max_length=50, unique=True)
@@ -92,7 +92,7 @@ class User(AbstractUser):
         )
 
     department = models.ForeignKey(
-        Department, verbose_name=_('所属学部学院'), on_delete=models.PROTECT,
+        Department, verbose_name=_('所属院系'), on_delete=models.PROTECT,
         blank=True, null=True,
         related_name='users')
     roles = models.ManyToManyField(Role, related_name='users', blank=True)
