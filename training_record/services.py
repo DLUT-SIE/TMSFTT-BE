@@ -101,7 +101,7 @@ class RecordService:
             sheet = xlrd.open_workbook(tup[1]).sheet_by_index(0)
         except Exception:
             raise BadRequest('无效的表格')
-     
+
         # process for each event
         for index in range(sheet.ncols):
 
