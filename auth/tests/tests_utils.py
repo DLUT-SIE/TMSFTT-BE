@@ -10,6 +10,7 @@ from auth.utils import (
     assign_perm, remove_perm,
 )
 
+
 # pylint: disable=no-self-use
 class TestUtils(TestCase):
     '''Unit tests for utility functions.'''
