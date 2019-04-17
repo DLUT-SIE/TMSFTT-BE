@@ -101,7 +101,7 @@ class RecordService:
             sheet = xlrd.open_workbook(tup[1]).sheet_by_index(0)
         except Exception:
             raise BadRequest('无效的表格')
-
+     
         # process for each event
         for index in range(sheet.ncols):
 
@@ -135,11 +135,11 @@ class CampusEventFeedbackService:
     @staticmethod
     def create_feedback(record, feedback):
         '''Create feedback for campus-event and update the status
-        of the related-record to be STATUS_WITH_FEEDBACK.'''
+        of the related-record to be STATUS_FEEDBACK_SUBMITTED.'''
         related_record = Record.objects.get(pk=record.id)
         with transaction.atomic():
             feedback = CampusEventFeedback.objects.create(record=record,
                                                           feedback=feedback)
-            related_record.status = Record.STATUS_WITH_FEEDBACK
+            related_record.status = Record.STATUS_FEEDBACK_SUBMITTED
             related_record.save()
         return feedback
