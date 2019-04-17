@@ -149,4 +149,4 @@ class TestCampusEventFeedbackService(TestCase):
         record = Record.objects.get(pk=record.id)
 
         self.assertEqual(CampusEventFeedback.objects.all().count(), 1)
-        self.assertEqual(record.status, Record.STATUS_WITH_FEEDBACK)
+        self.assertEqual(record.status, Record.STATUS_FEEDBACK_SUBMITTED)
