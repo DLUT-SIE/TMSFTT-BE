@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 
-from auth.models import Department, Role
+from auth.models import Department
 from infra.models import Notification
 from training_program.models import ProgramCategory, ProgramForm, Program
 from training_event.models import CampusEvent, OffCampusEvent, Enrollment
@@ -98,11 +98,6 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     departments = [Department.objects.create(
         name=faker.company_prefix()) for id in range(num_departments)]
 
-    print('Populate Role')
-    roles = [Role.objects.create(
-        type=role,
-    ) for role, name in Role.ROLE_CHOICES]
-
     print('Populate User')
     num_users = 20
     admin = User.objects.create_superuser(
@@ -112,7 +107,6 @@ def populate_initial_data(apps, _):  # pylint: disable=all
         email='root@root.com',
         department=departments[0],
     )
-    admin.roles.set(roles)
     usernames = set([faker.profile()['username'] for _ in range(num_users)])
     while len(usernames) < num_users:
         usernames.add(faker.profile()['username'])
@@ -231,7 +225,7 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('tmsftt_auth', '0001_initial'),
-        ('infra', '0002_auto_20190411_1702'),
+        ('infra', '0002_auto_20190417_0944'),
         ('training_program', '0001_initial'),
         ('training_event', '0001_initial'),
         ('training_record', '0001_initial'),
