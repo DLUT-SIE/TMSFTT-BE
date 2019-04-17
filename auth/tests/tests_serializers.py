@@ -1,4 +1,5 @@
 '''Unit tests for auth serializers.'''
+from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from model_mommy import mommy
@@ -11,17 +12,32 @@ User = get_user_model()
 
 
 # pylint: disable=no-self-use
-class TestUserSerializer(TestCase):
-    '''Unit tests for serializer of User.'''
+class TestDepartmentSerializer(TestCase):
+    '''Unit tests for serializer of Department.'''
 
-    def test_fields_equal(self):
-        '''Serializer should return fields of User correctly.'''
-        user = mommy.make(User, department=mommy.make(models.Department))
-        expected_keys = {
-            'id', 'username', 'last_login', 'first_name', 'last_name',
-            'email', 'is_active', 'date_joined', 'user_permissions',
-            'is_teacher', 'is_department_admin', 'is_superadmin',
-            'department', 'department_str'}
+    @patch('auth.models.Role.objects.filter')
+    def test_get_admins_no_role(self, mocked_filter):
+        '''Should return empty list if no such role.'''
+        department = mommy.make(models.Department)
+        serializer = serializers.DepartmentSerializer()
+        mocked_filter.return_value = []
 
-        keys = set(serializers.UserSerializer(user).data.keys())
-        self.assertEqual(keys, expected_keys)
+        admins = serializer.get_admins(department)
+
+        self.assertEqual(admins, [])
+        mocked_filter.assert_called()
+
+    def test_get_admins(self):
+        '''Should return list of ids if role exists.'''
+        department = mommy.make(models.Department)
+        role = mommy.make(
+            models.Role,
+            department_id=department.id,
+            role_type=models.Role.ROLE_DEPT_ADMIN
+        )
+        cnt = 10
+        users = [mommy.make(User, roles=[role]) for _ in range(cnt)]
+        serializer = serializers.DepartmentSerializer()
+
+        admins = set(serializer.get_admins(department))
+        self.assertEqual(admins, set(user.id for user in users))

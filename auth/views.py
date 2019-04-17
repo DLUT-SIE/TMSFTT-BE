@@ -15,7 +15,10 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     '''Create API views for Department.'''
     queryset = auth.models.Department.objects.all()
     serializer_class = auth.serializers.DepartmentSerializer
-    permission_classes = (auth.permissions.SuperAdminOnlyPermission,)
+    permission_classes = (
+        auth.permissions.DjangoModelPermissions,
+        auth.permissions.DjangoObjectPermissions,
+    )
 
 
 class UserViewSet(mixins.RetrieveModelMixin,
@@ -27,7 +30,10 @@ class UserViewSet(mixins.RetrieveModelMixin,
                 .prefetch_related('roles', 'user_permissions')
                 .all())
     serializer_class = auth.serializers.UserSerializer
-    permission_classes = (auth.permissions.SuperAdminOnlyPermission,)
+    permission_classes = (
+        auth.permissions.DjangoModelPermissions,
+        auth.permissions.DjangoObjectPermissions,
+    )
     filter_fields = ('username',)
 
 
@@ -41,7 +47,10 @@ class UserPermissionViewSet(mixins.CreateModelMixin,
                 .select_related('permission', 'user')
                 .all())
     serializer_class = auth.serializers.UserPermissionSerializer
-    permission_classes = (auth.permissions.SuperAdminOnlyPermission,)
+    permission_classes = (
+        auth.permissions.DjangoModelPermissions,
+        auth.permissions.DjangoObjectPermissions,
+    )
     filter_fields = ('user',)
     pagination_class = None
 
@@ -51,5 +60,8 @@ class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
     # Exclude Django-admin-related permissions.
     queryset = Permission.objects.filter(content_type_id__gt=7).all()
     serializer_class = auth.serializers.PermissionSerializer
-    permission_classes = (auth.permissions.SuperAdminOnlyPermission,)
+    permission_classes = (
+        auth.permissions.DjangoModelPermissions,
+        auth.permissions.DjangoObjectPermissions,
+    )
     pagination_class = None

@@ -13,18 +13,21 @@ class DepartmentSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize Department instance.'''
     users = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
     admins = serializers.SerializerMethodField(read_only=True)
+    roles = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
 
     class Meta:
         model = auth.models.Department
-        fields = '__all__'
+        fields = ('id', 'name', 'users', 'admins', 'roles')
 
-    def get_admins(self, obj):
+    def get_admins(self, obj):  # pylint: disable=no-self-use
         '''Get department admin ids.'''
-        users = (User.objects
-                 .filter(department_id=obj.id)
-                 .filter(roles__type__in=[auth.models.Role.ROLE_DEPT_ADMIN])
-                 .values_list('id', flat=True))
-        return users
+        role = auth.models.Role.objects.filter(
+            department_id=obj.id,
+            role_type=auth.models.Role.ROLE_DEPT_ADMIN,
+        )
+        if not role:
+            return []
+        return role[0].users.all().values_list('id', flat=True)
 
 
 class PermissionSerializer(serializers.ModelSerializer):
@@ -54,4 +57,4 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'last_login', 'first_name', 'last_name',
                   'email', 'is_active', 'date_joined', 'user_permissions',
                   'department', 'department_str', 'user_permissions',
-                  'is_teacher', 'is_department_admin', 'is_superadmin')
+                  'is_teacher', 'is_department_admin', 'is_school_admin')

@@ -16,6 +16,8 @@ from training_record.models import (
     Record, RecordAttachment, RecordContent, StatusChangeLog)
 from training_review.models import ReviewNote
 
+from auth.services import DepartmentService
+
 
 User = get_user_model()
 faker = Faker('zh_CN')
@@ -95,8 +97,8 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     print('Populate auth')
     print('Populate Department')
     num_departments = 5
-    departments = [Department.objects.create(
-        name=faker.company_prefix()) for id in range(num_departments)]
+    departments = [DepartmentService.create_department(
+        {'name': faker.company_prefix()}) for _ in range(num_departments)]
 
     print('Populate User')
     num_users = 20
@@ -225,7 +227,7 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('tmsftt_auth', '0001_initial'),
-        ('infra', '0002_auto_20190417_0944'),
+        ('infra', '0002_auto_20190417_1401'),
         ('training_program', '0001_initial'),
         ('training_event', '0001_initial'),
         ('training_record', '0001_initial'),

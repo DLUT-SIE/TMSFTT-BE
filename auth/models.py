@@ -1,7 +1,6 @@
 '''Define ORM models for auth module.'''
 from django.contrib.auth.models import Permission, AbstractUser, Group
-from django.db import models, transaction
-from django.db.models.signals import post_save
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.utils.functional import cached_property
 
@@ -24,7 +23,7 @@ class Department(models.Model):
             ('delete_department', '允许删除学部学院'),
         )
 
-    name = models.CharField(verbose_name=_('院系'), max_length=80, unique=True)
+    name = models.CharField(verbose_name=_('院系'), max_length=50, unique=True)
     create_time = models.DateTimeField(verbose_name=_('创建时间'),
                                        auto_now_add=True)
     update_time = models.DateTimeField(verbose_name=_('最近修改时间'),
@@ -32,10 +31,6 @@ class Department(models.Model):
 
     def __str__(self):
         return str(self.name)
-
-    @transaction.atomic()
-    def save(self, *args, **kwargs):  # pylint: disable=arguments-differ
-        return super().save(*args, **kwargs)
 
 
 class Role(models.Model):
@@ -82,21 +77,6 @@ class Role(models.Model):
     def __str__(self):
         return '{}({})'.format(self.department, self.get_role_type_display())
 
-    # pylint: disable=unused-argument
-    @classmethod
-    def create_department_roles(cls, sender, instance, **kwargs):
-        '''Create roles of this department based on ROLE_TYPES.'''
-        roles = []
-        for role_type, role_name in cls.ROLE_CHOICES:
-            group = Group.objects.create(name='{}({})'.format(
-                instance.name, role_name))
-            roles.append(cls(role_type=role_type, group=group,
-                             department=instance))
-        cls.objects.bulk_create(roles)
-
-# Connect to post_save signal, create roles automatically.
-post_save.connect(Role.create_department_roles, sender=Department)
-
 
 class User(AbstractUser):
     '''User holds private information for user.'''
@@ -142,9 +122,9 @@ class User(AbstractUser):
         return {'role_type': Role.ROLE_DEPT_ADMIN} in self._roles
 
     @property
-    def is_superadmin(self):
+    def is_school_admin(self):
         '''Field to indicate whether the user is a superadmin.'''
-        return self.is_staff or self.is_superadmin
+        return self.is_staff or self.is_superuser
 
 
 class UserPermission(models.Model):
