@@ -76,7 +76,8 @@ class Role(models.Model):
     group = models.OneToOneField(
         Group, verbose_name=_('用户组'), on_delete=models.CASCADE)
     department = models.ForeignKey(
-        Department, verbose_name=_('院系'), on_delete=models.CASCADE)
+        Department, verbose_name=_('院系'), related_name='roles',
+        on_delete=models.CASCADE)
 
     def __str__(self):
         return '{}({})'.format(self.department, self.get_role_type_display())
