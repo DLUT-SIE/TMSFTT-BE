@@ -18,11 +18,12 @@ def format_file_size(size_in_bytes):
 class BrowsableAPIRendererWithoutForms(BrowsableAPIRenderer):
     """Renders the browsable api, but excludes the forms."""
 
+    # pylint: disable=arguments-differ
     def get_context(self, *args, **kwargs):
         ctx = super().get_context(*args, **kwargs)
         ctx['display_edit_forms'] = False
         return ctx
-    
+
     def show_form_for_method(self, view, method, request, obj):
         """We never want to do this! So just return False."""
         return False
