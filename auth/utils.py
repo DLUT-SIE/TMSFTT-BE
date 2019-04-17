@@ -8,12 +8,7 @@ from auth.serializers import UserSerializer
 
 
 def get_user_secret_key(user):
-    '''Generate a secret key for a user.
-
-    We format the unhashed_key by including the time the module was imported.
-    This way we can invalidate all tokens when the server is restart to ensure
-    security.
-    '''
+    '''Generate a secret key for a user.'''
     unhashed_key = '{}.{}'.format(
         settings.SECRET_KEY,  # Django secret key
         user.password,  # User password
