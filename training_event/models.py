@@ -105,7 +105,8 @@ class Enrollment(models.Model):
 
 
 class EventCoefficient(models.Model):
-    """EventCoefficient holds information about the coefficient of role in different event"""
+    """EventCoefficient holds information about the coefficient of role
+    in different event"""
     ROLE_PARTICIPATOR = 0
     ROLE_LECTURER = 1
     ROLE_JUDGE = 2
@@ -130,13 +131,20 @@ class EventCoefficient(models.Model):
         verbose_name = _('培训活动系数')
         verbose_name_plural = _('培训活动系数')
 
-    campus_event = models.ForeignKey(CampusEvent, verbose_name=_('校内培训活动'), blank=True, null=True,
+    campus_event = models.ForeignKey(CampusEvent, verbose_name=_('校内培训活动'),
+                                     blank=True, null=True,
                                      on_delete=models.PROTECT)
-    off_campus_event = models.ForeignKey(OffCampusEvent, verbose_name=_('校外培训活动'), blank=True, null=True,
+    off_campus_event = models.ForeignKey(OffCampusEvent,
+                                         verbose_name=_('校外培训活动'),
+                                         blank=True, null=True,
                                          on_delete=models.PROTECT)
-    role = models.PositiveSmallIntegerField(verbose_name=_('参与角色'), choices=ROLE_CHOICES, default=ROLE_PARTICIPATOR)
+    role = models.PositiveSmallIntegerField(verbose_name=_('参与角色'),
+                                            choices=ROLE_CHOICES,
+                                            default=ROLE_PARTICIPATOR)
     coefficient = models.FloatField(verbose_name=_('角色系数'), default=0.0)
-    hours_option = models.PositiveSmallIntegerField(verbose_name=_('学时取整方式'),
-                                                    choices=ROUND_CHOICES, default=ROUND_METHOD_NONE)
-    workload_option = models.PositiveSmallIntegerField(verbose_name=_('工作量取整方式'),
-                                                       choices=ROUND_CHOICES, default=ROUND_METHOD_NONE)
+    hours_option = models.PositiveSmallIntegerField(
+        verbose_name=_('学时取整方式'), choices=ROUND_CHOICES,
+        default=ROUND_METHOD_NONE)
+    workload_option = models.PositiveSmallIntegerField(
+        verbose_name=_('工作量取整方式'), choices=ROUND_CHOICES,
+        default=ROUND_METHOD_NONE)
