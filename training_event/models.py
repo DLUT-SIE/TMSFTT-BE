@@ -102,3 +102,41 @@ class Enrollment(models.Model):
 
     def __str__(self):
         return str(_f('{} 报名 {} 的记录', self.user_id, self.campus_event_id))
+
+
+class EventCoefficient(models.Model):
+    """EventCoefficient holds information about the coefficient of role in different event"""
+    ROLE_PARTICIPATOR = 0
+    ROLE_LECTURER = 1
+    ROLE_JUDGE = 2
+    ROLE_CHOICES = (
+        (ROLE_PARTICIPATOR, _('参与教师')),
+        (ROLE_LECTURER, _('主讲人')),
+        (ROLE_JUDGE, _('评委')),
+    )
+
+    ROUND_METHOD_NONE = 0
+    ROUND_METHOD_CEIL = 1
+    ROUND_METHOD_FLOOR = 2
+    ROUND_METHOD_DEFAULT = 3
+    ROUND_CHOICES = (
+        (ROUND_METHOD_NONE, _('正常计算')),
+        (ROUND_METHOD_CEIL, _('向上取整')),
+        (ROUND_METHOD_FLOOR, _('向下取整')),
+        (ROUND_METHOD_DEFAULT, _('四舍五入')),
+    )
+
+    class Meta:
+        verbose_name = _('培训活动系数')
+        verbose_name_plural = _('培训活动系数')
+
+    campus_event = models.ForeignKey(CampusEvent, verbose_name=_('校内培训活动'), blank=True, null=True,
+                                     on_delete=models.PROTECT)
+    off_campus_event = models.ForeignKey(OffCampusEvent, verbose_name=_('校外培训活动'), blank=True, null=True,
+                                         on_delete=models.PROTECT)
+    role = models.PositiveSmallIntegerField(verbose_name=_('参与角色'), choices=ROLE_CHOICES, default=ROLE_PARTICIPATOR)
+    coefficient = models.FloatField(verbose_name=_('角色系数'), default=0.0)
+    hours_option = models.PositiveSmallIntegerField(verbose_name=_('学时取整方式'),
+                                                    choices=ROUND_CHOICES, default=ROUND_METHOD_NONE)
+    workload_option = models.PositiveSmallIntegerField(verbose_name=_('工作量取整方式'),
+                                                       choices=ROUND_CHOICES, default=ROUND_METHOD_NONE)
