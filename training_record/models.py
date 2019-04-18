@@ -5,7 +5,7 @@ from django.db.models.signals import pre_save
 from django.utils.translation import gettext_lazy as _
 from django.utils.text import format_lazy as _f
 
-from training_event.models import CampusEvent, OffCampusEvent
+from training_event.models import CampusEvent, OffCampusEvent, EventCoefficient
 from training_record.utils import infer_attachment_type
 
 
@@ -47,6 +47,8 @@ class Record(models.Model):
     status = models.PositiveSmallIntegerField(verbose_name=_('当前状态'),
                                               choices=STATUS_CHOICES,
                                               default=STATUS_SUBMITTED)
+    role = models.PositiveSmallIntegerField(verbose_name=_('参与角色'), choices=EventCoefficient.ROLE_CHOICES,
+                                            default=EventCoefficient.ROLE_PARTICIPATOR)
 
     def __str__(self):
         return '{}({})'.format(
