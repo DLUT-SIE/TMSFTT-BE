@@ -105,7 +105,7 @@ class Enrollment(models.Model):
 class EventCoefficient(models.Model):
     """
     EventCoefficient holds information about the coefficient of role
-    """
+    in different event"""
     ROLE_PARTICIPATOR = 0
     ROLE_LECTURER = 1
     ROLE_JUDGE = 2
