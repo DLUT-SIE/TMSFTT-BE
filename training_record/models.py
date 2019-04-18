@@ -49,7 +49,6 @@ class Record(models.Model):
     status = models.PositiveSmallIntegerField(verbose_name='当前状态',
                                               choices=STATUS_CHOICES,
                                               default=STATUS_SUBMITTED)
-
     role = models.PositiveSmallIntegerField(
         verbose_name='参与角色', choices=EventCoefficient.ROLE_CHOICES,
         default=EventCoefficient.ROLE_PARTICIPATOR)
