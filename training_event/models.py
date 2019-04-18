@@ -105,16 +105,18 @@ class Enrollment(models.Model):
 
 
 class EventCoefficient(models.Model):
-    """EventCoefficient holds information about the coefficient of role
+    """
+    EventCoefficient holds information about the coefficient of role
     in different event"""
     ROLE_PARTICIPATOR = 0
     ROLE_LECTURER = 1
     ROLE_JUDGE = 2
     ROLE_CHOICES = (
-        (ROLE_PARTICIPATOR, _('参与教师')),
-        (ROLE_LECTURER, _('主讲人')),
-        (ROLE_JUDGE, _('评委')),
+        (ROLE_PARTICIPATOR, '参与教师'),
+        (ROLE_LECTURER, '主讲人'),
+        (ROLE_JUDGE, '评委'),
     )
+    ROLE_CHOICES_MAP = {v: k for k, v in ROLE_CHOICES}
 
     ROUND_METHOD_NONE = 0
     ROUND_METHOD_CEIL = 1
@@ -130,6 +132,13 @@ class EventCoefficient(models.Model):
     class Meta:
         verbose_name = _('培训活动系数')
         verbose_name_plural = _('培训活动系数')
+        default_permissions = ()
+        permissions = (
+            ('add_coefficient', '允许添加活动系数'),
+            ('view_coefficient', '允许查看活动系数'),
+            ('change_coefficient', '允许修改培活动系数'),
+            ('delete_coefficient', '允许删除培活动系数'),
+        )
 
     campus_event = models.ForeignKey(CampusEvent, verbose_name=_('校内培训活动'),
                                      blank=True, null=True,
