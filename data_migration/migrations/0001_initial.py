@@ -109,6 +109,8 @@ def populate_initial_data(apps, _):  # pylint: disable=all
         email='root@root.com',
         department=departments[0],
     )
+    admin.roles.set(departments[0].roles.all())
+    admin.groups.set([role.group for role in departments[0].roles.all()])
     usernames = set([faker.profile()['username'] for _ in range(num_users)])
     while len(usernames) < num_users:
         usernames.add(faker.profile()['username'])
