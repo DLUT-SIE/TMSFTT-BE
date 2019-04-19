@@ -23,6 +23,7 @@ script:
   - find . -maxdepth 1 -type d -not -path './.*' -not -path './mock_cas' -not -path './scripts' -not -path './htmlcov' -not -path '.' | xargs python -m pylint
   - python -m coverage run manage.py test --debug-mode
   - python -m coverage report --skip-covered
+  - python manage.py migrate
 
 notifications:
     email: false
