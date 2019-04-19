@@ -114,5 +114,5 @@ class TestCampusEventFeedback(TestCase):
         record_id = 123
         expected_str = '反馈内容({})'.format(record_id)
         campus_event_feedback = CampusEventFeedback(record_id=record_id,
-                                                    feedback='')
+                                                    content='')
         self.assertEqual(str(campus_event_feedback), str(expected_str))
