@@ -41,7 +41,7 @@ class CampusEventFeedbackSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize CampusEventFeedback instance.'''
     class Meta:
         model = CampusEventFeedback
-        fields = '__all__'
+        fields = ('id', 'create_time', 'record', 'content')
 
     def create(self, validated_data):
         return CampusEventFeedbackService.create_feedback(
