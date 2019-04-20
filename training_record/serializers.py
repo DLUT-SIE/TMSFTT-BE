@@ -10,9 +10,6 @@ from training_record.models import (
     Record, RecordAttachment, RecordContent, StatusChangeLog
 )
 from training_record.services import RecordService
-from training_event.serializers import (
-    CampusEventSerializer, OffCampusEventSerializer
-)
 
 
 class RecordContentSerializer(BulkSerializerMixin,
@@ -32,49 +29,38 @@ class RecordAttachmentSerializer(BulkSerializerMixin,
         fields = '__all__'
         list_serializer_class = BulkListSerializer
 
+    def validate_path(self, data):  # pylint: disable=no-self-use
+        '''Validate the file in attachments.'''
+        # TODO(youchen): Use global configs
+        if data.size > 10 * 1024 * 1024:  # 10 MB
+            raise serializers.ValidationError(
+                '上传附件过大，请修改后再上传。(附件大小: {})'.format(
+                    format_file_size(data.size)))
+        return data
+
 
 class RecordSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize Record instance.'''
-    # Write-Only fields
-    off_campus_event_data = serializers.JSONField(binary=True, write_only=True)
-    contents_data = serializers.ListField(
-        child=serializers.JSONField(binary=True),
-        write_only=True,
-        default=lambda: [],
-    )
-    attachments_data = serializers.ListField(
-        child=serializers.FileField(),
-        write_only=True,
-        default=lambda: [],
-    )
 
     # Read-Only fields
     status_str = serializers.CharField(source='get_status_display',
                                        read_only=True)
-    campus_event = CampusEventSerializer(read_only=True)
-    off_campus_event = OffCampusEventSerializer(read_only=True)
-    attachments = RecordAttachmentSerializer(many=True, read_only=True)
-    contents = RecordContentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Record
-        fields = '__all__'
+        fields = ('user', 'id', 'status_str', 'campus_event',
+                  'off_campus_event', 'contents', 'attachments',
+                  'status', 'update_time', 'create_time')
 
     def create(self, validated_data):
         return RecordService.create_off_campus_record_from_raw_data(
             **validated_data)
 
-    def validate_attachments_data(self, data):  # pylint: disable=no-self-use
+    def validate_attachments(self, data):  # pylint: disable=no-self-use
         '''Validate attachments data.'''
         # TODO(youchen): Use global configs
         if len(data) > 3:
             raise serializers.ValidationError('最多允许上传3个附件')
-        size_bytes = sum(x.size for x in data)
-        # TODO(youchen): Use global configs
-        if size_bytes > 10 * 1024 * 1024:  # 10 MB
-            raise serializers.ValidationError(
-                '上传附件过大，请修改后再上传。(附件大小: {})'.format(
-                    format_file_size(size_bytes)))
         return data
 
 

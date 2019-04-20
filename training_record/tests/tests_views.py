@@ -1,7 +1,6 @@
 '''Unit tests for training_record views.'''
 import io
 import tempfile
-import json
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
@@ -34,22 +33,14 @@ class TestRecordViewSet(APITestCase):
         '''Record should be created by POST request.'''
         user = mommy.make(User)
         url = reverse('record-list')
-        off_campus_event_data = {
-            'name': 'abc',
-            'time': '0122-12-31T15:54:17.000Z',
-            'location': 'loc',
-            'num_hours': 5,
-            'num_participants': 30,
-        }
-        attachments_data = [io.BytesIO(b'some content') for _ in range(3)]
-        contents_data = [
-            json.dumps({'content_type': x[0], 'content': 'abc'})
-            for x in RecordContent.CONTENT_TYPE_CHOICES]
+        off_campus_event = mommy.make(training_event.models.OffCampusEvent)
+        contents = [mommy.make(RecordContent) for _ in range(2)]
+        attachments = [mommy.make(RecordAttachment) for _ in range(2)]
         data = {
-            'off_campus_event_data': json.dumps(off_campus_event_data),
+            'off_campus_event': off_campus_event.id,
             'user': user.id,
-            'contents_data': contents_data,
-            'attachments_data': attachments_data,
+            'contents': [content.id for content in contents],
+            'attachments': [attachment.id for attachment in attachments],
         }
 
         response = self.client.post(url, data, format='multipart')

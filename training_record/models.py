@@ -95,7 +95,7 @@ class RecordContent(models.Model):
                                        auto_now=True)
     record = models.ForeignKey(Record, verbose_name=_('培训记录'),
                                related_name='contents',
-                               db_index=True,
+                               blank=True, null=True,
                                on_delete=models.CASCADE)
     content_type = models.PositiveSmallIntegerField(
         verbose_name=_('内容类型'), choices=CONTENT_TYPE_CHOICES)
@@ -136,7 +136,7 @@ class RecordAttachment(models.Model):
                                        auto_now=True)
     record = models.ForeignKey(Record, verbose_name=_('培训记录'),
                                related_name='attachments',
-                               db_index=True,
+                               blank=True, null=True,
                                on_delete=models.CASCADE)
     attachment_type = models.PositiveSmallIntegerField(
         verbose_name=_('附件类型'), choices=ATTACHMENT_TYPE_CHOICES,
