@@ -11,9 +11,6 @@ from django.utils.timezone import now
 from training_event.models import EventCoefficient
 
 
-
-
-
 faker = Faker('zh_CN')
 faker.seed(0)
 
@@ -191,7 +188,7 @@ def populate_initial_data(apps, _):  # pylint: disable=all
             off_campus_event=off_campus_event)
 
     print('Populate Enrollment')
-    num_enrollments = 20
+    num_enrollments = 200
     enrollments = []
     from training_event.models import Enrollment
     enroll_methods = Enrollment.ENROLL_METHOD_CHOICES
