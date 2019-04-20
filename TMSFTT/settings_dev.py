@@ -10,7 +10,7 @@ DEV_INSTALLED_APPS = [
     'debug_toolbar',
     'mock_cas',
 
-    # 'data_migration',
+    'data_migration',
 ]
 INSTALLED_APPS.extend(DEV_INSTALLED_APPS)
 
