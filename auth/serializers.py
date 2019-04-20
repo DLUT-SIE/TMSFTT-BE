@@ -53,7 +53,7 @@ class UserSerializer(serializers.ModelSerializer):
         source='department.name', read_only=True)
     group_str = serializers.SerializerMethodField(read_only=True)
 
-    def get_group_str(self, obj):
+    def get_group_str(self, obj):  # pylint: disable=no-self-use
         '''Get all the groups of a regular User.'''
         group_set = Group.objects.filter(user=obj)
         return group_set.values_list('name', flat=True)
