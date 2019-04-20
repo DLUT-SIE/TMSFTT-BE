@@ -1,29 +1,12 @@
-from training_event.models import EventCoefficient
+'''Define workload calculation method.'''
+from django.utils.timezone import now
+
 from training_record.models import Record
 from auth.models import Department, User
 
-from django.utils.timezone import now
-import math
-
 
 class CoefficientCalculation:
-
-    @staticmethod
-    def calculate_campus_event_workload(record):
-        event = record.campus_event
-        event_coefficient = EventCoefficient.objects.select_related().all()\
-            .filter(role=record.role, campus_event=event)[0]
-
-        return CoefficientCalculation.calculate_workload(
-            event.num_hours, event_coefficient.coefficient,
-            event_coefficient.hours_option, event_coefficient.workload_option)
-
-    @staticmethod
-    def calculate_off_campus_event_workload(record):
-        """
-        return 0, if the record is a off_campus_event.
-        """
-        return 0
+    '''Provide workload calculation method .'''
 
     @staticmethod
     def calculate_workload_by_record(record):
@@ -31,10 +14,10 @@ class CoefficientCalculation:
         calculate workload of the record specified based on the eventCoefficient
         """
         if record.off_campus_event is None:
-            return CoefficientCalculation\
-                .calculate_campus_event_workload(record)
-        return CoefficientCalculation.\
-            calculate_off_campus_event_workload(record)
+            return record.event_coefficient.calculate_campus_event_workload(
+                record)
+        return record.event_coefficient\
+            .calculate_off_campus_event_workload(record)
 
     @staticmethod
     def calculate_workload_by_query(department=None, start_time=None,
@@ -78,40 +61,11 @@ class CoefficientCalculation:
             result.setdefault(user_id, 0)
             # 校外活动计算
             if record.campus_event is None:
-                result[user_id] += CoefficientCalculation\
+                result[user_id] += record.event_coefficient\
                     .calculate_off_campus_event_workload(record)
                 continue
 
             # 校内活动计算
-            event_coefficient = record.event_coefficient
-            result[user_id] += CoefficientCalculation.calculate_workload(
-                record.campus_event.num_hours,
-                event_coefficient.coefficient,
-                event_coefficient.hours_option,
-                event_coefficient.workload_option)
+            result[user_id] += record.event_coefficient\
+                .calculate_campus_event_workload(record)
         return result
-
-    @staticmethod
-    def calculate_workload(num_hours, coefficient, hours_option=0,
-                           workload_option=0):
-        # calculate num_hours based on  hours_option
-        hour = num_hours
-        if hours_option == 1:
-            hour = math.ceil(num_hours)
-        elif hours_option == 2:
-            hour = math.floor(num_hours)
-        elif hours_option == 3:
-            hour = round(num_hours)
-
-        # calculate workload based on workload_option
-        default_workload = hour * coefficient
-        if workload_option == 0:
-            return default_workload
-        elif workload_option == 1:
-            return math.ceil(default_workload)
-        elif workload_option == 2:
-            return math.floor(default_workload)
-        return round(default_workload)
-
-
-

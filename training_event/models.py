@@ -1,4 +1,6 @@
 '''Define ORM models for training_event module.'''
+import math
+
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -155,3 +157,29 @@ class EventCoefficient(models.Model):
     workload_option = models.PositiveSmallIntegerField(
         verbose_name='工作量取整方式', choices=ROUND_CHOICES,
         default=ROUND_METHOD_NONE)
+
+    def calculate_campus_event_workload(self, record):
+        # calculate campus_event num_hours based on  hours_option
+        hour = record.campus_event.num_hours
+        if self.hours_option == EventCoefficient.ROUND_METHOD_CEIL:
+            hour = math.ceil(self.num_hours)
+        elif self.hours_option == EventCoefficient.ROUND_METHOD_FLOOR:
+            hour = math.floor(self.num_hours)
+        elif self.hours_option == EventCoefficient.ROUND_METHOD_DEFAULT:
+            hour = round(self.num_hours)
+
+        # calculate workload based on workload_option
+        default_workload = hour * self.coefficient
+        if self.workload_option == EventCoefficient.ROUND_METHOD_NONE:
+            return default_workload
+        elif self.workload_option == EventCoefficient.ROUND_METHOD_CEIL:
+            return math.ceil(default_workload)
+        elif self.workload_option == EventCoefficient.ROUND_METHOD_FLOOR:
+            return math.floor(default_workload)
+        return round(default_workload)
+
+    def calculate_off_campus_event_workload(self):# pylint: disable=no-self-use
+        return 0
+
+
+
