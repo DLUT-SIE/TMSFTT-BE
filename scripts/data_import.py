@@ -119,7 +119,6 @@ def clean_department_name(department_name):
     return mappings.get(department_name, department_name)
 
 
-
 @transaction.atomic
 def read_content(fpath='~/Desktop/TMSFTT/2018年教师发展工作量-全-0315.xls'):
     '''Read xlsx file and generate records.'''
@@ -138,8 +137,7 @@ def read_content(fpath='~/Desktop/TMSFTT/2018年教师发展工作量-全-0315.x
         sys.stdout.flush()
         sys.stdout.write(f'{idx:4d} / {num_rows:4d} \r')
         try:
-            event_name, department_name, user_name, role, hours, \
-                coef, workload = row[1:8]
+            event_name, department_name, user_name = row[1:4]
         except ValueError:
             print(row)
             raise
