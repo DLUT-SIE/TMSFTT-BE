@@ -2,7 +2,7 @@
 from django.utils.timezone import now
 
 from training_record.models import Record
-from auth.models import Department, User
+from auth.models import User
 
 
 class CoefficientCalculation:
@@ -11,7 +11,7 @@ class CoefficientCalculation:
     @staticmethod
     def calculate_workload_by_record(record):
         """
-        calculate workload of the record specified based on the eventCoefficient
+        calculate workload of record specified based on the eventCoefficient
         """
         if record.off_campus_event is None:
             return record.event_coefficient.calculate_campus_event_workload(
