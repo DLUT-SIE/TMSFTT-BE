@@ -54,6 +54,7 @@ class UserSerializer(serializers.ModelSerializer):
     group_str = serializers.SerializerMethodField(read_only=True)
 
     def get_group_str(self, obj):
+        '''Get all the group of a regular User'''
         group_set = Group.objects.filter(user=obj)
         return group_set.values_list('name', flat=True)
 
