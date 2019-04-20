@@ -7,3 +7,4 @@ exclude =
     wsgi.py,
     migrations,
     mock_cas,
+    scripts,
