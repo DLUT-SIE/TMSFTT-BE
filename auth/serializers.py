@@ -1,6 +1,6 @@
 '''Define how to serialize our models.'''
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Permission, Group
 from rest_framework import serializers
 
 import auth.models
@@ -51,10 +51,16 @@ class UserSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize User instance.'''
     department_str = serializers.CharField(
         source='department.name', read_only=True)
+    group_str = serializers.SerializerMethodField(read_only=True)
+
+    def get_group_str(self, obj):
+        group_set = Group.objects.filter(user=obj)
+        return group_set.values_list('name', flat=True)
 
     class Meta:
         model = User
         fields = ('id', 'username', 'last_login', 'first_name', 'last_name',
                   'email', 'is_active', 'date_joined', 'user_permissions',
                   'department', 'department_str', 'user_permissions',
-                  'is_teacher', 'is_department_admin', 'is_school_admin')
+                  'is_teacher', 'is_department_admin', 'is_school_admin',
+                  'group_str')
