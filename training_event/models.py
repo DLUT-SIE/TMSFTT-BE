@@ -160,6 +160,7 @@ class EventCoefficient(models.Model):
         default=ROUND_METHOD_NONE)
 
     def calculate_campus_event_workload(self, record):
+        '''calculate wordkload by record'''
         # calculate campus_event num_hours based on  hours_option
         hour = record.campus_event.num_hours
         if self.hours_option == EventCoefficient.ROUND_METHOD_CEIL:
@@ -173,11 +174,12 @@ class EventCoefficient(models.Model):
         default_workload = hour * self.coefficient
         if self.workload_option == EventCoefficient.ROUND_METHOD_NONE:
             return default_workload
-        elif self.workload_option == EventCoefficient.ROUND_METHOD_CEIL:
+        if self.workload_option == EventCoefficient.ROUND_METHOD_CEIL:
             return math.ceil(default_workload)
-        elif self.workload_option == EventCoefficient.ROUND_METHOD_FLOOR:
+        if self.workload_option == EventCoefficient.ROUND_METHOD_FLOOR:
             return math.floor(default_workload)
         return round(default_workload)
 
     def calculate_off_campus_event_workload(self):
+        ''' to be confirmed someday'''
         return 0
