@@ -11,7 +11,8 @@ from django.utils.timezone import now
 from auth.models import Department
 from infra.models import Notification
 from training_program.models import ProgramCategory, ProgramForm, Program
-from training_event.models import CampusEvent, OffCampusEvent, Enrollment
+from training_event.models import (
+    CampusEvent, OffCampusEvent, Enrollment, EventCoefficient)
 from training_record.models import (
     Record, RecordAttachment, RecordContent, StatusChangeLog)
 from training_review.models import ReviewNote
@@ -101,7 +102,7 @@ def populate_initial_data(apps, _):  # pylint: disable=all
         {'name': faker.company_prefix()}) for _ in range(num_departments)]
 
     print('Populate User')
-    num_users = 20
+    num_users = 100
     admin = User.objects.create_superuser(
         id=1,
         username='root',
@@ -155,7 +156,7 @@ def populate_initial_data(apps, _):  # pylint: disable=all
 
     print('Populate training_event')
     print('Populate CampusEvent')
-    num_campus_events = 30
+    num_campus_events = 500
     campus_events = [CampusEvent.objects.create(
         name=faker.text(10),
         time=_random_datetime(False, True),
@@ -168,7 +169,7 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     ) for _ in range(num_campus_events)]
 
     print('Populate OffCampusEvent')
-    num_off_campus_events = 50
+    num_off_campus_events = 500
     off_campus_events = [OffCampusEvent.objects.create(
         name=faker.text(10),
         time=_random_datetime(False, True),
@@ -177,8 +178,18 @@ def populate_initial_data(apps, _):  # pylint: disable=all
         num_participants=randint(10, 100),
     ) for _ in range(num_off_campus_events)]
 
+    print('Populate EventCoefficient')
+    for campus_event in campus_events:
+        EventCoefficient.objects.create(
+            coefficient=1, hours_option=0, workload_option=0,
+            campus_event=campus_event)
+    for off_campus_event in off_campus_events:
+        EventCoefficient.objects.create(
+            coefficient=0, hours_option=0, workload_option=0,
+            off_campus_event=off_campus_event)
+
     print('Populate Enrollment')
-    num_enrollments = 20
+    num_enrollments = 200
     enrollments = []
     for campus_event in campus_events:
         enrolled_users = sample(users, randint(2, num_users - 5))
@@ -193,11 +204,15 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     off_campus_event_records = [Record.objects.create(
         off_campus_event=off_campus_event,
         user=choice(users),
+        event_coefficient=EventCoefficient.objects.get(
+            off_campus_event=off_campus_event)
     ) for off_campus_event in off_campus_events]
 
     campus_event_records = [Record.objects.create(
         campus_event=enrollment.campus_event,
         user=enrollment.user,
+        event_coefficient=EventCoefficient.objects.filter(
+            campus_event=enrollment.campus_event)[0]
     ) for enrollment in enrollments]
 
     records = off_campus_event_records + campus_event_records
@@ -229,7 +244,7 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('tmsftt_auth', '0001_initial'),
-        ('infra', '0002_auto_20190419_0946'),
+        ('infra', '0002_auto_20190420_1438'),
         ('training_program', '0001_initial'),
         ('training_event', '0001_initial'),
         ('training_record', '0001_initial'),
