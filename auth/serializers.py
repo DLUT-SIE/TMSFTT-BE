@@ -48,6 +48,7 @@ class UserPermissionSerializer(serializers.ModelSerializer):
 
 
 class GroupSerializer(serializers.ModelSerializer):
+    '''Indicate how to serialize Group instance.'''
 
     class Meta:
         model = auth.models.Group
