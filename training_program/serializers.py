@@ -4,7 +4,6 @@ from rest_framework import serializers
 from training_program.models import (
     Program, ProgramCategory, ProgramForm
 )
-from auth.serializers import DepartmentSerializer
 
 
 class ProgramCategorySerializer(serializers.ModelSerializer):
