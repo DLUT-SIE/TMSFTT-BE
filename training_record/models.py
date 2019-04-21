@@ -203,9 +203,9 @@ class CampusEventFeedback(models.Model):
 
     create_time = models.DateTimeField(verbose_name='创建时间',
                                        auto_now_add=True)
-    record = models.ForeignKey(Record, verbose_name='培训记录',
-                               related_name='feedback',
-                               on_delete=models.CASCADE)
+    record = models.OneToOneField(Record, verbose_name='培训记录',
+                                  related_name='feedback',
+                                  on_delete=models.CASCADE)
     content = models.CharField(verbose_name='反馈内容', max_length=120)
 
     def __str__(self):
