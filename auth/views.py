@@ -1,6 +1,6 @@
 '''Define how to serialize our models.'''
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission, Group
+from django.contrib.auth.models import Permission
 from rest_framework import serializers
 
 import auth.models
@@ -46,11 +46,13 @@ class UserPermissionSerializer(serializers.ModelSerializer):
         model = auth.models.UserPermission
         fields = ('id', 'user', 'permission')
 
+
 class GroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = auth.models.Group
         fields = ('id', 'name')
+
 
 class UserSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize User instance.'''
