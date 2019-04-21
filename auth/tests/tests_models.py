@@ -1,5 +1,4 @@
 '''Unit tests for auth models.'''
-from unittest.mock import patch, MagicMock
 from django.test import TestCase
 from model_mommy import mommy
 
@@ -106,7 +105,7 @@ class TestTeacherInformation(TestCase):
         info = TeacherInformation(xb='2')
 
         self.assertEqual(info.get_xb_display(), '女性')
-   
+
     def test_get_rzzt_display(self):
         '''Should return human-readable string.'''
         info = TeacherInformation(rzzt='11')
@@ -149,4 +148,3 @@ class TestDepartmentInformation(TestCase):
 
         with self.assertRaisesMessage(Exception, '该表状态为只读'):
             info.delete()
-
