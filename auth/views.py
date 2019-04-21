@@ -38,6 +38,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
 
 
 class GroupViewSet(viewsets.ModelViewSet):
+    '''Create API views for Group.'''
     queryset = Group.objects.all()
     serializer_class = auth.serializers.GroupSerializer
     permission_classes = (
