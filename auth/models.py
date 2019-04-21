@@ -4,7 +4,6 @@ from collections import defaultdict
 
 from django.contrib.auth.models import Permission, AbstractUser, Group
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 from django.utils.functional import cached_property
 
 
@@ -16,8 +15,8 @@ class Department(models.Model):
     other objects.
     '''
     class Meta:
-        verbose_name = _('院系')
-        verbose_name_plural = _('院系')
+        verbose_name = '院系'
+        verbose_name_plural = '院系'
         default_permissions = ()
         permissions = (
             ('add_department', '允许添加院系'),
@@ -26,10 +25,10 @@ class Department(models.Model):
             ('delete_department', '允许删除院系'),
         )
 
-    name = models.CharField(verbose_name=_('院系'), max_length=50, unique=True)
-    create_time = models.DateTimeField(verbose_name=_('创建时间'),
+    name = models.CharField(verbose_name='院系', max_length=50, unique=True)
+    create_time = models.DateTimeField(verbose_name='创建时间',
                                        auto_now_add=True)
-    update_time = models.DateTimeField(verbose_name=_('最近修改时间'),
+    update_time = models.DateTimeField(verbose_name='最近修改时间',
                                        auto_now=True)
 
     def __str__(self):
@@ -71,10 +70,10 @@ class Role(models.Model):
     )
 
     role_type = models.PositiveSmallIntegerField(choices=ROLE_CHOICES)
-    group = models.OneToOneField(
-        Group, verbose_name=_('用户组'), on_delete=models.CASCADE)
+    group = models.OneToOneField(Group, verbose_name='用户组',
+                                 on_delete=models.CASCADE)
     department = models.ForeignKey(
-        Department, verbose_name=_('院系'), related_name='roles',
+        Department, verbose_name='院系', related_name='roles',
         on_delete=models.CASCADE)
 
     def __str__(self):
@@ -84,8 +83,8 @@ class Role(models.Model):
 class User(AbstractUser):
     '''User holds private information for user.'''
     class Meta:
-        verbose_name = _('用户')
-        verbose_name_plural = _('用户')
+        verbose_name = '用户'
+        verbose_name_plural = '用户'
         default_permissions = ()
         permissions = (
             ('add_user', '允许添加用户'),
@@ -95,14 +94,14 @@ class User(AbstractUser):
         )
 
     department = models.ForeignKey(
-        Department, verbose_name=_('所属院系'), on_delete=models.PROTECT,
+        Department, verbose_name='所属院系', on_delete=models.PROTECT,
         blank=True, null=True,
         related_name='users')
     roles = models.ManyToManyField(Role, related_name='users', blank=True)
-    age = models.PositiveSmallIntegerField(verbose_name=_('年龄'), default=0)
+    age = models.PositiveSmallIntegerField(verbose_name='年龄', default=0)
 
     def __str__(self):
-        return str(self.username)
+        return self.username
 
     @cached_property
     def _roles(self):
@@ -133,8 +132,8 @@ class User(AbstractUser):
 class UserPermission(models.Model):
     '''A mapping to User-Permission Many-To-Many relationship.'''
     class Meta:
-        verbose_name = _('用户权限')
-        verbose_name_plural = _('用户权限')
+        verbose_name = '用户权限'
+        verbose_name_plural = '用户权限'
         managed = False  # This model is managed by Django.
         db_table = 'tmsftt_auth_user_user_permissions'
         default_permissions = ()
@@ -146,9 +145,9 @@ class UserPermission(models.Model):
         )
 
     id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, verbose_name=_('用户'),
+    user = models.ForeignKey(User, verbose_name='用户',
                              on_delete=models.CASCADE)
-    permission = models.ForeignKey(Permission, verbose_name=_('权限'),
+    permission = models.ForeignKey(Permission, verbose_name='权限',
                                    on_delete=models.CASCADE)
 
     def __str__(self):
@@ -158,8 +157,8 @@ class UserPermission(models.Model):
 class GroupPermission(models.Model):
     '''A mapping to Group-Permission Many-To-Many relationship.'''
     class Meta:
-        verbose_name = _('用户组权限')
-        verbose_name_plural = _('用户组权限')
+        verbose_name = '用户组权限'
+        verbose_name_plural = '用户组权限'
         managed = False  # This model is managed by Django.
         db_table = 'auth_group_permissions'
         default_permissions = ()
@@ -171,9 +170,9 @@ class GroupPermission(models.Model):
         )
 
     id = models.AutoField(primary_key=True)
-    group = models.ForeignKey(Group, verbose_name=_('用户'),
+    group = models.ForeignKey(Group, verbose_name='用户',
                               on_delete=models.CASCADE)
-    permission = models.ForeignKey(Permission, verbose_name=_('权限'),
+    permission = models.ForeignKey(Permission, verbose_name='权限',
                                    on_delete=models.CASCADE)
 
     def __str__(self):
@@ -187,37 +186,37 @@ class TeacherInformation(models.Model):
     by DLUT-ITS.
     '''
     class Meta:
-        verbose_name = _('教师基本信息')
-        verbose_name_plural = _('教师基本信息')
+        verbose_name = '教师基本信息'
+        verbose_name_plural = '教师基本信息'
         db_table = 'TBL_JB_INFO'
         default_permissions = ()
 
-    zgh = models.CharField(verbose_name=_('职工号'), max_length=20,
+    zgh = models.CharField(verbose_name='职工号', max_length=20,
                            db_column='ZGH')
-    jsxm = models.CharField(verbose_name=_('教师姓名'), max_length=100,
+    jsxm = models.CharField(verbose_name='教师姓名', max_length=100,
                             db_column='JSXM', blank=True, null=True)
-    nl = models.CharField(verbose_name=_('年龄'), max_length=10,
+    nl = models.CharField(verbose_name='年龄', max_length=10,
                           db_column='NL', blank=True, null=True)
-    xb = models.CharField(verbose_name=_('性别'), max_length=10,
+    xb = models.CharField(verbose_name='性别', max_length=10,
                           db_column='XB', blank=True, null=True)
-    xy = models.CharField(verbose_name=_('学院'), max_length=10,
+    xy = models.CharField(verbose_name='学院', max_length=10,
                           db_column='XY', blank=True, null=True)
-    rxsj = models.CharField(verbose_name=_('入校时间'), max_length=10,
+    rxsj = models.CharField(verbose_name='入校时间', max_length=10,
                             db_column='RXSJ', blank=True, null=True)
-    rzzt = models.CharField(verbose_name=_('任职状态'), max_length=40,
+    rzzt = models.CharField(verbose_name='任职状态', max_length=40,
                             db_column='RZZT', blank=True, null=True)
-    xl = models.CharField(verbose_name=_('学历'), max_length=40,
+    xl = models.CharField(verbose_name='学历', max_length=40,
                           db_column='XL', blank=True, null=True)
-    zyjszc = models.CharField(verbose_name=_('专业技术职称'), max_length=40,
+    zyjszc = models.CharField(verbose_name='专业技术职称', max_length=40,
                               db_column='ZYJSZC', blank=True, null=True)
-    rjlx = models.CharField(verbose_name=_('任教类型'), max_length=40,
+    rjlx = models.CharField(verbose_name='任教类型', max_length=40,
                             db_column='RJLX', blank=True, null=True)
 
     def save(self, *args, **kwargs):  # pylint: disable=arguments-differ
-        raise Exception(_('该表状态为只读'))
+        raise Exception('该表状态为只读')
 
     def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
-        raise Exception(_('该表状态为只读'))
+        raise Exception('该表状态为只读')
 
     @classmethod
     def _get_mapping(cls, mapping_name):
@@ -274,22 +273,22 @@ class DepartmentInformation(models.Model):
     by DLUT-ITS.
     '''
     class Meta:
-        verbose_name = _('单位基本信息')
-        verbose_name_plural = _('单位基本信息')
+        verbose_name = '单位基本信息'
+        verbose_name_plural = '单位基本信息'
         db_table = 'TBL_DW_INFO'
         default_permissions = ()
 
-    dwid = models.CharField(verbose_name=_('单位ID'), max_length=20,
+    dwid = models.CharField(verbose_name='单位ID', max_length=20,
                             db_column='DWID')
-    dwmc = models.CharField(verbose_name=_('单位名称'), max_length=100,
+    dwmc = models.CharField(verbose_name='单位名称', max_length=100,
                             db_column='DWMC', blank=True, null=True)
-    dwfzr = models.CharField(verbose_name=_('单位负责人'), max_length=20,
+    dwfzr = models.CharField(verbose_name='单位负责人', max_length=20,
                              db_column='DWFZR', blank=True, null=True)
-    dwjxfzr = models.CharField(verbose_name=_('单位教学负责人'), max_length=20,
+    dwjxfzr = models.CharField(verbose_name='单位教学负责人', max_length=20,
                                db_column='DWJXFRZ', blank=True, null=True)
-    lsdw = models.CharField(verbose_name=_('隶属单位'), max_length=20,
+    lsdw = models.CharField(verbose_name='隶属单位', max_length=20,
                             db_column='LSDW', blank=True, null=True)
-    sfyx = models.CharField(verbose_name=_('是否有效'), max_length=1,
+    sfyx = models.CharField(verbose_name='是否有效', max_length=1,
                             db_column='SFYX', blank=True, null=True)
 
     def save(self, *args, **kwargs):  # pylint: disable=arguments-differ
