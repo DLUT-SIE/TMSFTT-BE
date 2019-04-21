@@ -1,4 +1,7 @@
 '''Define ORM models for auth module.'''
+import os
+from collections import defaultdict
+
 from django.contrib.auth.models import Permission, AbstractUser, Group
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -175,3 +178,122 @@ class GroupPermission(models.Model):
 
     def __str__(self):
         return '用户组{}拥有权限{}'.format(self.group_id, self.permission_id)
+
+
+class TeacherInformation(models.Model):
+    '''Raw data of teacher information.
+
+    From our backend's view, this table is READ-ONLY. Its data is maintained
+    by DLUT-ITS.
+    '''
+    class Meta:
+        verbose_name = _('教师基本信息')
+        verbose_name_plural = _('教师基本信息')
+        db_table = 'TBL_JB_INFO'
+        default_permissions = ()
+
+    zgh = models.CharField(verbose_name=_('职工号'), max_length=20,
+                           db_column='ZGH')
+    jsxm = models.CharField(verbose_name=_('教师姓名'), max_length=100,
+                            db_column='JSXM', blank=True, null=True)
+    nl = models.CharField(verbose_name=_('年龄'), max_length=10,
+                          db_column='NL', blank=True, null=True)
+    xb = models.CharField(verbose_name=_('性别'), max_length=10,
+                          db_column='XB', blank=True, null=True)
+    xy = models.CharField(verbose_name=_('学院'), max_length=10,
+                          db_column='XY', blank=True, null=True)
+    rxsj = models.CharField(verbose_name=_('入校时间'), max_length=10,
+                            db_column='RXSJ', blank=True, null=True)
+    rzzt = models.CharField(verbose_name=_('任职状态'), max_length=40,
+                            db_column='RZZT', blank=True, null=True)
+    xl = models.CharField(verbose_name=_('学历'), max_length=40,
+                          db_column='XL', blank=True, null=True)
+    zyjszc = models.CharField(verbose_name=_('专业技术职称'), max_length=40,
+                              db_column='ZYJSZC', blank=True, null=True)
+    rjlx = models.CharField(verbose_name=_('任教类型'), max_length=40,
+                            db_column='RJLX', blank=True, null=True)
+
+    def save(self, *args, **kwargs):  # pylint: disable=arguments-differ
+        raise Exception(_('该表状态为只读'))
+
+    def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
+        raise Exception(_('该表状态为只读'))
+
+    @classmethod
+    def _get_mapping(cls, mapping_name):
+        '''Read mapping from ./data/<mapping_name>.
+
+        Parameters
+        ----------
+        mapping_name: string
+            The mapping file name.
+
+        Return
+        ------
+        mapping_dict: dict
+            The code to human-readable string mapping dict.
+        '''
+        private_mapping_name = f'_{mapping_name}'
+        if not hasattr(cls, private_mapping_name):
+            mapping = defaultdict(lambda: '未知')
+            fpath = os.path.join(
+                os.path.dirname(__file__), 'data',
+                mapping_name)
+            with open(fpath) as target_file:
+                for line in target_file:
+                    mapping.setdefault(*line.strip().split())
+            # pylint: disable=attribute-defined-outside-init
+            setattr(cls, private_mapping_name, mapping)
+        return getattr(cls, private_mapping_name)
+
+    def get_xl_display(self):
+        '''Return human-readable value of xl field.'''
+        return self._get_mapping('education_background')[self.xl]
+
+    def get_zyjszc_display(self):
+        '''Return human-readable value of zyjszc field.'''
+        return self._get_mapping('technical_title')[self.zyjszc]
+
+    def get_xb_display(self):
+        '''Return human-readable value of xb field.'''
+        return self._get_mapping('gender')[self.xb]
+
+    def get_rzzt_display(self):
+        '''Return human-readable value of rzzt field.'''
+        return self._get_mapping('tenure_status')[self.rzzt]
+
+    def get_rjlx_display(self):
+        '''Return human-readable value of rjlx field.'''
+        return self._get_mapping('teaching_type')[self.rjlx]
+
+
+class DepartmentInformation(models.Model):
+    '''Raw data of department information.
+
+    From our backend's view, this table is READ-ONLY. Its data is maintained
+    by DLUT-ITS.
+    '''
+    class Meta:
+        verbose_name = _('单位基本信息')
+        verbose_name_plural = _('单位基本信息')
+        db_table = 'TBL_DW_INFO'
+        default_permissions = ()
+
+    dwid = models.CharField(verbose_name=_('单位ID'), max_length=20,
+                            db_column='DWID')
+    dwmc = models.CharField(verbose_name=_('单位名称'), max_length=100,
+                            db_column='DWMC', blank=True, null=True)
+    dwfzr = models.CharField(verbose_name=_('单位负责人'), max_length=20,
+                             db_column='DWFZR', blank=True, null=True)
+    dwjxfzr = models.CharField(verbose_name=_('单位教学负责人'), max_length=20,
+                               db_column='DWJXFRZ', blank=True, null=True)
+    lsdw = models.CharField(verbose_name=_('隶属单位'), max_length=20,
+                            db_column='LSDW', blank=True, null=True)
+    sfyx = models.CharField(verbose_name=_('是否有效'), max_length=1,
+                            db_column='SFYX', blank=True, null=True)
+
+    def save(self, *args, **kwargs):  # pylint: disable=arguments-differ
+        raise Exception('该表状态为只读')
+
+    def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
+        raise Exception('该表状态为只读')
