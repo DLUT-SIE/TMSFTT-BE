@@ -23,10 +23,6 @@ class ProgramFormSerializer(serializers.ModelSerializer):
 
 class ProgramSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize Program instance.'''
-    department_detail = DepartmentSerializer(source='department',
-                                             read_only=True)
-    category_detail = ProgramCategorySerializer(source='category',
-                                                read_only=True)
 
     class Meta:
         model = Program
