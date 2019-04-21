@@ -3,7 +3,6 @@ from rest_framework import serializers
 
 import training_event.models
 from training_event.services import EnrollmentService
-from training_program.serializers import ProgramSerializer
 
 
 class CampusEventSerializer(serializers.ModelSerializer):
