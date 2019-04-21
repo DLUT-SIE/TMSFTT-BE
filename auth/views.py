@@ -1,68 +1,76 @@
-'''Define how to serialize our models.'''
+'''Provide API views for auth module.'''
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
-from rest_framework import serializers
+from django.contrib.auth.models import Permission, Group
+from rest_framework import viewsets, mixins
 
 import auth.models
+import auth.serializers
+import auth.permissions
 
 
 User = get_user_model()
 
 
-class DepartmentSerializer(serializers.ModelSerializer):
-    '''Indicate how to serialize Department instance.'''
-    users = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
-    admins = serializers.SerializerMethodField(read_only=True)
-    roles = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
-
-    class Meta:
-        model = auth.models.Department
-        fields = ('id', 'name', 'users', 'admins', 'roles')
-
-    def get_admins(self, obj):  # pylint: disable=no-self-use
-        '''Get department admin ids.'''
-        role = auth.models.Role.objects.filter(
-            department_id=obj.id,
-            role_type=auth.models.Role.ROLE_DEPT_ADMIN,
-        )
-        if not role:
-            return []
-        return role[0].users.all().values_list('id', flat=True)
+class DepartmentViewSet(viewsets.ModelViewSet):
+    '''Create API views for Department.'''
+    queryset = auth.models.Department.objects.all()
+    serializer_class = auth.serializers.DepartmentSerializer
+    permission_classes = (
+        auth.permissions.DjangoModelPermissions,
+        auth.permissions.DjangoObjectPermissions,
+    )
 
 
-class PermissionSerializer(serializers.ModelSerializer):
-    '''Indicate how to serialize Permission instance.'''
-    label = serializers.CharField(source='name')
-
-    class Meta:
-        model = Permission
-        fields = ('id', 'codename', 'label')
-
-
-class UserPermissionSerializer(serializers.ModelSerializer):
-    '''Indicate how to serialize UserPermission instance.'''
-
-    class Meta:
-        model = auth.models.UserPermission
-        fields = ('id', 'user', 'permission')
-
-
-class GroupSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = auth.models.Group
-        fields = ('id', 'name')
+class UserViewSet(mixins.RetrieveModelMixin,
+                  mixins.ListModelMixin,
+                  viewsets.GenericViewSet):
+    '''Create API views for User.'''
+    queryset = (User.objects
+                .select_related('department')
+                .prefetch_related('roles', 'user_permissions')
+                .all())
+    serializer_class = auth.serializers.UserSerializer
+    permission_classes = (
+        auth.permissions.DjangoModelPermissions,
+        auth.permissions.DjangoObjectPermissions,
+    )
+    filter_fields = ('username',)
 
 
-class UserSerializer(serializers.ModelSerializer):
-    '''Indicate how to serialize User instance.'''
-    department_str = serializers.CharField(
-        source='department.name', read_only=True)
+class GroupViewSet(viewsets.ModelViewSet):
+    queryset = Group.objects.all()
+    serializer_class = auth.serializers.GroupSerializer
+    permission_classes = (
+        auth.permissions.DjangoModelPermissions,
+        auth.permissions.DjangoObjectPermissions,
+    )
 
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'last_login', 'first_name', 'last_name',
-                  'email', 'is_active', 'date_joined', 'user_permissions',
-                  'department', 'department_str',
-                  'is_teacher', 'is_department_admin', 'is_school_admin',
-                  'groups')
+
+class UserPermissionViewSet(mixins.CreateModelMixin,
+                            mixins.ListModelMixin,
+                            mixins.RetrieveModelMixin,
+                            mixins.DestroyModelMixin,
+                            viewsets.GenericViewSet):
+    '''Create API views for UserPermission.'''
+    queryset = (auth.models.UserPermission.objects
+                .select_related('permission', 'user')
+                .all())
+    serializer_class = auth.serializers.UserPermissionSerializer
+    permission_classes = (
+        auth.permissions.DjangoModelPermissions,
+        auth.permissions.DjangoObjectPermissions,
+    )
+    filter_fields = ('user',)
+    pagination_class = None
+
+
+class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
+    '''Create READ-ONLY APIs for Permission.'''
+    # Exclude Django-admin-related permissions.
+    queryset = Permission.objects.filter(content_type_id__gt=13).all()
+    serializer_class = auth.serializers.PermissionSerializer
+    permission_classes = (
+        auth.permissions.DjangoModelPermissions,
+        auth.permissions.DjangoObjectPermissions,
+    )
+    pagination_class = None
