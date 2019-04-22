@@ -70,6 +70,7 @@ class WriteOnlyRecordSerializer(serializers.ModelSerializer):
         write_only=True,
         default=lambda: [],
     )
+    feedback = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Record
