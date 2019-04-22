@@ -8,10 +8,11 @@ from rest_framework_bulk.mixins import (
 
 
 import training_record.models
-import training_record.serializers
 import training_record.filters
 from training_record.services import RecordService
-from training_record.serializers import CampusEventFeedbackSerializer
+from training_record.serializers import (CampusEventFeedbackSerializer,
+                                         WriteOnlyRecordSerializer,
+                                         ReadOnlyRecordSerializer)
 
 
 class RecordViewSet(viewsets.ModelViewSet):
@@ -20,8 +21,14 @@ class RecordViewSet(viewsets.ModelViewSet):
         training_record.models.Record.objects.all()
         .prefetch_related('contents', 'attachments')
     )
-    serializer_class = training_record.serializers.RecordSerializer
     filter_class = training_record.filters.RecordFilter
+
+    def get_serializer_class(self):
+        if (self.action == 'create') | (self.action == 'update'):
+            serializer_class = WriteOnlyRecordSerializer
+        else:
+            serializer_class = ReadOnlyRecordSerializer
+        return serializer_class
 
 # TODO: rename this action
     def _get_reviewed_status_filtered_records(self, request, is_reviewed):
