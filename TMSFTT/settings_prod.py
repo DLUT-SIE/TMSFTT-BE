@@ -3,6 +3,8 @@ import os.path as osp
 
 from .settings import *
 
+from celery.schedules import crontab
+
 
 def get_secret_from_file(file_env_name, default=None):
     path = os.environ.get(file_env_name, None)
@@ -95,3 +97,21 @@ CORS_ORIGIN_ALLOW_ALL = True
 # TODO(youchen): Enable HTTPS secure
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False
+
+# Celery settings
+CELERY_BROKER_URL = 'redis://redis:6379'
+CELERY_RESULT_BACKEND = 'redis://redis:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Shanghai'
+CELERY_BEAT_SCHEDULE = {
+    'update_users_from_teacher_information': {
+        'task': 'auth.tasks.update_users_from_teacher_information',
+        'schedule': crontab(minute=0, hour=0)  # Daily at midnight.
+    },
+    'update_departments_from_teacher_information': {
+        'task': 'auth.tasks.update_departments_from_teacher_information',
+        'schedule': crontab(minute=0, hour=0)  # Daily at midnight.
+    }
+}
