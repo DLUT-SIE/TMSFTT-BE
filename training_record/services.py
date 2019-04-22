@@ -102,11 +102,9 @@ class RecordService:
         except Exception:
             raise BadRequest('无效的表格')
 
-        # process for each event
-        for index in range(sheet.ncols):
-
-            # get the information
-            ids = sheet.col_values(index)
+        with transaction.atomic():
+            # get the IDs
+            ids = sheet.col_values(0)
             event_id = ids[0]
             user_ids = ids[1:]
             try:
@@ -116,14 +114,14 @@ class RecordService:
 
             # generate the record for each participant
             for user_id in user_ids:
-
                 try:
                     user = User.objects.get(pk=user_id)
                 except Exception:
                     raise BadRequest('编号为'+str(int(user_id))+'的用户不存在')
 
                 record = Record.objects.create(
-                    campus_event=campus_event, user=user)
+                    campus_event=campus_event, user=user,
+                    status=Record.STATUS_FEEDBACK_REQUIRED)
 
                 records.add(record)
 
