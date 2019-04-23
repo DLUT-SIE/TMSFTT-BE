@@ -27,7 +27,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
     '''Create API views for User.'''
     queryset = (User.objects
                 .select_related('department')
-                .prefetch_related('roles', 'user_permissions')
+                .prefetch_related('user_permissions')
                 .all())
     serializer_class = auth.serializers.UserSerializer
     permission_classes = (

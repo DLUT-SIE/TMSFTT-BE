@@ -37,51 +37,6 @@ class Department(models.Model):
         return str(self.name)
 
 
-class Role(models.Model):
-    '''Role objects connect User, Department and Group.
-
-    The groups each user is in should be identical with the groups of the roles
-    the user is. That said, if user is connected with N roles, then the user
-    should at least be in N groups (extra groups are allowed since some of the
-    groups are not related to roles, such as superadmin).
-
-    NOTE: The ideal implementation would be that Group has a foreign key field
-    to our department model, and it should have an extra field like role_type,
-    then there is no need to keep this Role model, but since Group is created
-    by Django, along with fully operational permission checking logic, so the
-    Role model is required. But we need to make sure that the relation between
-    user and groups should be removed when user switching from departments.
-    '''
-    class Meta:
-        verbose_name = '身份'
-        verbose_name_plural = '身份'
-        default_permissions = ()
-        permissions = (
-            ('add_role', '允许添加身份'),
-            ('view_role', '允许查看身份'),
-            ('change_role', '允许修改身份'),
-            ('delete_role', '允许删除身份'),
-        )
-        unique_together = (('department', 'role_type'),)
-
-    ROLE_TEACHER = 1
-    ROLE_DEPT_ADMIN = 2
-    ROLE_CHOICES = (
-        (ROLE_TEACHER, '专任教师'),
-        (ROLE_DEPT_ADMIN, '院系管理员'),
-    )
-
-    role_type = models.PositiveSmallIntegerField(choices=ROLE_CHOICES)
-    group = models.OneToOneField(Group, verbose_name='用户组',
-                                 on_delete=models.CASCADE)
-    department = models.ForeignKey(
-        Department, verbose_name='院系', related_name='roles',
-        on_delete=models.CASCADE)
-
-    def __str__(self):
-        return '{}({})'.format(self.department, self.get_role_type_display())
-
-
 class User(AbstractUser):
     '''User holds private information for user.'''
     GENDER_UNKNOWN = 0
@@ -111,7 +66,6 @@ class User(AbstractUser):
         Department, verbose_name='所属院系', on_delete=models.PROTECT,
         blank=True, null=True,
         related_name='users')
-    roles = models.ManyToManyField(Role, related_name='users', blank=True)
     gender = models.PositiveSmallIntegerField(
         verbose_name='性别', choices=GENDER_CHOICES, default=GENDER_UNKNOWN,
     )
@@ -138,17 +92,18 @@ class User(AbstractUser):
         ------
         <QuerySet [{'role_type': 1}, {'role_type': 2}, {'role_type': 3}]>
         '''
-        return self.roles.all().values('role_type')
+        # TODO: get role from user_group
+        return [{'role_type': 1}, ]
 
     @property
     def is_teacher(self):
         '''Field to indicate whether the user is a teacher.'''
-        return {'role_type': Role.ROLE_TEACHER} in self._roles
+        return {'role_type': 'teacher'} in self._roles
 
     @property
     def is_department_admin(self):
         '''Field to indicate whether the user is a department admin.'''
-        return {'role_type': Role.ROLE_DEPT_ADMIN} in self._roles
+        return {'role_type': 'department_admin'} in self._roles
 
     @property
     def is_school_admin(self):
