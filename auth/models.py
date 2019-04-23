@@ -112,8 +112,6 @@ class User(AbstractUser):
         blank=True, null=True,
         related_name='users')
     roles = models.ManyToManyField(Role, related_name='users', blank=True)
-    raw_user_id = models.CharField(
-        verbose_name='用户原始ID', max_length=20, unique=True)
     gender = models.PositiveSmallIntegerField(
         verbose_name='性别', choices=GENDER_CHOICES, default=GENDER_UNKNOWN,
     )
@@ -122,7 +120,7 @@ class User(AbstractUser):
         verbose_name='入校时间', blank=True, null=True)
     tenure_status = models.CharField(
         verbose_name='任职状态', max_length=40, blank=True, null=True)
-    education_backgroun = models.CharField(
+    education_background = models.CharField(
         verbose_name='学历', max_length=40, blank=True, null=True)
     technical_title = models.CharField(
         verbose_name='专业技术职称', max_length=40, blank=True, null=True)
@@ -219,6 +217,7 @@ class TeacherInformation(models.Model):
         verbose_name_plural = '教师基本信息'
         db_table = 'TBL_JB_INFO'
         default_permissions = ()
+        ordering = ['zgh']
 
     zgh = models.CharField(verbose_name='职工号', max_length=20,
                            db_column='ZGH', primary_key=True)
@@ -306,6 +305,7 @@ class DepartmentInformation(models.Model):
         verbose_name_plural = '单位基本信息'
         db_table = 'TBL_DW_INFO'
         default_permissions = ()
+        ordering = ['dwid']
 
     dwid = models.CharField(verbose_name='单位ID', max_length=20,
                             db_column='DWID', primary_key=True)
