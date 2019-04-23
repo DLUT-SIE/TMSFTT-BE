@@ -12,6 +12,7 @@ from auth.tasks import (
     update_teachers_and_departments_information
 )
 
+
 # pylint: disable=no-self-use
 class TestUpdateTeachersAndDepartmentsInformation(TestCase):
     '''Unit tests for syncing from provided data.'''
@@ -98,8 +99,9 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
             department = dwid_to_department.get(raw_user.xy)
             self.assertEqual(user.department_id,
                              department.id if department else None)
-            self.assertEqual(user.gender,
-                             User.GENDER_CHOICES_MAP[raw_user.get_xb_display()])
+            self.assertEqual(
+                user.gender,
+                User.GENDER_CHOICES_MAP[raw_user.get_xb_display()])
             self.assertEqual(user.age, int(raw_user.nl))
             self.assertEqual(user.tenure_status, raw_user.get_rzzt_display())
             self.assertEqual(user.education_background,
