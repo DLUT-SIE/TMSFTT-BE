@@ -1,9 +1,8 @@
 '''Unit tests for auth models.'''
 from django.test import TestCase
-from model_mommy import mommy
 
 from auth.models import (
-    User, Department, UserPermission, Role, GroupPermission,
+    User, Department, UserPermission, GroupPermission,
     TeacherInformation, DepartmentInformation
 )
 
@@ -43,18 +42,6 @@ class TestUserPermission(TestCase):
             permission_id=permission_id)
 
         self.assertEqual(str(user_permission), expected_str)
-
-
-class TestRole(TestCase):
-    '''Unit tests for model Role.'''
-    def test_str(self):
-        '''Should render string correctly.'''
-        role_type, role_name = Role.ROLE_CHOICES[0]
-        department = mommy.make(Department)
-        name = '{}({})'.format(department, role_name)
-        role = Role(department=department, role_type=role_type)
-
-        self.assertEqual(str(role), name)
 
 
 class TestGroupPermission(TestCase):

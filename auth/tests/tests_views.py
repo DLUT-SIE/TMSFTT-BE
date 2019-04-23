@@ -60,7 +60,7 @@ class TestDepartmentViewSet(APITestCase):
         '''Department should be accessed by GET request.'''
         department = mommy.make(auth.models.Department)
         url = reverse('department-detail', args=(department.pk,))
-        expected_keys = {'id', 'name', 'users', 'admins', 'roles'}
+        expected_keys = {'id', 'name', 'users', 'admins'}
 
         self.client.force_authenticate(self.user)
         assign_perm('view_department', self.user, department)
