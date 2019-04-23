@@ -136,8 +136,9 @@ class TestRecordService(TestCase):
         with open(tup[0], 'rb') as work_book:
             excel = work_book.read()
         with self.assertRaisesMessage(
-                BadRequest, '编号为' + str(self.event_coefficient.id + 1)
-                            + '的活动系数不存在'):
+                BadRequest,
+                '编号为' + str(self.event_coefficient.id + 1) +
+                '的活动系数不存在'):
             RecordService.create_campus_records_from_excel(excel)
 
     def test_create_campus_records(self):

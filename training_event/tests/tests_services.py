@@ -1,8 +1,8 @@
 '''Unit tests for training_event services.'''
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from model_mommy import mommy
 from django.utils.timezone import now
+from model_mommy import mommy
 
 from infra.exceptions import BadRequest
 from training_event.models import (

@@ -176,8 +176,8 @@ class EventCoefficient(models.Model):
     def _round(cls, value, option):
         if option == cls.ROUND_METHOD_CEIL:
             return math.ceil(value)
-        elif option == EventCoefficient.ROUND_METHOD_FLOOR:
+        if option == EventCoefficient.ROUND_METHOD_FLOOR:
             return math.floor(value)
-        elif option == EventCoefficient.ROUND_METHOD_DEFAULT:
+        if option == EventCoefficient.ROUND_METHOD_DEFAULT:
             return round(value)
         return value

@@ -82,9 +82,9 @@ class CoefficientCalculationService:
 
         records = Record.objects.select_related(
             'event_coefficient', 'campus_event', 'off_campus_event').filter(
-            user__in=teachers,
-            campus_event__time__gte=start_time,
-            campus_event__time__lte=end_time)
+                user__in=teachers,
+                campus_event__time__gte=start_time,
+                campus_event__time__lte=end_time)
 
         result = {}
         for record in records:
