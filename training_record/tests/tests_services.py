@@ -124,6 +124,22 @@ class TestRecordService(TestCase):
                 BadRequest, '编号为'+str(self.user.id+1)+'的用户不存在'):
             RecordService.create_campus_records_from_excel(excel)
 
+    def test_create_campus_records_bad_event_coefficient_id(self):
+        '''Should raise Error if get invalid event_coefficient id.'''
+        tup = tempfile.mkstemp()
+        work_book = xlwt.Workbook()
+        sheet = work_book.add_sheet(u'sheet1', cell_overwrite_ok=True)
+        sheet.write(0, 0, self.campus_event.id)
+        sheet.write(1, 0, self.user.id)
+        sheet.write(1, 1, self.event_coefficient.id + 1)
+        work_book.save(tup[1])
+        with open(tup[0], 'rb') as work_book:
+            excel = work_book.read()
+        with self.assertRaisesMessage(
+                BadRequest, '编号为' + str(self.event_coefficient.id + 1)
+                            + '的活动系数不存在'):
+            RecordService.create_campus_records_from_excel(excel)
+
     def test_create_campus_records(self):
         '''Should return the number of created records.'''
         tup = tempfile.mkstemp()
