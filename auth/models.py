@@ -25,6 +25,8 @@ class Department(models.Model):
             ('delete_department', '允许删除院系'),
         )
 
+    raw_department_id = models.CharField(
+        verbose_name='单位原始ID', max_length=20, unique=True)
     name = models.CharField(verbose_name='院系', max_length=50, unique=True)
     create_time = models.DateTimeField(verbose_name='创建时间',
                                        auto_now_add=True)
@@ -82,6 +84,18 @@ class Role(models.Model):
 
 class User(AbstractUser):
     '''User holds private information for user.'''
+    GENDER_UNKNOWN = 0
+    GENDER_MALE = 1
+    GENDER_FEMALE = 2
+    GENDER_PRIVATE = 3
+    GENDER_CHOICES = (
+        (GENDER_UNKNOWN, '未知'),
+        (GENDER_MALE, '男性'),
+        (GENDER_FEMALE, '女性'),
+        (GENDER_PRIVATE, '未说明'),
+    )
+    GENDER_CHOICES_MAP = {label: key for key, label in GENDER_CHOICES}
+
     class Meta:
         verbose_name = '用户'
         verbose_name_plural = '用户'
@@ -98,7 +112,22 @@ class User(AbstractUser):
         blank=True, null=True,
         related_name='users')
     roles = models.ManyToManyField(Role, related_name='users', blank=True)
+    raw_user_id = models.CharField(
+        verbose_name='用户原始ID', max_length=20, unique=True)
+    gender = models.PositiveSmallIntegerField(
+        verbose_name='性别', choices=GENDER_CHOICES, default=GENDER_UNKNOWN,
+    )
     age = models.PositiveSmallIntegerField(verbose_name='年龄', default=0)
+    onboard_time = models.DateTimeField(
+        verbose_name='入校时间', blank=True, null=True)
+    tenure_status = models.CharField(
+        verbose_name='任职状态', max_length=40, blank=True, null=True)
+    education_backgroun = models.CharField(
+        verbose_name='学历', max_length=40, blank=True, null=True)
+    technical_title = models.CharField(
+        verbose_name='专业技术职称', max_length=40, blank=True, null=True)
+    teaching_type = models.CharField(
+        verbose_name='任教类型', max_length=40, blank=True, null=True)
 
     def __str__(self):
         return self.username
@@ -192,7 +221,7 @@ class TeacherInformation(models.Model):
         default_permissions = ()
 
     zgh = models.CharField(verbose_name='职工号', max_length=20,
-                           db_column='ZGH')
+                           db_column='ZGH', primary_key=True)
     jsxm = models.CharField(verbose_name='教师姓名', max_length=100,
                             db_column='JSXM', blank=True, null=True)
     nl = models.CharField(verbose_name='年龄', max_length=10,
@@ -279,7 +308,7 @@ class DepartmentInformation(models.Model):
         default_permissions = ()
 
     dwid = models.CharField(verbose_name='单位ID', max_length=20,
-                            db_column='DWID')
+                            db_column='DWID', primary_key=True)
     dwmc = models.CharField(verbose_name='单位名称', max_length=100,
                             db_column='DWMC', blank=True, null=True)
     dwfzr = models.CharField(verbose_name='单位负责人', max_length=20,
