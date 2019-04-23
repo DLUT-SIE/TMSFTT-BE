@@ -8,16 +8,10 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 
-from auth.models import Department
-from infra.models import Notification
-from training_program.models import ProgramCategory, ProgramForm, Program
-from training_event.models import (
-    CampusEvent, OffCampusEvent, Enrollment, EventCoefficient)
-from training_record.models import (
-    Record, RecordAttachment, RecordContent, StatusChangeLog)
-from training_review.models import ReviewNote
+from training_event.models import EventCoefficient
 
-from auth.services import DepartmentService
+
+
 
 
 faker = Faker('zh_CN')
