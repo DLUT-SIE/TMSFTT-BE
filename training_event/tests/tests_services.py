@@ -70,6 +70,3 @@ class TestCoefficientCalculationService(TestCase):
         self.assertEqual(
             CoefficientCalculationService.calculate_workload_by_query(
                 department=self.department)[self.user.id], self.NUM_HOURS)
-
-
-
