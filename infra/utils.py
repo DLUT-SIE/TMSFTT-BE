@@ -1,5 +1,11 @@
 '''Provide useful utilities shared among modules.'''
+import logging
+
 from rest_framework.renderers import BrowsableAPIRenderer
+
+
+dev_logger = logging.getLogger('django')  # pylint: disable=invalid-name
+prod_logger = logging.getLogger('django.prod')  # pylint: disable=invalid-name
 
 
 def format_file_size(size_in_bytes):

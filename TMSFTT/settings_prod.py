@@ -60,26 +60,6 @@ REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = (
     'rest_framework.renderers.JSONRenderer',
 )
 
-# Logging
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'filters': None,
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-        },
-    },
-}
-
-
 # User-uploaded files
 MEDIA_ROOT = '/media/'
 MEDIA_URL = '/media/'
@@ -106,12 +86,8 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Shanghai'
 CELERY_BEAT_SCHEDULE = {
-    'update_users_from_teacher_information': {
-        'task': 'auth.tasks.update_users_from_teacher_information',
+    'update_teachers_and_departments_information': {
+        'task': 'auth.tasks.update_teachers_and_departments_information',
         'schedule': crontab(minute=0, hour=0)  # Daily at midnight.
     },
-    'update_departments_from_teacher_information': {
-        'task': 'auth.tasks.update_departments_from_teacher_information',
-        'schedule': crontab(minute=0, hour=0)  # Daily at midnight.
-    }
 }
