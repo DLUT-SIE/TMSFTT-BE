@@ -12,7 +12,7 @@ from infra.exceptions import BadRequest
 from training_record.models import (
     RecordContent, RecordAttachment, CampusEventFeedback, Record)
 from training_record.services import RecordService, CampusEventFeedbackService
-from training_event.models import CampusEvent
+from training_event.models import CampusEvent, EventCoefficient
 
 
 User = get_user_model()
@@ -40,6 +40,7 @@ class TestRecordService(TestCase):
 
         cls.campus_event = mommy.make(CampusEvent)
         cls.user = mommy.make(User)
+        cls.event_coefficient = mommy.make(EventCoefficient)
 
     def test_create_off_campus_record_no_event_data(self):
         '''Should raise ValueError if no off-campus event data.'''
@@ -130,12 +131,12 @@ class TestRecordService(TestCase):
         sheet = work_book.add_sheet(u'sheet1', cell_overwrite_ok=True)
         sheet.write(0, 0, self.campus_event.id)
         sheet.write(1, 0, self.user.id)
+        sheet.write(1, 1, self.event_coefficient.id)
         work_book.save(tup[1])
         with open(tup[0], 'rb') as work_book:
             excel = work_book.read()
 
         count = RecordService.create_campus_records_from_excel(excel)
-
         self.assertEqual(count, 1)
 
 

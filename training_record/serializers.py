@@ -71,6 +71,7 @@ class RecordSerializer(serializers.ModelSerializer):
     attachments = RecordAttachmentSerializer(many=True, read_only=True)
     contents = RecordContentSerializer(many=True, read_only=True)
     feedback = serializers.PrimaryKeyRelatedField(read_only=True)
+    event_coefficient = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Record
@@ -78,7 +79,7 @@ class RecordSerializer(serializers.ModelSerializer):
                   'off_campus_event', 'off_campus_event_data',
                   'user', 'status', 'contents', 'contents_data',
                   'attachments', 'attachments_data',
-                  'status_str', 'feedback', 'role')
+                  'status_str', 'feedback', 'event_coefficient')
 
     def create(self, validated_data):
         return RecordService.create_off_campus_record_from_raw_data(

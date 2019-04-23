@@ -6,10 +6,10 @@ from django.db import transaction
 from django.contrib.auth import get_user_model
 
 from infra.exceptions import BadRequest
-from training_event.models import OffCampusEvent, CampusEvent
 from training_record.models import (
     Record, RecordContent, RecordAttachment, CampusEventFeedback,
 )
+from training_event.models import OffCampusEvent, CampusEvent, EventCoefficient
 
 
 User = get_user_model()
@@ -21,7 +21,7 @@ class RecordService:
     @staticmethod
     def create_off_campus_record_from_raw_data(
             off_campus_event_data=None, user=None,
-            contents_data=None, attachments_data=None):
+            contents_data=None, attachments_data=None, event_coefficient=None):
         '''Create a training record of off-campus training event.
 
         Parameters
@@ -54,9 +54,15 @@ class RecordService:
                 **off_campus_event_data,
             )
 
+            if event_coefficient is None:
+                event_coefficient = EventCoefficient.objects.create(
+                    role=0, coefficient=0, hours_option=0, workload_option=0,
+                    off_campus_event=off_campus_event)
+
             record = Record.objects.create(
                 off_campus_event=off_campus_event,
                 user=user,
+                event_coefficient=event_coefficient,
             )
 
             for content_data in contents_data:
@@ -74,7 +80,7 @@ class RecordService:
 
     @staticmethod
     def create_campus_records_from_excel(file):
-        '''Create a training record of off-campus training event.
+        '''Create a training record of campus training event.
 
         Parameters
         ----------
@@ -118,9 +124,17 @@ class RecordService:
                 except Exception:
                     raise BadRequest('编号为'+str(int(user_id))+'的用户不存在')
 
+                event_coefficient_id = sheet.cell(index, 1).value
+                try:
+                    event_coefficient = EventCoefficient.objects.get(
+                        pk=event_coefficient_id)
+                except Exception:
+                    raise BadRequest('编号为'+str(int(event_coefficient_id)) +
+                                     '的活动系数不存在')
                 record = Record.objects.create(
                     campus_event=campus_event, user=user,
-                    status=Record.STATUS_FEEDBACK_REQUIRED)
+                    status=Record.STATUS_FEEDBACK_REQUIRED,
+                    event_coefficient=event_coefficient)
 
                 records.add(record)
 
