@@ -181,11 +181,11 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     for campus_event in campus_events:
         EventCoefficient.objects.create(
             coefficient=1, hours_option=0, workload_option=0,
-            campus_event=campus_event)
+            campus_event_id=campus_event.id)
     for off_campus_event in off_campus_events:
         EventCoefficient.objects.create(
             coefficient=0, hours_option=0, workload_option=0,
-            off_campus_event=off_campus_event)
+            off_campus_event_id=off_campus_event.id)
 
     print('Populate Enrollment')
     num_enrollments = 200
@@ -213,15 +213,15 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     off_campus_event_records = [Record.objects.create(
         off_campus_event_id=off_campus_event.id,
         user_id=choice(users).id,
-        event_coefficient=EventCoefficient.objects.get(
-            off_campus_event=off_campus_event)
+        event_coefficient_id=EventCoefficient.objects.get(
+            off_campus_event_id=off_campus_event.id).id
     ) for off_campus_event in off_campus_events]
 
     campus_event_records = [Record.objects.create(
         campus_event_id=enrollment.campus_event_id,
         user_id=enrollment.user_id,
-        event_coefficient=EventCoefficient.objects.filter(
-            campus_event=enrollment.campus_event)[0]
+        event_coefficient_id=EventCoefficient.objects.get(
+            campus_event_id=enrollment.campus_event.id).id
     ) for enrollment in enrollments]
 
     records = off_campus_event_records + campus_event_records
@@ -265,7 +265,7 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('tmsftt_auth', '0001_initial'),
-        ('infra', '0002_auto_20190421_1833'),
+        ('infra', '0002_auto_20190423_2040'),
         ('training_program', '0001_initial'),
         ('training_event', '0001_initial'),
         ('training_record', '0001_initial'),
