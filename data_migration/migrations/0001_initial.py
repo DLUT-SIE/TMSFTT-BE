@@ -101,7 +101,6 @@ def populate_initial_data(apps, _):  # pylint: disable=all
         password='root',
         email='root@root.com',
         department_id=departments[0].id,
-        raw_user_id=f'1',
     )
     usernames = set([faker.profile()['username'] for _ in range(num_users)])
     while len(usernames) < num_users:
@@ -114,7 +113,6 @@ def populate_initial_data(apps, _):  # pylint: disable=all
         age=randint(20, 60),
         first_name=faker.first_name(),
         last_name=faker.last_name(),
-        raw_user_id=f'{idx}'
     ) for idx in range(2, 2 + num_users)]
 
     print('Populate infra')
@@ -251,7 +249,7 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('tmsftt_auth', '0001_initial'),
-        ('infra', '0002_auto_20190423_1403'),
+        ('infra', '0002_auto_20190423_1810'),
         ('training_program', '0001_initial'),
         ('training_event', '0001_initial'),
         ('training_record', '0001_initial'),
