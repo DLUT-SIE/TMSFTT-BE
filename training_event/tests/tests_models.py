@@ -9,6 +9,7 @@ from training_record.models import Record
 from training_event.models import (
     CampusEvent, OffCampusEvent, Enrollment, EventCoefficient)
 
+
 # pylint: disable=no-self-use
 class TestCampusEvent(TestCase):
     '''Unit tests for model CampusEvent.'''
