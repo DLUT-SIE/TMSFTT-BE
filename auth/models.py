@@ -93,7 +93,6 @@ class User(AbstractUser):
         <QuerySet [{'role_type': 1}, {'role_type': 2}, {'role_type': 3}]>
         '''
         # TODO: get role from user_group
-        _department = self.department
         return [{'role_type': 1}, ]
 
     @property
