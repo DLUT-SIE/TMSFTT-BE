@@ -84,26 +84,15 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
-    @cached_property
-    def _roles(self):  # pylint: disable=no-self-use
-        '''Retrieve the role types of the current user, and cache it.
-
-        Return
-        ------
-        <QuerySet [{'role_type': 1}, {'role_type': 2}, {'role_type': 3}]>
-        '''
-        # TODO: get role from user_group
-        return [{'role_type': 1}, ]
-
     @property
     def is_teacher(self):
         '''Field to indicate whether the user is a teacher.'''
-        return {'role_type': 'teacher'} in self._roles
+        return True
 
     @property
     def is_department_admin(self):
         '''Field to indicate whether the user is a department admin.'''
-        return {'role_type': 'department_admin'} in self._roles
+        return True
 
     @property
     def is_school_admin(self):
