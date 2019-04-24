@@ -85,7 +85,7 @@ class User(AbstractUser):
         return self.username
 
     @cached_property
-    def _roles(self): # pylint: disable=no-self-use
+    def _roles(self):  # pylint: disable=no-self-use
         '''Retrieve the role types of the current user, and cache it.
 
         Return
