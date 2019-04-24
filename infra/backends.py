@@ -1,4 +1,5 @@
 '''Backends provided by infra module.'''
+import hashlib
 import json
 import re
 
@@ -8,6 +9,7 @@ from zeep import Client
 from zeep.cache import InMemoryCache
 from zeep.transports import Transport
 
+from infra.exceptions import InternalServerError
 from infra.utils import prod_logger
 
 
@@ -15,24 +17,33 @@ class SOAPEmailBackend(BaseEmailBackend):
     '''Provide Email service via web service.'''
     def send_messages(self, email_messages):
         transport = Transport(cache=InMemoryCache())
-        client = Client(
-            f'{settings.SOAP_BASE_URL}/EmailService?wsdl',
-            transport=transport
-        )
+        try:
+            client = Client(
+                f'{settings.SOAP_BASE_URL}/EmailService?wsdl',
+                transport=transport
+            )
+        except Exception:
+            prod_logger.warning('获取WSDL失败，邮件服务暂时不可用')
+            raise InternalServerError('邮件服务暂时不可用')
 
-        # TODO(youchen): Verity field names
+        # According to the protocol, we need encrypt our secret_key with
+        # SHA-1
+        sha1 = hashlib.sha1()
+        sha1.update(settings.SOAP_AUTH_SECRET_KEY.encode())
+
         default_payload = {
             # Auth-related
             'tp_name': settings.SOAP_AUTH_TP_NAME,
             'sys_id': settings.SOAP_AUTH_SYS_ID,
             'module_id': settings.SOAP_AUTH_MODULE_ID,
-            # TODO(youchen): Encrypt with sha
-            'secret_key': settings.SOAP_AUTH_SECRET_KEY,
+            'secret_key': sha1.hexdigest(),
             'interface_method': settings.SOAP_AUTH_INTERFACE_METHOD,
 
             # Business-related
             'receive_person_info': '',  # Required
-            'email_title': '',  # Required
+            # NOTE: emial_title is the correct parameter name,
+            # I know it's a typo but it's required by the interface
+            'emial_title': '',  # Required
             'email_info': '',  # Required
             'send_priority': '3',  # Send now
             'templet_id': '0',
@@ -46,15 +57,19 @@ class SOAPEmailBackend(BaseEmailBackend):
             payload['email_info'] = message.body
             email_info = json.dumps(payload)
             try:
-                client.service.saveEmailInfo(email_info)
+                resp = client.service.saveEmailInfo(email_info)
+                resp = json.loads(resp)
+                if resp['result'] is False:
+                    raise Exception(resp['msg'])
             except Exception as err:  # pylint: disable=broad-except
-                msg = f'邮件发送失败, 失败原因: {err.message}'
+                msg = f'邮件发送失败, 失败原因: {err}'
                 prod_logger.warning(msg)
-                raise
+                raise InternalServerError('邮件发送失败')
             else:
                 msg = (
                     f'邮件发送成功, 收件人: {message.to}, '
-                    f'标题: {message.subject}'
+                    f'标题: {message.subject}, '
+                    f'消息ID: {resp["msg_id"]}'
                 )
                 prod_logger.info(msg)
 
@@ -63,11 +78,11 @@ class SOAPEmailBackend(BaseEmailBackend):
         '''Return True if recipient is in format 'x@y.z'.'''
         return re.match(r'^.+?@.+?\..+?$', recipient) is not None
 
-
     def format_recipients(self, recipients):
         '''Format recipients to string.
 
-        Recipient is formatted into "Name|ID|DepartmentID|DepartmentName|Email",
+        Recipient is formatted into
+        "Name|ID|DepartmentID|DepartmentName|Email",
         fields are optional but vertical bar is required, multiple recipients
         are separated by "^@^".
         '''
@@ -80,4 +95,3 @@ class SOAPEmailBackend(BaseEmailBackend):
             else:
                 res += f'|{recipient}|||'
         return res
-        
