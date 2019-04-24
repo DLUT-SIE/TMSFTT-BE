@@ -80,14 +80,27 @@ class CoefficientCalculationService:
             teachers = User.objects.all().filter(department=department)
         # 查询缓存
 
-        records = Record.objects.select_related(
-            'event_coefficient', 'campus_event', 'off_campus_event').filter(
+        campus_records = Record.objects.select_related(
+            'event_coefficient', 'campus_event').filter(
                 user__in=teachers,
                 campus_event__time__gte=start_time,
                 campus_event__time__lte=end_time)
 
+        off_campus_records = Record.objects.select_related(
+            'event_coefficient', 'off_campus_event').filter(
+                user__in=teachers, off_campus_event__time__gte=start_time,
+                off_campus_event__time__lte=end_time)
         result = {}
-        for record in records:
+
+        for record in campus_records:
+            user_id = record.user_id
+            result.setdefault(user_id, 0)
+
+            # 校内活动计算
+            result[user_id] += record.event_coefficient \
+                .calculate_campus_event_workload(record)
+
+        for record in off_campus_records:
             user_id = record.user_id
             result.setdefault(user_id, 0)
             # 校外活动计算
@@ -95,8 +108,4 @@ class CoefficientCalculationService:
                 result[user_id] += record.event_coefficient \
                     .calculate_off_campus_event_workload(record)
                 continue
-
-            # 校内活动计算
-            result[user_id] += record.event_coefficient \
-                .calculate_campus_event_workload(record)
         return result

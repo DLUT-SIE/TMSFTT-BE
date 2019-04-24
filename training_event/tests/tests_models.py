@@ -49,9 +49,9 @@ class TestEventCoefficient(TestCase):
     def test_calculate_off_campus_event_workload(self):
         '''Should return 0 correctly.'''
         event_coefficient = EventCoefficient()
-
+        record = Record()
         self.assertEqual(
-            event_coefficient.calculate_off_campus_event_workload(), 0)
+            event_coefficient.calculate_off_campus_event_workload(record), 0)
 
     def test_calculate_campus_event_workload(self):
         '''Should return workload correctly.'''
