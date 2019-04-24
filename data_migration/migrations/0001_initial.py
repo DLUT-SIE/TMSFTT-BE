@@ -8,6 +8,8 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 
+from training_event.models import EventCoefficient
+
 
 faker = Faker('zh_CN')
 faker.seed(0)
@@ -91,7 +93,7 @@ def populate_initial_data(apps, _):  # pylint: disable=all
         name=faker.company_prefix(),
         raw_department_id=f'{idx}'
     ) for idx in range(1, 1 + num_departments)]
-    
+
     print('Populate User')
     num_users = 20
     User = get_user_model()
@@ -175,8 +177,18 @@ def populate_initial_data(apps, _):  # pylint: disable=all
         num_participants=randint(10, 100),
     ) for _ in range(num_off_campus_events)]
 
+    print('Populate EventCoefficient')
+    for campus_event in campus_events:
+        EventCoefficient.objects.create(
+            coefficient=1, hours_option=0, workload_option=0,
+            campus_event_id=campus_event.id)
+    for off_campus_event in off_campus_events:
+        EventCoefficient.objects.create(
+            coefficient=0, hours_option=0, workload_option=0,
+            off_campus_event_id=off_campus_event.id)
+
     print('Populate Enrollment')
-    num_enrollments = 20
+    num_enrollments = 200
     enrollments = []
     from training_event.models import Enrollment
     enroll_methods = Enrollment.ENROLL_METHOD_CHOICES
@@ -201,11 +213,15 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     off_campus_event_records = [Record.objects.create(
         off_campus_event_id=off_campus_event.id,
         user_id=choice(users).id,
+        event_coefficient_id=EventCoefficient.objects.get(
+            off_campus_event_id=off_campus_event.id).id
     ) for off_campus_event in off_campus_events]
 
     campus_event_records = [Record.objects.create(
         campus_event_id=enrollment.campus_event_id,
         user_id=enrollment.user_id,
+        event_coefficient_id=EventCoefficient.objects.get(
+            campus_event_id=enrollment.campus_event.id).id
     ) for enrollment in enrollments]
 
     records = off_campus_event_records + campus_event_records
