@@ -56,7 +56,7 @@ class SOAPEmailBackend(BaseEmailBackend):
         for message in email_messages:
             payload = default_payload.copy()
             payload['recieve_person_info'] = self.format_recipients(message.to)
-            payload['email_title'] = message.subject
+            payload['emial_title'] = message.subject
             payload['email_info'] = message.body
             email_info = json.dumps(payload)
             try:
