@@ -168,7 +168,7 @@ class EventCoefficient(models.Model):
         default_workload = hour * self.coefficient
         return self._round(default_workload, self.workload_option)
 
-    def calculate_off_campus_event_workload(self):
+    def calculate_off_campus_event_workload(self, record):
         ''' to be confirmed someday'''
         return 0
 
