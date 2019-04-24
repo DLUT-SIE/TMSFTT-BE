@@ -1,4 +1,5 @@
 '''Backends provided by infra module.'''
+import base64
 import hashlib
 import json
 import re
@@ -27,22 +28,24 @@ class SOAPEmailBackend(BaseEmailBackend):
             raise InternalServerError('邮件服务暂时不可用')
 
         # According to the protocol, we need encrypt our secret_key with
-        # SHA-1
+        # SHA-1 and encode with base64
         sha1 = hashlib.sha1()
         sha1.update(settings.SOAP_AUTH_SECRET_KEY.encode())
+        secret_key = base64.b64encode(sha1.digest())
 
         default_payload = {
             # Auth-related
             'tp_name': settings.SOAP_AUTH_TP_NAME,
             'sys_id': settings.SOAP_AUTH_SYS_ID,
             'module_id': settings.SOAP_AUTH_MODULE_ID,
-            'secret_key': sha1.hexdigest(),
+            'secret_key': secret_key.decode(),
             'interface_method': settings.SOAP_AUTH_INTERFACE_METHOD,
 
             # Business-related
-            'receive_person_info': '',  # Required
-            # NOTE: emial_title is the correct parameter name,
+            # NOTE: recieve_person_info is the correct parameter name,
             # I know it's a typo but it's required by the interface
+            'recieve_person_info': '',  # Required
+            # NOTE: Again, emial_title is the correct parameter name
             'emial_title': '',  # Required
             'email_info': '',  # Required
             'send_priority': '3',  # Send now
@@ -52,7 +55,7 @@ class SOAPEmailBackend(BaseEmailBackend):
         }
         for message in email_messages:
             payload = default_payload.copy()
-            payload['receive_person_info'] = self.format_recipients(message.to)
+            payload['recieve_person_info'] = self.format_recipients(message.to)
             payload['email_title'] = message.subject
             payload['email_info'] = message.body
             email_info = json.dumps(payload)
