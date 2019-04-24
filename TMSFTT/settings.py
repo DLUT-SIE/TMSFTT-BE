@@ -199,3 +199,11 @@ JWT_AUTH = {
 # Email settings
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# SOAP settings
+SOAP_BASE_URL = 'http://****/service'
+SOAP_AUTH_TP_NAME = 'unknown'
+SOAP_AUTH_SYS_ID = 'unknown'
+SOAP_AUTH_MODULE_ID = 'unknown'
+SOAP_AUTH_SECRET_KEY = 'unknown'
+SOAP_AUTH_INTERFACE_METHOD = 'unknown'

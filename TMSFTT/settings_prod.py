@@ -91,3 +91,16 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': crontab(minute=0, hour=0)  # Daily at midnight.
     },
 }
+
+# Email settings
+
+EMAIL_BACKEND = 'infra.backends.SOAPEmailBackend'
+
+# SOAP settings
+# TODO(youchen): Update to prod settings
+SOAP_BASE_URL = 'http://message.dlut.edu.cn/mp/service'
+SOAP_AUTH_TP_NAME = 'unknown'
+SOAP_AUTH_SYS_ID = 'unknown'
+SOAP_AUTH_MODULE_ID = 'unknown'
+SOAP_AUTH_SECRET_KEY = 'unknown'
+SOAP_AUTH_INTERFACE_METHOD = 'unknown'
