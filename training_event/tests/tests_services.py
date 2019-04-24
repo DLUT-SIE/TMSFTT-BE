@@ -44,6 +44,7 @@ class TestEnrollmentService(TestCase):
 class TestCoefficientCalculationService(TestCase):
     '''Test services provided by EnrollmentService.'''
     NUM_HOURS = 10
+    RECORDS_NUMS = 10
 
     @classmethod
     def setUpTestData(cls):
@@ -55,11 +56,12 @@ class TestCoefficientCalculationService(TestCase):
         cls.user = mommy.make(User, department=cls.department)
         cls.event_coefficient = mommy.make(
             EventCoefficient, campus_event=cls.campus_event, coefficient=1,
-            hours_option=1, workload_option=1)
+            hours_option=EventCoefficient.ROUND_METHOD_CEIL,
+            workload_option=EventCoefficient.ROUND_METHOD_CEIL,)
 
-        cls.campus_record = mommy.make(
+        cls.campus_records = [mommy.make(
             Record, event_coefficient=cls.event_coefficient, user=cls.user,
-            campus_event=cls.campus_event)
+            campus_event=cls.campus_event) for _ in range(cls.RECORDS_NUMS)]
 
         cls.off_campus_record = mommy.make(
             Record, event_coefficient=cls.event_coefficient,
@@ -69,4 +71,5 @@ class TestCoefficientCalculationService(TestCase):
         '''Should return workload by query'''
         self.assertEqual(
             CoefficientCalculationService.calculate_workload_by_query(
-                department=self.department)[self.user.id], self.NUM_HOURS)
+                department=self.department)[self.user.id],
+            self.NUM_HOURS * self.RECORDS_NUMS)

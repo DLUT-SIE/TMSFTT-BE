@@ -1,5 +1,6 @@
 '''Unit tests for training_event models.'''
 import math
+from unittest.mock import patch
 
 from django.test import TestCase
 from django.utils.text import format_lazy as _f
@@ -8,7 +9,7 @@ from training_record.models import Record
 from training_event.models import (
     CampusEvent, OffCampusEvent, Enrollment, EventCoefficient)
 
-
+# pylint: disable=no-self-use
 class TestCampusEvent(TestCase):
     '''Unit tests for model CampusEvent.'''
     def test_str(self):
@@ -61,8 +62,9 @@ class TestEventCoefficient(TestCase):
         def test_generate(campus_event, hours_option, workload_option, result):
             '''Should generate testcase correctly.'''
             event_coefficient = EventCoefficient(
-                role=0, coefficient=1, hours_option=hours_option,
-                workload_option=workload_option, campus_event=campus_event)
+                role=EventCoefficient.ROLE_PARTICIPATOR, coefficient=1,
+                hours_option=hours_option, workload_option=workload_option,
+                campus_event=campus_event)
             record = Record(campus_event=campus_event)
             self.assertAlmostEqual(
                 event_coefficient.calculate_campus_event_workload(record),
@@ -87,3 +89,23 @@ class TestEventCoefficient(TestCase):
         test_generate(
             campus_event, EventCoefficient.ROUND_METHOD_DEFAULT,
             EventCoefficient.ROUND_METHOD_NONE, round(num_hours))
+
+    @patch(
+        'training_event.models.EventCoefficient'
+        '.calculate_campus_event_workload')
+    def test_calculate_event_workload_campus_event(self, mocked):
+        '''Should call calculate_campus_event_workload correctly.'''
+        event_coefficient = EventCoefficient()
+        campus_event = CampusEvent()
+        record = Record(campus_event=campus_event)
+        event_coefficient.calculate_event_workload(record)
+        mocked.assert_called_with(record)
+
+    @patch('training_event.models.EventCoefficient'
+           '.calculate_off_campus_event_workload')
+    def test_calculate_event_workload_off_campus_event(self, mocked):
+        '''Should call calculate_event_workload correctly.'''
+        event_coefficient = EventCoefficient()
+        record = Record()
+        event_coefficient.calculate_off_campus_event_workload(record)
+        mocked.assert_called_with(record)

@@ -56,7 +56,9 @@ class RecordService:
 
             if event_coefficient is None:
                 event_coefficient = EventCoefficient.objects.create(
-                    role=0, coefficient=0, hours_option=0, workload_option=0,
+                    role=EventCoefficient.ROLE_PARTICIPATOR, coefficient=0,
+                    hours_option=EventCoefficient.ROUND_METHOD_NONE,
+                    workload_option=EventCoefficient.ROUND_METHOD_NONE,
                     off_campus_event=off_campus_event)
 
             record = Record.objects.create(
@@ -80,7 +82,7 @@ class RecordService:
 
     @staticmethod
     def create_campus_records_from_excel(file):
-        '''Create a training record of campus training event.
+        '''Create training records of campus training event.
 
         Parameters
         ----------
