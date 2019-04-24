@@ -30,4 +30,4 @@ class TestDepartmentSerializer(TestCase):
     def test_get_admins(self):
         '''Should return list of ids if role exists.'''
         # TODO: rewrite test case
-        self.assertEqual(1, 1)
+        self.assertEqual([], [])
