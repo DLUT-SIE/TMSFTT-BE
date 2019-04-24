@@ -180,7 +180,8 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     print('Populate EventCoefficient')
     for campus_event in campus_events:
         EventCoefficient.objects.create(
-            coefficient=1, hours_option=0, workload_option=0,
+            coefficient=1, hours_option=EventCoefficient.ROUND_METHOD_NONE,
+            workload_option=EventCoefficient.ROUND_METHOD_NONE,
             campus_event_id=campus_event.id)
     for off_campus_event in off_campus_events:
         EventCoefficient.objects.create(

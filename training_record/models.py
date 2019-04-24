@@ -51,7 +51,7 @@ class Record(models.Model):
                                               default=STATUS_SUBMITTED)
     event_coefficient = models.ForeignKey(EventCoefficient,
                                           verbose_name='培训活动系数',
-                                          related_name='event_coefficient',
+                                          related_name='records',
                                           on_delete=models.CASCADE)
 
     def __str__(self):

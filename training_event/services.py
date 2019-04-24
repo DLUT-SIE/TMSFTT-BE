@@ -1,4 +1,6 @@
 '''Provide services of training event module.'''
+from itertools import chain
+
 from django.db import transaction
 from django.utils.timezone import now
 
@@ -51,7 +53,7 @@ class CoefficientCalculationService:
 
     @staticmethod
     def calculate_workload_by_query(department=None, start_time=None,
-                                    end_time=None, ):
+                                    end_time=None):
         """calculate workload by department and period
 
         Parameters
@@ -74,11 +76,9 @@ class CoefficientCalculationService:
             start_time = end_time.replace(year=end_time.year - 1,
                                           month=12, day=31, hour=16, minute=0,
                                           second=0)
-        if department is None:
-            teachers = User.objects.all()
-        else:
-            teachers = User.objects.all().filter(department=department)
-        # 查询缓存
+        teachers = User.objects.all()
+        if department is not None:
+            teachers = teachers.filter(department=department)
 
         campus_records = Record.objects.select_related(
             'event_coefficient', 'campus_event').filter(
@@ -92,20 +92,10 @@ class CoefficientCalculationService:
                 off_campus_event__time__lte=end_time)
         result = {}
 
-        for record in campus_records:
+        for record in chain(campus_records, off_campus_records):
             user_id = record.user_id
             result.setdefault(user_id, 0)
+            result[user_id] += record.event_coefficient\
+                .calculate_event_workload(record)
 
-            # 校内活动计算
-            result[user_id] += record.event_coefficient \
-                .calculate_campus_event_workload(record)
-
-        for record in off_campus_records:
-            user_id = record.user_id
-            result.setdefault(user_id, 0)
-            # 校外活动计算
-            if record.campus_event is None:
-                result[user_id] += record.event_coefficient \
-                    .calculate_off_campus_event_workload(record)
-                continue
         return result

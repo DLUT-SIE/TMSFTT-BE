@@ -173,6 +173,12 @@ class EventCoefficient(models.Model):
         ''' to be confirmed someday'''
         return 0
 
+    def calculate_event_workload(self, record):
+        '''calculate event workload by event type'''
+        if record.campus_event:
+            return self.calculate_campus_event_workload(record)
+        return self.calculate_off_campus_event_workload(record)
+
     @classmethod
     def _round(cls, value, option):
         if option == cls.ROUND_METHOD_CEIL:
