@@ -4,7 +4,6 @@ from collections import defaultdict
 
 from django.contrib.auth.models import Permission, AbstractUser, Group
 from django.db import models
-from django.utils.functional import cached_property
 
 
 class Department(models.Model):
