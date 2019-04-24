@@ -12,17 +12,12 @@ User = get_user_model()
 class DepartmentSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize Department instance.'''
     users = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
-    admins = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = auth.models.Department
         fields = ('id', 'name', 'users', 'admins')
 
-    def get_admins(self, obj):  # pylint: disable=no-self-use
-        '''Get department admin ids.'''
-        # TODO: rewrite this function
-        obj_id = obj.id
-        return []
+    # TODO: rewrite get_admins function
 
 
 class PermissionSerializer(serializers.ModelSerializer):
