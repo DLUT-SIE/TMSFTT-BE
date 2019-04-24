@@ -8,8 +8,6 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 
-from training_event.models import EventCoefficient
-
 
 faker = Faker('zh_CN')
 faker.seed(0)
@@ -178,6 +176,7 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     ) for _ in range(num_off_campus_events)]
 
     print('Populate EventCoefficient')
+    EventCoefficient = apps.get_model('training_event.EventCoefficient')
     for campus_event in campus_events:
         EventCoefficient.objects.create(
             coefficient=1, hours_option=0, workload_option=0,
@@ -188,7 +187,7 @@ def populate_initial_data(apps, _):  # pylint: disable=all
             off_campus_event_id=off_campus_event.id)
 
     print('Populate Enrollment')
-    num_enrollments = 200
+    num_enrollments = 20
     enrollments = []
     from training_event.models import Enrollment
     enroll_methods = Enrollment.ENROLL_METHOD_CHOICES
@@ -220,8 +219,6 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     campus_event_records = [Record.objects.create(
         campus_event_id=enrollment.campus_event_id,
         user_id=enrollment.user_id,
-        event_coefficient_id=EventCoefficient.objects.get(
-            campus_event_id=enrollment.campus_event.id).id
     ) for enrollment in enrollments]
 
     records = off_campus_event_records + campus_event_records
@@ -265,7 +262,7 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('tmsftt_auth', '0001_initial'),
-        ('infra', '0002_auto_20190424_0949'),
+        ('infra', '0002_auto_20190423_1810'),
         ('training_program', '0001_initial'),
         ('training_event', '0001_initial'),
         ('training_record', '0001_initial'),
