@@ -49,9 +49,10 @@ class Record(models.Model):
     status = models.PositiveSmallIntegerField(verbose_name='当前状态',
                                               choices=STATUS_CHOICES,
                                               default=STATUS_SUBMITTED)
-    role = models.PositiveSmallIntegerField(
-        verbose_name='参与角色', choices=EventCoefficient.ROLE_CHOICES,
-        default=EventCoefficient.ROLE_PARTICIPATOR)
+    event_coefficient = models.ForeignKey(EventCoefficient,
+                                          verbose_name='培训活动系数',
+                                          related_name='records',
+                                          on_delete=models.CASCADE)
 
     def __str__(self):
         return '{}({})'.format(

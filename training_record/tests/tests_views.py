@@ -16,6 +16,7 @@ import training_record.models
 from training_record.models import (
     Record, RecordContent, RecordAttachment, StatusChangeLog)
 import training_event.models
+from training_event.models import EventCoefficient
 
 
 User = get_user_model()
@@ -41,6 +42,7 @@ class TestRecordViewSet(APITestCase):
             'num_hours': 5,
             'num_participants': 30,
         }
+        event_coefficient = mommy.make(EventCoefficient)
         attachments_data = [io.BytesIO(b'some content') for _ in range(3)]
         contents_data = [
             json.dumps({'content_type': x[0], 'content': 'abc'})
@@ -50,6 +52,7 @@ class TestRecordViewSet(APITestCase):
             'user': user.id,
             'contents_data': contents_data,
             'attachments_data': attachments_data,
+            'event_coefficient': event_coefficient.id,
         }
 
         response = self.client.post(url, data, format='multipart')
@@ -116,7 +119,8 @@ class TestRecordViewSet(APITestCase):
         url = reverse('record-detail', args=(record.pk,))
         expected_keys = {'id', 'create_time', 'update_time', 'campus_event',
                          'off_campus_event', 'user', 'status', 'contents',
-                         'attachments', 'status_str', 'role', 'feedback'}
+                         'attachments', 'status_str',
+                         'feedback'}
 
         response = self.client.get(url)
 

@@ -1,4 +1,6 @@
 '''Define ORM models for training_event module.'''
+import math
+
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -102,6 +104,7 @@ class Enrollment(models.Model):
         return '{} 报名 {} 的记录'.format(self.user_id, self.campus_event_id)
 
 
+# pylint: disable=no-self-use
 class EventCoefficient(models.Model):
     """
     EventCoefficient holds information about the coefficient of role
@@ -155,3 +158,33 @@ class EventCoefficient(models.Model):
     workload_option = models.PositiveSmallIntegerField(
         verbose_name='工作量取整方式', choices=ROUND_CHOICES,
         default=ROUND_METHOD_NONE)
+
+    def calculate_campus_event_workload(self, record):
+        '''calculate wordkload by record'''
+        # calculate campus_event num_hours based on  hours_option
+        hour = self._round(record.campus_event.num_hours, self.hours_option)
+
+        # calculate workload based on workload_option
+        default_workload = hour * self.coefficient
+        return self._round(default_workload, self.workload_option)
+
+    def calculate_off_campus_event_workload(
+            self, record):  # pylint: disable=unused-argument
+        ''' to be confirmed someday'''
+        return 0
+
+    def calculate_event_workload(self, record):
+        '''calculate event workload by event type'''
+        if record.campus_event:
+            return self.calculate_campus_event_workload(record)
+        return self.calculate_off_campus_event_workload(record)
+
+    @classmethod
+    def _round(cls, value, option):
+        if option == cls.ROUND_METHOD_CEIL:
+            return math.ceil(value)
+        if option == EventCoefficient.ROUND_METHOD_FLOOR:
+            return math.floor(value)
+        if option == EventCoefficient.ROUND_METHOD_DEFAULT:
+            return round(value)
+        return value
