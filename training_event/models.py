@@ -168,8 +168,8 @@ class EventCoefficient(models.Model):
         default_workload = hour * self.coefficient
         return self._round(default_workload, self.workload_option)
 
-    # pylint: disable unused-argument
-    def calculate_off_campus_event_workload(self, record):
+    def calculate_off_campus_event_workload(
+            self, record):  # pylint: disable unused-argument
         ''' to be confirmed someday'''
         return 0
 
