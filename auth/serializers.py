@@ -21,7 +21,7 @@ class DepartmentSerializer(serializers.ModelSerializer):
     def get_admins(self, obj):  # pylint: disable=no-self-use
         '''Get department admin ids.'''
         # TODO: rewrite this function
-        obj = self.obj
+        obj_id = obj.id
         return []
 
 
