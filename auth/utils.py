@@ -9,7 +9,7 @@ def get_user_secret_key(user):
     '''Generate a secret key for a user.'''
     unhashed_key = '{}.{}'.format(
         settings.SECRET_KEY,  # Django secret key
-        user.password,  # User password
+        user.username,  # Username 
         ).encode()
     sha1 = hashlib.new('sha1')
     sha1.update(unhashed_key)
