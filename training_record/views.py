@@ -11,7 +11,7 @@ import training_record.models
 import training_record.filters
 from training_record.services import RecordService
 from training_record.serializers import (CampusEventFeedbackSerializer,
-                                         WriteOnlyRecordSerializer,
+                                         RecordCreateSerializer,
                                          ReadOnlyRecordSerializer)
 
 
@@ -19,13 +19,14 @@ class RecordViewSet(viewsets.ModelViewSet):
     '''Create API views for Record.'''
     queryset = (
         training_record.models.Record.objects.all()
+        .select_related('feedback', 'campus_event', 'off_campus_event')
         .prefetch_related('contents', 'attachments')
     )
     filter_class = training_record.filters.RecordFilter
 
     def get_serializer_class(self):
-        if (self.action == 'create') | (self.action == 'update'):
-            serializer_class = WriteOnlyRecordSerializer
+        if self.action == 'create':
+            serializer_class = RecordCreateSerializer
         else:
             serializer_class = ReadOnlyRecordSerializer
         return serializer_class
