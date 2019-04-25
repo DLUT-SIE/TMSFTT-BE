@@ -48,6 +48,7 @@ DATABASES = {
         'PASSWORD': get_secret_from_file('DATABASE_PASSWORD_FILE'),
         'HOST': os.environ.get('DATABASE_HOST', 'tmsftt-db'),
         'PORT': os.environ.get('DATABASE_PORT', '3306'),
+        'CONN_MAX_AGE': 10,
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
@@ -58,15 +59,73 @@ DATABASES = {
         }
     }
 }
-CONN_MAX_AGE = 10
+
+# Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{levelname}] {asctime} {module} {process:d}: {message}',
+            'style': '{',
+        },
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        'django.server': {
+            'level': 'INFO',
+            'filters': ['require_debug_false'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        'file': {
+            'level': 'INFO',
+            'filters': ['require_debug_false'],
+            'class': 'logging.FileHandler',
+            'formatter': 'verbose',
+            'filename': '/django-server.log',
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'verbose',
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'django.prod': {
+            'handlers': ['django.server', 'file', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    }
+}
+
 
 # DRF settings
 REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = (
     'rest_framework.renderers.JSONRenderer',
 )
 
-# User-uploaded files
-MEDIA_ROOT = '/media/'
+# Dynamic contents
+MEDIA_ROOT = '/files/'
 MEDIA_URL = '/media/'
 
 # CAS dev settings
