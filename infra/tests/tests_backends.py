@@ -4,7 +4,7 @@ from unittest.mock import patch, Mock
 from django.core.mail import EmailMessage
 from django.test import TestCase
 
-from infra.exceptions import InternalServerError
+from infra.exceptions import InternalServerError, BadRequest
 from infra.backends import SOAPEmailBackend
 
 
@@ -28,6 +28,13 @@ class TestSOAPEmailBackend(TestCase):
 
         self.assertFalse(res)
 
+    def test_format_recipient_fail(self):
+        '''Should raise exception if recipient is not an email address.'''
+        recipients = ['abcdef.gh']
+
+        with self.assertRaisesMessage(BadRequest, '邮箱地址无效'):
+            self.backend.format_recipients(recipients)
+
     def test_format_single_recipient(self):
         '''Should format single recipient correctly.'''
 
@@ -39,11 +46,11 @@ class TestSOAPEmailBackend(TestCase):
 
     def test_format_multiple_recipients(self):
         '''Should format multiple recipients correctly.'''
-        recipients = ['abc@def.gh', '123456']
+        recipients = ['abc@def.gh', 'abccc@ggg.com']
 
         res = self.backend.format_recipients(recipients)
 
-        self.assertEqual(res, f'||||{recipients[0]}^@^|{recipients[1]}|||')
+        self.assertEqual(res, f'||||{recipients[0]}^@^||||{recipients[1]}')
 
     @patch('infra.backends.InMemoryCache', Mock())
     @patch('infra.backends.Transport', Mock())
@@ -68,7 +75,7 @@ class TestSOAPEmailBackend(TestCase):
 
         mocked_client.return_value = mocked_client
         mocked_client.service.saveEmailInfo.side_effect = Exception('Unknown')
-        email_message = EmailMessage('a', 'b', 'from', ['12345', 'a@b.com'])
+        email_message = EmailMessage('a', 'b', 'from', ['c@d.com', 'a@b.com'])
         with self.assertRaisesMessage(InternalServerError, '邮件发送失败'):
             self.backend.send_messages([email_message])
 
@@ -86,10 +93,10 @@ class TestSOAPEmailBackend(TestCase):
         mocked_client.service.saveEmailInfo.return_value = (
             '{"result":true,"msg":"success","msg_id":"123"}'
         )
-        email_message = EmailMessage('a', 'b', 'from', ['12345', 'a@b.com'])
+        email_message = EmailMessage('a', 'b', 'from', ['a@c.com', 'a@b.com'])
         self.backend.send_messages([email_message])
 
-        msg = "邮件发送成功, 收件人: ['12345', 'a@b.com'], 标题: a, 消息ID: 123"
+        msg = "邮件发送成功, 收件人: ['a@c.com', 'a@b.com'], 标题: a, 消息ID: 123"
         mocked_logger.info.assert_called_with(msg)
 
     @patch('infra.backends.InMemoryCache', Mock())
@@ -103,7 +110,7 @@ class TestSOAPEmailBackend(TestCase):
         mocked_client.service.saveEmailInfo.return_value = (
             '{"result":false,"msg":"failed reason","msg_id":"123"}'
         )
-        email_message = EmailMessage('a', 'b', 'from', ['12345', 'a@b.com'])
+        email_message = EmailMessage('a', 'b', 'from', ['aa@c.com', 'a@b.com'])
         with self.assertRaisesMessage(InternalServerError, '邮件发送失败'):
             self.backend.send_messages([email_message])
 
