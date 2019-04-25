@@ -10,7 +10,7 @@ from zeep import Client
 from zeep.cache import InMemoryCache
 from zeep.transports import Transport
 
-from infra.exceptions import InternalServerError
+from infra.exceptions import InternalServerError, BadRequest
 from infra.utils import prod_logger
 
 
@@ -93,8 +93,7 @@ class SOAPEmailBackend(BaseEmailBackend):
         for recipient in recipients:
             if res != '':
                 res += '^@^'
-            if self.recipient_is_email(recipient):
-                res += f'||||{recipient}'
-            else:
-                res += f'|{recipient}|||'
+            if not self.recipient_is_email(recipient):
+                raise BadRequest('邮箱地址无效')
+            res += f'||||{recipient}'
         return res
