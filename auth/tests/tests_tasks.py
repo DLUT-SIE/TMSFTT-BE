@@ -13,7 +13,6 @@ from auth.tasks import (
 )
 
 
-# pylint: disable=no-self-use
 class TestUpdateTeachersAndDepartmentsInformation(TestCase):
     '''Unit tests for syncing from provided data.'''
 

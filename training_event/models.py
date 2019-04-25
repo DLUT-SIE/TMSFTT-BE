@@ -104,7 +104,6 @@ class Enrollment(models.Model):
         return '{} 报名 {} 的记录'.format(self.user_id, self.campus_event_id)
 
 
-# pylint: disable=no-self-use
 class EventCoefficient(models.Model):
     """
     EventCoefficient holds information about the coefficient of role

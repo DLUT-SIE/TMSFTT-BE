@@ -11,7 +11,6 @@ from auth.utils import (
 )
 
 
-# pylint: disable=no-self-use
 class TestUtils(TestCase):
     '''Unit tests for utility functions.'''
     def test_consistent_results_for_same_user(self):

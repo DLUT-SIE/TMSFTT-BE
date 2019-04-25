@@ -15,7 +15,6 @@ from training_event.models import OffCampusEvent, CampusEvent, EventCoefficient
 User = get_user_model()
 
 
-# pylint: disable=too-few-public-methods
 class RecordService:
     '''Provide services for Record.'''
     @staticmethod

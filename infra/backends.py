@@ -64,7 +64,7 @@ class SOAPEmailBackend(BaseEmailBackend):
                 resp = json.loads(resp)
                 if resp['result'] is False:
                     raise Exception(resp['msg'])
-            except Exception as err:  # pylint: disable=broad-except
+            except Exception as err:
                 msg = f'邮件发送失败, 失败原因: {err}'
                 prod_logger.warning(msg)
                 raise InternalServerError('邮件发送失败')
