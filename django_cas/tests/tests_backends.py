@@ -29,20 +29,15 @@ class TestCASBackend(TestCase):
 
         self.assertEqual(result, user)
 
-    @patch('auth.models.User.objects')
     @patch('django_cas.backends.CAS_VERIFY')
-    def test_authenticate_success_create_user(self, mocked_verify,
-                                              mocked_queryset):
-        '''Should create user if not exsting when authentication succeed.'''
+    def test_authenticate_success_return_none(self, mocked_verify):
+        '''Should return None if not exsting when authentication succeed.'''
         mocked_verify.return_value = ('username', None)
-        user = Mock()
-        mocked_queryset.get.side_effect = User.DoesNotExist()
-        mocked_queryset.create_user.return_value = user
         backend = self.backend
 
         result = backend.authenticate(None, None, None)
 
-        self.assertEqual(result, user)
+        self.assertIsNone(result)
 
     @patch('auth.models.User.objects')
     @patch('django_cas.backends.CAS_VERIFY')
