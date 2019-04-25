@@ -8,6 +8,7 @@ from infra.mixins import MultiSerializerActionClassMixin
 class TestMultiSerializerActionClassMixin(TestCase):
     '''Unit tests for MultiSerializerActionClassMixin.'''
     def setUp(self):
+        # pylint: disable=missing-docstring
         class ViewSet:
             get_serializer_class = Mock()
 
