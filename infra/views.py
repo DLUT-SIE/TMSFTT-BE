@@ -48,7 +48,6 @@ class NotificationViewSet(mixins.ListModelMixin,
         return self._get_read_status_filtered_notifications(request, True)
 
 
-# pylint: disable=no-self-use
 class NotificationActionViewSet(viewsets.ViewSet):
     '''Define actions for users to manipulate Notification objects.'''
     permission_classes = (permissions.IsAuthenticated,)

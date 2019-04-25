@@ -18,7 +18,6 @@ class DepartmentSerializer(serializers.ModelSerializer):
         model = auth.models.Department
         fields = ('id', 'name', 'users', 'admins')
 
-    # pylint: disable=no-self-use
     # pylint: disable=unused-argument
     def get_admins(self, obj):
         '''Get department admin ids.'''

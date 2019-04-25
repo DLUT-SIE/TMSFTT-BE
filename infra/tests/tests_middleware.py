@@ -5,7 +5,6 @@ from django.test import TestCase
 from infra.middleware import OperationLogMiddleware
 
 
-# pylint: disable=too-few-public-methods
 class TestOperationLogMiddleware(TestCase):
     '''Unit tests for OperationLogMiddleware.'''
 

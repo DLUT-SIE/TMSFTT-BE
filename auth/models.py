@@ -183,10 +183,10 @@ class TeacherInformation(models.Model):
     rjlx = models.CharField(verbose_name='任教类型', max_length=40,
                             db_column='RJLX', blank=True, null=True)
 
-    def save(self, *args, **kwargs):  # pylint: disable=arguments-differ
+    def save(self, *args, **kwargs):
         raise Exception('该表状态为只读')
 
-    def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
+    def delete(self, *args, **kwargs):
         raise Exception('该表状态为只读')
 
     @classmethod
@@ -263,8 +263,8 @@ class DepartmentInformation(models.Model):
     sfyx = models.CharField(verbose_name='是否有效', max_length=1,
                             db_column='SFYX', blank=True, null=True)
 
-    def save(self, *args, **kwargs):  # pylint: disable=arguments-differ
+    def save(self, *args, **kwargs):
         raise Exception('该表状态为只读')
 
-    def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
+    def delete(self, *args, **kwargs):
         raise Exception('该表状态为只读')

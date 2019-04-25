@@ -46,7 +46,6 @@ class RecordViewSet(viewsets.ModelViewSet):
         return self._get_reviewed_status_filtered_records(request, True)
 
 
-# pylint: disable=no-self-use
 class RecordActionViewSet(viewsets.ViewSet):
     '''Create extra actions for Record objects.'''
     @decorators.action(detail=False, methods=['POST'],

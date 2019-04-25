@@ -11,7 +11,6 @@ from training_record.models import Record
 from auth.models import User
 
 
-# pylint: disable=too-few-public-methods
 class EnrollmentService:
     '''Provide services for Enrollment.'''
     @staticmethod

@@ -25,7 +25,6 @@ class BrowsableAPIRendererWithoutForms(
         BrowsableAPIRenderer):  # pragma: no cover
     """Renders the browsable api, but excludes the forms."""
 
-    # pylint: disable=arguments-differ
     def get_context(self, *args, **kwargs):
         ctx = super().get_context(*args, **kwargs)
         ctx['display_edit_forms'] = False

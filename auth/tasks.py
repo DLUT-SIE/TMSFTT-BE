@@ -69,5 +69,5 @@ def update_teachers_and_departments_information():
     try:
         dwid_to_department = _update_from_department_information()
         _update_from_teacher_information(dwid_to_department)
-    except Exception:  # pylint: disable=broad-except
+    except Exception:
         prod_logger.exception('教师信息或部门信息更新失败')
