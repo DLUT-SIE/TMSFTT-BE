@@ -36,18 +36,36 @@ class OperationLog(models.Model):
 
     time = models.DateTimeField(verbose_name='操作时间', auto_now_add=True)
     remote_ip = models.GenericIPAddressField(verbose_name='操作来源IP')
-    requester = models.ForeignKey(User, verbose_name='操作人员',
-                                  on_delete=models.PROTECT)
-    method = models.PositiveSmallIntegerField(verbose_name='HTTP方法',
-                                              choices=HTTP_METHODS)
+    requester = models.ForeignKey(
+        User, verbose_name='操作人员', on_delete=models.PROTECT,
+        blank=True, null=True)
+    method = models.PositiveSmallIntegerField(
+        verbose_name='HTTP方法', choices=HTTP_METHODS)
     url = models.URLField(verbose_name='请求URL', max_length=256)
-    referrer = models.URLField(verbose_name='来源URL', max_length=256)
+    referrer = models.URLField(verbose_name='来源URL', max_length=256,
+                               blank=True)
     user_agent = models.CharField(verbose_name='用户代理标识',
-                                  max_length=256)
+                                  max_length=256, blank=True)
+    status_code = models.PositiveSmallIntegerField(
+        verbose_name='响应状态码', default=0)
 
     def __str__(self):
         return '{}({} {} {})'.format(self.time, self.requester_id,
                                      self.method, self.url)
+
+    @classmethod
+    def from_response(cls, request, response):
+        '''Construct instance from request and respnose.'''
+        obj = cls(
+            remote_ip=request.META['REMOTE_ADDR'],
+            requester=request.user,
+            method=cls.HTTP_METHODS_DICT[request.method],
+            url=request.get_full_path_info(),
+            referrer=request.META.get('HTTP_REFERER', ''),
+            user_agent=request.META['HTTP_USER_AGENT'],
+            status_code=response.status_code
+        )
+        return obj
 
 
 class Notification(models.Model):
