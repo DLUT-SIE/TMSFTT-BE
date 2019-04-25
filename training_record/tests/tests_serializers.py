@@ -5,15 +5,15 @@ from django.test import TestCase
 from rest_framework import serializers
 
 from training_record.serializers import (
-    WriteOnlyRecordSerializer, CampusEventFeedbackSerializer)
+    RecordCreateSerializer, CampusEventFeedbackSerializer)
 
 
 # pylint: disable=no-self-use
-class TestWriteOnlyRecordSerializer(TestCase):
+class TestRecordCreateSerializer(TestCase):
     '''Unit tests for serializer of Record.'''
     def test_validate_attachments_too_much_attachments(self):
         '''Should raise ValidationError if there are too much attachments.'''
-        serializer = WriteOnlyRecordSerializer()
+        serializer = RecordCreateSerializer()
         data = [Mock() for _ in range(20)]
 
         with self.assertRaisesMessage(
@@ -27,7 +27,7 @@ class TestWriteOnlyRecordSerializer(TestCase):
         '''
         Should raise ValidationError if the size of attachments is too large.
         '''
-        serializer = WriteOnlyRecordSerializer()
+        serializer = RecordCreateSerializer()
         data = [Mock(size=100*1024*1024) for _ in range(2)]
 
         with self.assertRaisesMessage(

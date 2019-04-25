@@ -57,18 +57,22 @@ class ReadOnlyRecordSerializer(serializers.ModelSerializer):
                   'attachments', 'status_str', 'role', 'feedback')
 
 
-class WriteOnlyRecordSerializer(serializers.ModelSerializer):
+class RecordCreateSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize Record instance.'''
-    off_campus_event = serializers.JSONField(binary=True, write_only=True)
+    off_campus_event = serializers.JSONField(
+        binary=True,
+        write_only=True,
+        required=True,
+    )
     contents = serializers.ListField(
         child=serializers.JSONField(binary=True),
         write_only=True,
-        default=lambda: [],
+        required=False,
     )
     attachments = serializers.ListField(
         child=serializers.FileField(),
         write_only=True,
-        default=lambda: [],
+        required=False,
     )
     feedback = serializers.PrimaryKeyRelatedField(read_only=True)
 
