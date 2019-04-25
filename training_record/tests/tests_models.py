@@ -3,7 +3,6 @@ from unittest.mock import Mock
 
 from django.test import TestCase
 from django.utils.timezone import now
-from django.utils.text import format_lazy as _f
 
 from training_record.models import (
     Record, RecordContent, RecordAttachment,
@@ -97,8 +96,8 @@ class TestStatusChangeLog(TestCase):
         record_id = 123
         for pre_status, pre_msg in Record.STATUS_CHOICES:
             for post_status, post_msg in Record.STATUS_CHOICES:
-                expected_str = _f('{}状态于{}由{}变为{}',
-                                  record_id, time, pre_msg, post_msg)
+                expected_str = '{}状态于{}由{}变为{}'.format(
+                    record_id, time, pre_msg, post_msg)
                 change_log = StatusChangeLog(pre_status=pre_status,
                                              post_status=post_status,
                                              time=time,

@@ -3,7 +3,6 @@ import math
 from unittest.mock import patch
 
 from django.test import TestCase
-from django.utils.text import format_lazy as _f
 
 from training_record.models import Record
 from training_event.models import (
@@ -37,7 +36,7 @@ class TestEnrollment(TestCase):
         '''Should render string correctly.'''
         campus_event_id = 123
         user_id = 456
-        expected_str = _f('{} 报名 {} 的记录', user_id, campus_event_id)
+        expected_str = '{} 报名 {} 的记录'.format(user_id, campus_event_id)
         enrollment = Enrollment(
             campus_event_id=campus_event_id,
             user_id=user_id,

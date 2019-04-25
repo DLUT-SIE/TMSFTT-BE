@@ -21,6 +21,11 @@ DEV_INSTALLED_APPS = [
 ]
 INSTALLED_APPS.extend(DEV_INSTALLED_APPS)
 
+# Middlewares
+MIDDLEWARE.extend([
+    'infra.middleware.OperationLogMiddleware',
+])
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_secret_from_file('SECRET_KEY_FILE')
