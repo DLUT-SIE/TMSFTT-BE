@@ -23,6 +23,5 @@ class CASBackend(ModelBackend):  # pylint: disable=R0903
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
-            # user will have an "unusable" password
-            user = User.objects.create_user(username)
+            return None
         return user
