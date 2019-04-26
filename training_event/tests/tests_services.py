@@ -66,6 +66,8 @@ class TestCoefficientCalculationService(TestCase):
         cls.off_campus_record = mommy.make(
             Record, event_coefficient=cls.event_coefficient,
             off_campus_event=cls.off_campus_event, user=cls.user)
+        cls.workload_dic = {cls.user: 100}
+        cls.filename = 'testfile'
 
     def test_calculate_workload_by_query(self):
         '''Should return workload by query'''
