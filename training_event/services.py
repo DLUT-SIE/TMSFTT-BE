@@ -1,12 +1,11 @@
 '''Provide services of training event module.'''
 from itertools import chain
-import os.path as osp
+import tempfile
 import collections
-import xlwt
 
+import xlwt
 from django.db import transaction
 from django.utils.timezone import now
-from django.conf import settings
 
 from infra.exceptions import BadRequest
 from training_event.models import CampusEvent, Enrollment
@@ -147,7 +146,8 @@ class CoefficientCalculationService:
             worksheet.write(row+1, 1, str(teacher[0].department))
             worksheet.write(row+1, 2, teacher[0].first_name)
             worksheet.write(row+1, 3, teacher[1])
-        path = osp.join(
-            settings.MEDIA_ROOT, 'workload', '{}.xls'.format(filename))
-        workbook.save(path)
-        return path
+
+        tup = tempfile.mkstemp(suffix=filename)
+
+        workbook.save(tup[1])
+        return tup[1]

@@ -1,10 +1,8 @@
 '''Unit tests for training_event services.'''
-import os.path as osp
 import xlrd
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from django.conf import settings
 from django.utils.timezone import now
 from model_mommy import mommy
 
@@ -87,9 +85,6 @@ class TestCoefficientCalculationService(TestCase):
             .generate_workload_excel_from_data(
                 self.workload_dic, self.filename)
         workbook = xlrd.open_workbook(path)
-        path_name = osp.join(
-            settings.MEDIA_ROOT, 'workload', '{}.xls'.format(self.filename))
-        self.assertEqual(path, path_name)
         sheet = workbook.sheet_by_name(
             CoefficientCalculationService.WORKLOAD_SHEET_NAME)
         row = 0
