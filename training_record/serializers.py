@@ -86,7 +86,7 @@ class RecordCreateSerializer(serializers.ModelSerializer):
         return RecordService.create_off_campus_record_from_raw_data(
             **validated_data)
 
-    def validate_attachments(self, data):  # pylint: disable=no-self-use
+    def validate_attachments(self, data):
         '''Validate attachments data.'''
         # TODO(youchen): Use global configs
         if len(data) > 3:
