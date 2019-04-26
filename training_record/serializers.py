@@ -54,7 +54,7 @@ class ReadOnlyRecordSerializer(serializers.ModelSerializer):
         model = Record
         fields = ('id', 'create_time', 'update_time', 'campus_event',
                   'off_campus_event', 'user', 'status', 'contents',
-                  'attachments', 'status_str', 'role', 'feedback')
+                  'attachments', 'status_str', 'feedback')
 
 
 class RecordCreateSerializer(serializers.ModelSerializer):
@@ -80,7 +80,7 @@ class RecordCreateSerializer(serializers.ModelSerializer):
         model = Record
         fields = ('id', 'create_time', 'update_time', 'campus_event',
                   'off_campus_event', 'user', 'status', 'contents',
-                  'attachments', 'role', 'feedback')
+                  'attachments', 'feedback')
 
     def create(self, validated_data):
         return RecordService.create_off_campus_record_from_raw_data(
