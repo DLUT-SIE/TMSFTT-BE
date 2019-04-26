@@ -1,7 +1,6 @@
 '''Provide services of training event module.'''
 from itertools import chain
 import tempfile
-import collections
 
 import xlwt
 from django.db import transaction
@@ -54,8 +53,9 @@ class CoefficientCalculationService:
 
     WORKLOAD_SHEET_NAME = '工作量汇总统计'
     WORKLOAD_SHEET_TITLE = ['序号', '学部（学院）', '教师姓名', '工作量']
-    WORKLOAD_SHEET_TITLE_STYLE = 'font: bold on; ' \
-                                 'align: wrap on, vert centre, horiz center'
+    WORKLOAD_SHEET_TITLE_STYLE = ('font: bold on; '
+                                  'align: wrap on, vert centre, horiz center'
+                                  )
 
     @staticmethod
     def calculate_workload_by_query(department=None, start_time=None,
@@ -106,18 +106,19 @@ class CoefficientCalculationService:
         for record in chain(campus_records, off_campus_records):
             user = record.user
             result.setdefault(user, 0)
-            result[user] += record.event_coefficient\
-                .calculate_event_workload(record)
+            result[user] += (
+                record.event_coefficient.calculate_event_workload(record)
+            )
 
         return result
 
     @staticmethod
-    def generate_workload_excel_from_data(workload_dic, filename):
+    def generate_workload_excel_from_data(workload_dict, filename):
         """ 根据传入的工作量汇总字典生成excel
 
         Parameters
         ----------
-        workload_dic: dic
+        workload_dict: dict
             key 为user，value为对应user的工作量，通过调用
             calculate_workload_by_query（）方法获取相应字典
         filename: str
@@ -125,7 +126,6 @@ class CoefficientCalculationService:
         """
 
         # 初始化excel
-        workload_dic = collections.OrderedDict(workload_dic)
         workbook = xlwt.Workbook()
         worksheet = workbook.add_sheet(
             CoefficientCalculationService.WORKLOAD_SHEET_NAME)
@@ -137,17 +137,17 @@ class CoefficientCalculationService:
             worksheet.write(0, col, title, style)
 
         # 根据学院名排序，优化输出形式
-        workload_list = sorted(workload_dic.items(),
-                               key=lambda item: str(item[0].department))
+        workload_list = sorted(workload_dict.items(),
+                               key=lambda item: item[0].department.name)
         # 写数据
         for row, teacher in enumerate(workload_list):
 
             worksheet.write(row+1, 0, row+1)
-            worksheet.write(row+1, 1, str(teacher[0].department))
+            worksheet.write(row+1, 1, teacher[0].department.name)
             worksheet.write(row+1, 2, teacher[0].first_name)
             worksheet.write(row+1, 3, teacher[1])
 
-        tup = tempfile.mkstemp(suffix=filename)
+        tmpfile_tup = tempfile.mkstemp(suffix=filename)
 
-        workbook.save(tup[1])
-        return tup[1]
+        workbook.save(tmpfile_tup[1])
+        return tmpfile_tup[1]
