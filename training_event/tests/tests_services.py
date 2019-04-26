@@ -1,4 +1,6 @@
 '''Unit tests for training_event services.'''
+import xlrd
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils.timezone import now
@@ -66,7 +68,8 @@ class TestCoefficientCalculationService(TestCase):
         cls.off_campus_record = mommy.make(
             Record, event_coefficient=cls.event_coefficient,
             off_campus_event=cls.off_campus_event, user=cls.user)
-        cls.workload_dic = {cls.user: 100}
+        cls.workload = 100
+        cls.workload_dic = {cls.user: cls.workload}
         cls.filename = 'testfile'
 
     def test_calculate_workload_by_query(self):
@@ -75,3 +78,22 @@ class TestCoefficientCalculationService(TestCase):
             CoefficientCalculationService.calculate_workload_by_query(
                 department=self.department)[self.user],
             self.NUM_HOURS * self.RECORDS_NUMS)
+
+    def test_generate_workload_excel_from_data(self):
+        '''Should generate excel correctly'''
+        path = CoefficientCalculationService\
+            .generate_workload_excel_from_data(self.workload_dic, self.filename)
+        workbook = xlrd.open_workbook(path)
+        sheet = workbook.sheet_by_name(
+            CoefficientCalculationService.WORKLOAD_SHEET_NAME)
+        row = 0
+        for col, title in enumerate(
+                CoefficientCalculationService.WORKLOAD_SHEET_TITLE):
+            self.assertEqual(title, sheet.cell_value(row, col))
+        row += 1
+        self.assertEqual(sheet.cell_value(row, 0), row)
+        self.assertEqual(sheet.cell_value(row, 1), str(self.user.department))
+        self.assertEqual(sheet.cell_value(row, 2), str(self.user.first_name))
+        self.assertEqual(sheet.cell_value(row, 3), self.workload)
+
+
