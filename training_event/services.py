@@ -1,13 +1,16 @@
 '''Provide services of training event module.'''
 from itertools import chain
+import os.path as osp
+import collections
+import xlwt
 
 from django.db import transaction
 from django.utils.timezone import now
+from django.conf import settings
 
 from infra.exceptions import BadRequest
 from training_event.models import CampusEvent, Enrollment
 from training_record.models import Record
-
 from auth.models import User
 
 
@@ -50,9 +53,14 @@ class EnrollmentService:
 class CoefficientCalculationService:
     '''Provide workload calculation method .'''
 
+    WORKLOAD_SHEET_NAME = '工作量汇总统计'
+    WORKLOAD_SHEET_TITLE = ['序号', '学部（学院）', '教师姓名', '工作量']
+    WORKLOAD_SHEET_TITLE_STYLE = 'font: bold on; ' \
+                                 'align: wrap on, vert centre, horiz center'
+
     @staticmethod
     def calculate_workload_by_query(department=None, start_time=None,
-                                    end_time=None):
+                                    end_time=None, teachers=None):
         """calculate workload by department and period
 
         Parameters
@@ -63,6 +71,9 @@ class CoefficientCalculationService:
             查询结束时间
         department: Department
             查询的学院
+        teachers: list of users, optional
+            可选参数，list中存储需要查询的老师，该参数与department互斥，当二者
+            同时存在时，以teachers参数查询为主，department参数不生效
         Returns
         -------
         result: dict
@@ -75,9 +86,11 @@ class CoefficientCalculationService:
             start_time = end_time.replace(year=end_time.year - 1,
                                           month=12, day=31, hour=16, minute=0,
                                           second=0)
-        teachers = User.objects.all()
-        if department is not None:
-            teachers = teachers.filter(department=department)
+        if teachers is None:
+            teachers = User.objects.all()
+            if department is not None:
+                teachers = teachers.filter(department=department)
+        teachers = teachers.select_related('department')
 
         campus_records = Record.objects.select_related(
             'event_coefficient', 'campus_event').filter(
@@ -92,9 +105,49 @@ class CoefficientCalculationService:
         result = {}
 
         for record in chain(campus_records, off_campus_records):
-            user_id = record.user_id
-            result.setdefault(user_id, 0)
-            result[user_id] += record.event_coefficient\
+            user = record.user
+            result.setdefault(user, 0)
+            result[user] += record.event_coefficient\
                 .calculate_event_workload(record)
 
         return result
+
+    @staticmethod
+    def generate_workload_excel_from_data(workload_dic, filename):
+        """ 根据传入的工作量汇总字典生成excel
+
+        Parameters
+        ----------
+        workload_dic: dic
+            key 为user，value为对应user的工作量，通过调用
+            calculate_workload_by_query（）方法获取相应字典
+        filename: str
+            文件名
+        """
+
+        # 初始化excel
+        workload_dic = collections.OrderedDict(workload_dic)
+        workbook = xlwt.Workbook()
+        worksheet = workbook.add_sheet(
+            CoefficientCalculationService.WORKLOAD_SHEET_NAME)
+        style = xlwt.easyxf(
+            CoefficientCalculationService.WORKLOAD_SHEET_TITLE_STYLE)
+        # 生成表头
+        for col, title in enumerate(
+                CoefficientCalculationService.WORKLOAD_SHEET_TITLE):
+            worksheet.write(0, col, title, style)
+
+        # 根据学院名排序，优化输出形式
+        workload_list = sorted(workload_dic.items(),
+                               key=lambda item: str(item[0].department))
+        # 写数据
+        for row, teacher in enumerate(workload_list):
+
+            worksheet.write(row+1, 0, row+1)
+            worksheet.write(row+1, 1, str(teacher[0].department))
+            worksheet.write(row+1, 2, teacher[0].first_name)
+            worksheet.write(row+1, 3, teacher[1])
+        path = osp.join(
+            settings.MEDIA_ROOT, 'workload', '{}.xls'.format(filename))
+        workbook.save(path)
+        return path
