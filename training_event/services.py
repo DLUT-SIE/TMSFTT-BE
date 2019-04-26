@@ -120,7 +120,7 @@ class CoefficientCalculationService:
         ----------
         workload_dict: dict
             key 为user，value为对应user的工作量，通过调用
-            calculate_workload_by_query（）方法获取相应字典
+            calculate_workload_by_query方法获取相应字典
         filename: str
             文件名
         Returns
