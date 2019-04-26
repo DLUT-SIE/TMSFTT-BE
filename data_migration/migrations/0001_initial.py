@@ -100,9 +100,9 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     groups = []
     for idx in range(1, 1 + num_departments):
         department = Department.objects.get(raw_department_id=f'{idx}')
-        groups += [Group.objects.create(
+        groups.extend([Group.objects.create(
             name = department.name + '-' + item,
-        ) for item in category_names]
+        ) for item in category_names])
 
     print('Populate User')
     num_users = 20
@@ -128,10 +128,8 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     ) for idx in range(2, 2 + num_users)]
 
     print('Populate User-Groups')
-    for idx in range(num_users):
-        user = users[idx]
-        temp_idx = randint(0, num_departments * len(category_names) - 1)
-        user.groups.add(groups[temp_idx])
+    for user in users:
+        user.groups.add(choice(groups))
 
     print('Populate infra')
     print('Populate Notification')
