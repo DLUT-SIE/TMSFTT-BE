@@ -73,5 +73,5 @@ class TestCoefficientCalculationService(TestCase):
         '''Should return workload by query'''
         self.assertEqual(
             CoefficientCalculationService.calculate_workload_by_query(
-                department=self.department)[self.user.id],
+                department=self.department)[self.user],
             self.NUM_HOURS * self.RECORDS_NUMS)
