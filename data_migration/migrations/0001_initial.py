@@ -130,7 +130,7 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     print('Populate User-Groups')
     for idx in range(num_users):
         user = users[idx]
-        temp_idx = randint(0, num_departments * len(category_names))
+        temp_idx = randint(0, num_departments * len(category_names) - 1)
         user.groups.add(groups[temp_idx])
 
     print('Populate infra')
