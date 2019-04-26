@@ -76,8 +76,8 @@ class CoefficientCalculationService:
         Returns
         -------
         result: dict
-        key 为学部老师
-        values 为该老师在规定查询时间段内的工时
+            key 为学部老师
+            values 为该老师在规定查询时间段内的工时
         """
         if end_time is None:
             end_time = now()
