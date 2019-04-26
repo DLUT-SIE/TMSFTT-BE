@@ -69,7 +69,7 @@ class TestCoefficientCalculationService(TestCase):
             Record, event_coefficient=cls.event_coefficient,
             off_campus_event=cls.off_campus_event, user=cls.user)
         cls.workload = 100
-        cls.workload_dic = {cls.user: cls.workload}
+        cls.workload_dict = {cls.user: cls.workload}
         cls.filename = 'testfile'
 
     def test_calculate_workload_by_query(self):
@@ -81,9 +81,10 @@ class TestCoefficientCalculationService(TestCase):
 
     def test_generate_workload_excel_from_data(self):
         '''Should generate excel correctly'''
-        path = CoefficientCalculationService\
-            .generate_workload_excel_from_data(
-                self.workload_dic, self.filename)
+        path = (CoefficientCalculationService
+                .generate_workload_excel_from_data(
+                    self.workload_dict, self.filename)
+                )
         workbook = xlrd.open_workbook(path)
         sheet = workbook.sheet_by_name(
             CoefficientCalculationService.WORKLOAD_SHEET_NAME)
@@ -93,6 +94,6 @@ class TestCoefficientCalculationService(TestCase):
             self.assertEqual(title, sheet.cell_value(row, col))
         row += 1
         self.assertEqual(sheet.cell_value(row, 0), row)
-        self.assertEqual(sheet.cell_value(row, 1), str(self.user.department))
-        self.assertEqual(sheet.cell_value(row, 2), str(self.user.first_name))
+        self.assertEqual(sheet.cell_value(row, 1), self.user.department.name)
+        self.assertEqual(sheet.cell_value(row, 2), self.user.first_name)
         self.assertEqual(sheet.cell_value(row, 3), self.workload)
