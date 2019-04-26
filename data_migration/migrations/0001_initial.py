@@ -6,6 +6,7 @@ from faker import Faker
 from django.db import migrations
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.utils.timezone import now
 
 from training_event.models import EventCoefficient
@@ -94,6 +95,15 @@ def populate_initial_data(apps, _):  # pylint: disable=all
         raw_department_id=f'{idx}'
     ) for idx in range(1, 1 + num_departments)]
 
+    print('Populate Group')
+    category_names = ('管理员', '教师', '访客')
+    groups = []
+    for idx in range(1, 1 + num_departments):
+        department = Department.objects.get(raw_department_id=f'{idx}')
+        groups.extend([Group.objects.create(
+            name = department.name + '-' + item,
+        ) for item in category_names])
+
     print('Populate User')
     num_users = 20
     User = get_user_model()
@@ -116,6 +126,10 @@ def populate_initial_data(apps, _):  # pylint: disable=all
         first_name=faker.first_name(),
         last_name=faker.last_name(),
     ) for idx in range(2, 2 + num_users)]
+
+    print('Populate User-Groups')
+    for user in users:
+        user.groups.add(choice(groups))
 
     print('Populate infra')
     print('Populate Notification')
