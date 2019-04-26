@@ -1,6 +1,6 @@
 '''Unit tests for training_event services.'''
-import xlrd
 import os.path as osp
+import xlrd
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
