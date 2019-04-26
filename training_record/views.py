@@ -20,16 +20,13 @@ class RecordViewSet(viewsets.ModelViewSet):
     queryset = (
         training_record.models.Record.objects.all()
         .select_related('feedback', 'campus_event', 'off_campus_event')
-        .prefetch_related('contents', 'attachments')
     )
     filter_class = training_record.filters.RecordFilter
 
     def get_serializer_class(self):
         if self.action == 'create':
-            serializer_class = RecordCreateSerializer
-        else:
-            serializer_class = ReadOnlyRecordSerializer
-        return serializer_class
+            return RecordCreateSerializer
+        return ReadOnlyRecordSerializer
 
 # TODO: rename this action
     def _get_reviewed_status_filtered_records(self, request, is_reviewed):
