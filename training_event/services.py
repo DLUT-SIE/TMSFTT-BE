@@ -123,6 +123,9 @@ class CoefficientCalculationService:
             calculate_workload_by_query（）方法获取相应字典
         filename: str
             文件名
+        Returns
+        -------
+        file_path: str
         """
 
         # 初始化excel
@@ -147,7 +150,7 @@ class CoefficientCalculationService:
             worksheet.write(row+1, 2, teacher[0].first_name)
             worksheet.write(row+1, 3, teacher[1])
 
-        tmpfile_tup = tempfile.mkstemp(suffix=filename)
+        _, file_path = tempfile.mkstemp(suffix=filename)
 
-        workbook.save(tmpfile_tup[1])
-        return tmpfile_tup[1]
+        workbook.save(file_path)
+        return file_path
