@@ -6,12 +6,12 @@ from rest_framework import viewsets, mixins
 import auth.models
 import auth.serializers
 import auth.permissions
-
+import auth.filters
 
 User = get_user_model()
 
 
-class DepartmentViewSet(viewsets.ModelViewSet):
+class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
     '''Create API views for Department.'''
     queryset = auth.models.Department.objects.all()
     serializer_class = auth.serializers.DepartmentSerializer
@@ -45,6 +45,7 @@ class GroupViewSet(viewsets.ModelViewSet):
         auth.permissions.DjangoModelPermissions,
         auth.permissions.DjangoObjectPermissions,
     )
+    filter_class = auth.filters.GroupFilter
 
 
 class UserPermissionViewSet(mixins.CreateModelMixin,
