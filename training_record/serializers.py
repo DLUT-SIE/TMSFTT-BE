@@ -14,6 +14,7 @@ from training_record.models import (
     CampusEventFeedback,
 )
 from training_record.services import RecordService, CampusEventFeedbackService
+from secure_file.fields import SecureFileField
 
 
 class RecordContentSerializer(BulkSerializerMixin,
@@ -28,6 +29,8 @@ class RecordContentSerializer(BulkSerializerMixin,
 class RecordAttachmentSerializer(BulkSerializerMixin,
                                  serializers.ModelSerializer):
     '''Indicate how to serialize RecordAttachment instance.'''
+    path = SecureFileField()
+
     class Meta:
         model = RecordAttachment
         fields = '__all__'

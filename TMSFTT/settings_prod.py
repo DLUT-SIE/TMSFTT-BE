@@ -125,7 +125,7 @@ REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = (
 )
 
 # Dynamic contents
-MEDIA_ROOT = '/files/'
+MEDIA_ROOT = '/protected-files/'
 MEDIA_URL = '/media/'
 
 # CAS dev settings
