@@ -1,7 +1,10 @@
 '''Unit tests for infra utils.'''
+import random
+import string
+
 from django.test import TestCase
 
-from infra.utils import format_file_size
+import infra.utils as utils
 
 
 class TestFormatFileSize(TestCase):
@@ -19,16 +22,42 @@ class TestFormatFileSize(TestCase):
         )
 
         for size_in_bytes, expected_str in test_cases:
-            res = format_file_size(size_in_bytes)
+            res = utils.format_file_size(size_in_bytes)
 
             self.assertEqual(res, expected_str)
 
     def test_format_size_is_too_large(self):
         '''Should raise ValueError if size is too large.'''
         with self.assertRaisesMessage(ValueError, '参数超出转换范围'):
-            format_file_size(512 * 1024**6)
+            utils.format_file_size(512 * 1024**6)
 
     def test_format_size_is_negative(self):
         '''Should raise ValueError if size is negative.'''
         with self.assertRaisesMessage(ValueError, '参数超出转换范围'):
-            format_file_size(-100)
+            utils.format_file_size(-100)
+
+
+class TestEncryptionandDecryption(TestCase):
+    '''Unit tests for encrypt() and decrypt().'''
+    @staticmethod
+    def random_string(length):
+        '''Generate random string.'''
+        return ''.join(random.SystemRandom().choice(
+            string.ascii_uppercase + string.digits) for _ in range(length))
+
+    def test_should_return_same_value(self):
+        '''Value should be the same after encrypt-decrypt.'''
+        raw_values = (self.random_string(random.randint(i + 10, i + 100))
+                      for i in range(20))
+        for raw_value in raw_values:
+            encrypted = utils.encrypt(raw_value)
+            decrypted = utils.decrypt(encrypted)
+            self.assertEqual(decrypted, raw_value)
+
+    def test_decrypt_corrupted_data(self):
+        '''Should raise ValueError if data is corrupted.'''
+        encrypted = utils.encrypt('some data')
+        encrypted = encrypted[:-1] + '0'
+
+        with self.assertRaisesMessage(ValueError, '已被篡改的内容'):
+            utils.decrypt(encrypted)
