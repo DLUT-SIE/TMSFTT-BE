@@ -6,27 +6,28 @@ from rest_framework_bulk.mixins import (
     BulkCreateModelMixin,
 )
 
-
 import training_record.models
 import training_record.filters
 from training_record.services import RecordService
 from training_record.serializers import (CampusEventFeedbackSerializer,
                                          RecordCreateSerializer,
                                          ReadOnlyRecordSerializer)
+from infra.mixins import MultiSerializerActionClassMixin
 
 
-class RecordViewSet(viewsets.ModelViewSet):
+class RecordViewSet(MultiSerializerActionClassMixin,
+                    viewsets.ModelViewSet):
     '''Create API views for Record.'''
     queryset = (
         training_record.models.Record.objects.all()
         .select_related('feedback', 'campus_event', 'off_campus_event')
     )
     filter_class = training_record.filters.RecordFilter
-
-    def get_serializer_class(self):
-        if self.action == 'create':
-            return RecordCreateSerializer
-        return ReadOnlyRecordSerializer
+    serializer_action_classes = {
+        'create': RecordCreateSerializer,
+        'update': RecordCreateSerializer,
+    }
+    serializer_class = ReadOnlyRecordSerializer
 
 # TODO: rename this action
     def _get_reviewed_status_filtered_records(self, request, is_reviewed):
