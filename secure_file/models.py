@@ -2,7 +2,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.files import File
-from django.http import HttpResponseRedirect
+from rest_framework import response, status
 
 from secure_file.utils import encrypt_file_download_url
 
@@ -60,9 +60,11 @@ class SecureFile(models.Model):
 
         Return
         ------
-        response: HTTPResponseRedirect
-            The HTTP redirect response for downloading the file.
+        response: Response
+            The json response contains only one key named 'url', this url
+            points to the real file created.
         '''
-        return HttpResponseRedirect(encrypt_file_download_url(
-            type(self), 'path', self.path.name, 'download_file'
-        ))
+        return response.Response({
+            'url': encrypt_file_download_url(
+                type(self), 'path', self.path.name, 'download_file')
+        }, status=status.HTTP_201_CREATED)
