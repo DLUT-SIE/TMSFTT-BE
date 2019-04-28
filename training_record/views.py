@@ -15,6 +15,7 @@ from training_record.serializers import (CampusEventFeedbackSerializer,
 from infra.mixins import MultiSerializerActionClassMixin
 
 
+# pylint: disable=no-self-use, C0103
 class RecordViewSet(MultiSerializerActionClassMixin,
                     viewsets.ModelViewSet):
     '''Create API views for Record.'''
@@ -50,6 +51,24 @@ class RecordViewSet(MultiSerializerActionClassMixin,
     def reviewed(self, request):
         '''Return records which are already reviewed.'''
         return self._get_reviewed_status_filtered_records(request, True)
+
+    @decorators.action(detail=True, methods=['POST'],
+                       url_path='department-admin-review')
+    def department_admin_review(self, request, pk):
+        '''Pass the record which is being reviewed.'''
+        passornot = request.data.get('passornot')
+        RecordService.off_campus_record_dep_admin_review(pk,
+                                                         passornot)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @decorators.action(detail=True, methods=['POST'],
+                       url_path='school-admin-review')
+    def school_admin_review(self, request, pk):
+        '''Pass the record which is being reviewed.'''
+        passornot = request.data.get('passornot')
+        RecordService.off_campus_record_sup_admin_review(pk,
+                                                         passornot)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class RecordActionViewSet(viewsets.ViewSet):

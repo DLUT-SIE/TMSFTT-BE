@@ -143,6 +143,40 @@ class TestRecordViewSet(APITestCase):
         self.assertIn('status', response.data)
         self.assertEqual(response.data['status'], status1)
 
+    @patch('training_record.views.RecordService')
+    def test_department_admin_review(self, mocked_service):
+        '''Should call department_admin_review.'''
+        off_campus_event = mommy.make(training_event.models.OffCampusEvent)
+        rec = mommy.make(training_record.models.Record,
+                         off_campus_event=off_campus_event,
+                         status=Record.STATUS_SUBMITTED)
+        user = mommy.make(User)
+        url = reverse('record-department-admin-review', args=(rec.pk,))
+        mocked_service.off_campus_record_dep_admin_review.return_value = rec
+
+        self.client.force_authenticate(user)
+        data = {'passornot': 1, 'recordid': 2}
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    @patch('training_record.views.RecordService')
+    def test_school_admin_review(self, mocked_service):
+        '''Should call department_admin_review.'''
+        off_campus_event = mommy.make(training_event.models.OffCampusEvent)
+        rec = mommy.make(training_record.models.Record,
+                         off_campus_event=off_campus_event,
+                         status=Record.STATUS_FACULTY_ADMIN_REVIEWED)
+        user = mommy.make(User)
+        url = reverse('record-school-admin-review', args=(rec.pk,))
+        mocked_service.off_campus_record_sch_admin_review.return_value = rec
+
+        self.client.force_authenticate(user)
+        data = {'passornot': 1, 'recordid': 2}
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
 
 class TestRecordActionViewSet(APITestCase):
     '''Unit tests for RecordActionViewSet'''
