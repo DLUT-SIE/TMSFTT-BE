@@ -82,7 +82,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
     'UPLOADED_FILES_USE_URL': False,
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'DEFAULT_PAGINATION_CLASS': 'infra.paginations.LimitOffsetPagination',
     'PAGE_SIZE': 10,
     'HTML_SELECT_CUTOFF': 100,
 }

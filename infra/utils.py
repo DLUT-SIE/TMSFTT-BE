@@ -11,6 +11,16 @@ dev_logger = logging.getLogger('django')  # pylint: disable=invalid-name
 prod_logger = logging.getLogger('django.prod')  # pylint: disable=invalid-name
 
 
+def positive_int(integer_string, strict=False, cutoff=None):
+    '''Cast a string to a strictly positive integer.'''
+    ret = int(integer_string)
+    if ret < 0 or (ret == 0 and strict):
+        raise ValueError()
+    if cutoff:
+        return min(ret, cutoff)
+    return ret
+
+
 def format_file_size(size_in_bytes):
     '''Format human-readable file size.'''
     if size_in_bytes < 0 or size_in_bytes >= 1024**6:
