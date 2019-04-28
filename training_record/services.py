@@ -142,26 +142,34 @@ class RecordService:
         return len(records)
 
     @staticmethod
-    def off_campus_record_dep_admin_review(recordid, passornot):
+    def department_admin_review(record_id, is_approved):
         '''Department admin review the off-campus training record.'''
-        record = Record.objects.get(pk=recordid)
+        record = Record.objects.filter(pk=record_id, campus_event__isnull=True)
+        if len(record) != 1:
+            raise BadRequest('无此培训记录！')
+        record = record[0]
         if record.status != Record.STATUS_SUBMITTED:
             raise BadRequest('无权更改！')
         with transaction.atomic():
-            if passornot == 1:
-                record.status = Record.STATUS_FACULTY_ADMIN_REVIEWED
+            if is_approved:
+                record.status = Record.STATUS_DEPARTMENT_ADMIN_APPROVED
+            else:
+                record.status = Record.STATUS_DEPARTMENT_ADMIN_REJECTED
             record.save()
         return record
 
     @staticmethod
-    def off_campus_record_sch_admin_review(recordid, passornot):
-        '''Super admin review the off-campus training record.'''
-        record = Record.objects.get(pk=recordid)
-        if record.status != Record.STATUS_FACULTY_ADMIN_REVIEWED:
+    def school_admin_review(record_id, is_approved):
+        '''School admin review the off-campus training record.'''
+        record = Record.objects.filter(pk=record_id, campus_event__isnull=True)
+        if len(record) != 1:
+            raise BadRequest('无此培训记录！')
+        record = record[0]
+        if record.status != Record.STATUS_DEPARTMENT_ADMIN_APPROVED:
             raise BadRequest('无权更改！')
         with transaction.atomic():
-            if passornot == 1:
-                record.status = Record.STATUS_SCHOOL_ADMIN_REVIEWED
+            if is_approved:
+                record.status = Record.STATUS_SCHOOL_ADMIN_APPROVED
             else:
                 record.status = Record.STATUS_SUBMITTED
             record.save()

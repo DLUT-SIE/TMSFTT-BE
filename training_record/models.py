@@ -10,16 +10,18 @@ from training_record.utils import infer_attachment_type
 class Record(models.Model):
     '''Record records the attendance of users.'''
     STATUS_SUBMITTED = 1
-    STATUS_FACULTY_ADMIN_REVIEWED = 2
-    STATUS_SCHOOL_ADMIN_REVIEWED = 3
+    STATUS_DEPARTMENT_ADMIN_APPROVED = 2
+    STATUS_SCHOOL_ADMIN_APPROVED = 3
     STATUS_FEEDBACK_REQUIRED = 4
     STATUS_FEEDBACK_SUBMITTED = 5
+    STATUS_DEPARTMENT_ADMIN_REJECTED = 6
     STATUS_CHOICES = (
         (STATUS_SUBMITTED, '已提交'),
-        (STATUS_FACULTY_ADMIN_REVIEWED, '院系管理员已审核'),
-        (STATUS_SCHOOL_ADMIN_REVIEWED, '学校管理员已审核'),
+        (STATUS_DEPARTMENT_ADMIN_APPROVED, '院系管理员审核通过'),
+        (STATUS_SCHOOL_ADMIN_APPROVED, '学校管理员审核通过'),
         (STATUS_FEEDBACK_REQUIRED, '培训反馈待提交'),
         (STATUS_FEEDBACK_SUBMITTED, '培训反馈已提交'),
+        (STATUS_DEPARTMENT_ADMIN_REJECTED, '院系管理员审核不通过'),
     )
 
     class Meta:
