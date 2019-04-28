@@ -16,7 +16,7 @@ class ProgramCategoryViewSet(viewsets.ViewSet):
     @decorators.action(detail=False, methods=['GET'],
                        url_path='program-categories')
     def get(self, request):
-
+        '''return the program categories which are called '''
         program_category = [
             {
                 'val': item[0],

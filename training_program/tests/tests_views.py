@@ -28,7 +28,7 @@ class TestProgram(APITestCase):
 
         name = 'program'
         data = {'name': name, 'department': department.id,
-                'category': 1,}
+                'category': 1}
 
         response = self.client.post(url, data, format='json')
 
