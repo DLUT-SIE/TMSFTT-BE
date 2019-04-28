@@ -6,8 +6,8 @@ from unittest.mock import patch, Mock
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.http import HttpResponseRedirect
 from model_mommy import mommy
+from rest_framework import status
 
 from secure_file.models import SecureFile
 
@@ -42,11 +42,14 @@ class TestSecureFile(TestCase):
         secure_file.path = Mock()
         path = 'path/to/file'
         secure_file.path.name = path
-        mocked_encrypt.return_value = '/media/Encrypted'
+        encrypted_path = '/media/Encrypted'
+        mocked_encrypt.return_value = encrypted_path
         resp = secure_file.generate_secured_download_response()
 
         mocked_encrypt.assert_called_with(
             SecureFile, 'path', path, 'download_file'
         )
 
-        self.assertEqual(resp.status_code, HttpResponseRedirect.status_code)
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.assertIn('url', resp.data)
+        self.assertEqual(resp.data['url'], encrypted_path)
