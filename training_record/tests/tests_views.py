@@ -81,7 +81,7 @@ class TestRecordViewSet(APITestCase):
             off_campus_event = mommy.make(training_event.models.OffCampusEvent)
             mommy.make(Record,
                        off_campus_event=off_campus_event,
-                       status=Record.STATUS_SCHOOL_ADMIN_REVIEWED
+                       status=Record.STATUS_SCHOOL_ADMIN_APPROVED
                        if index % 4 == 0 else Record.STATUS_SUBMITTED)
 
         response = self.client.get(url)
@@ -130,7 +130,8 @@ class TestRecordViewSet(APITestCase):
     def test_update_record(self):
         '''Record should be updated by PATCH request.'''
         status0 = training_record.models.Record.STATUS_SUBMITTED
-        status1 = training_record.models.Record.STATUS_FACULTY_ADMIN_REVIEWED
+        status1 = (training_record
+                   .models.Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
         campus_event = mommy.make(training_event.models.CampusEvent)
         record = mommy.make(training_record.models.Record,
                             campus_event=campus_event, status=status0)
@@ -143,36 +144,32 @@ class TestRecordViewSet(APITestCase):
         self.assertIn('status', response.data)
         self.assertEqual(response.data['status'], status1)
 
-    @patch('training_record.views.RecordService')
-    def test_department_admin_review(self, mocked_service):
+    def test_department_admin_review(self):
         '''Should call department_admin_review.'''
         off_campus_event = mommy.make(training_event.models.OffCampusEvent)
-        rec = mommy.make(training_record.models.Record,
-                         off_campus_event=off_campus_event,
-                         status=Record.STATUS_SUBMITTED)
+        record = mommy.make(training_record.models.Record,
+                            off_campus_event=off_campus_event,
+                            status=Record.STATUS_SUBMITTED)
         user = mommy.make(User)
-        url = reverse('record-department-admin-review', args=(rec.pk,))
-        mocked_service.off_campus_record_dep_admin_review.return_value = rec
+        url = reverse('record-department-admin-review', args=(record.pk,))
 
         self.client.force_authenticate(user)
-        data = {'passornot': 1, 'recordid': 2}
+        data = {'is_approved': True}
         response = self.client.post(url, data)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    @patch('training_record.views.RecordService')
-    def test_school_admin_review(self, mocked_service):
+    def test_school_admin_review(self):
         '''Should call department_admin_review.'''
         off_campus_event = mommy.make(training_event.models.OffCampusEvent)
-        rec = mommy.make(training_record.models.Record,
-                         off_campus_event=off_campus_event,
-                         status=Record.STATUS_FACULTY_ADMIN_REVIEWED)
+        record = mommy.make(training_record.models.Record,
+                            off_campus_event=off_campus_event,
+                            status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
         user = mommy.make(User)
-        url = reverse('record-school-admin-review', args=(rec.pk,))
-        mocked_service.off_campus_record_sch_admin_review.return_value = rec
+        url = reverse('record-school-admin-review', args=(record.pk,))
 
         self.client.force_authenticate(user)
-        data = {'passornot': 1, 'recordid': 2}
+        data = {'passornot': True}
         response = self.client.post(url, data)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -446,7 +443,7 @@ class TestStatusChangeLogViewSet(APITestCase):
     def test_update_status_change_log(self):
         '''StatusChangeLog should be updated by PATCH request.'''
         pre_status0 = Record.STATUS_SUBMITTED
-        pre_status1 = Record.STATUS_FACULTY_ADMIN_REVIEWED
+        pre_status1 = Record.STATUS_DEPARTMENT_ADMIN_APPROVED
         campus_event = mommy.make(training_event.models.CampusEvent)
         record = mommy.make(training_record.models.Record,
                             campus_event=campus_event)

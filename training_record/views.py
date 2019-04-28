@@ -15,7 +15,7 @@ from training_record.serializers import (CampusEventFeedbackSerializer,
 from infra.mixins import MultiSerializerActionClassMixin
 
 
-# pylint: disable=no-self-use, C0103
+# pylint: disable=C0103
 class RecordViewSet(MultiSerializerActionClassMixin,
                     viewsets.ModelViewSet):
     '''Create API views for Record.'''
@@ -36,7 +36,7 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         queryset = self.filter_queryset(self.get_queryset())
         queryset = queryset.filter(
             Q(status=training_record.models.Record
-              .STATUS_SCHOOL_ADMIN_REVIEWED) |
+              .STATUS_SCHOOL_ADMIN_APPROVED) |
             Q(campus_event__isnull=False))
 
         page = self.paginate_queryset(queryset)
@@ -56,18 +56,18 @@ class RecordViewSet(MultiSerializerActionClassMixin,
                        url_path='department-admin-review')
     def department_admin_review(self, request, pk):
         '''Pass the record which is being reviewed.'''
-        passornot = request.data.get('passornot')
-        RecordService.off_campus_record_dep_admin_review(pk,
-                                                         passornot)
+        is_approved = request.data.get('is_approved')
+        RecordService.department_admin_review(pk,
+                                              is_approved)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @decorators.action(detail=True, methods=['POST'],
                        url_path='school-admin-review')
     def school_admin_review(self, request, pk):
         '''Pass the record which is being reviewed.'''
-        passornot = request.data.get('passornot')
-        RecordService.off_campus_record_sup_admin_review(pk,
-                                                         passornot)
+        is_approved = request.data.get('is_approved')
+        RecordService.school_admin_review(pk,
+                                          is_approved)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

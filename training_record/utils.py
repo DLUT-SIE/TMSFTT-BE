@@ -1,5 +1,10 @@
 '''Utility functions provided by training_record module.'''
 import re
+import logging
+
+
+dev_logger = logging.getLogger('django')  # pylint: disable=invalid-name
+prod_logger = logging.getLogger('django.prod')  # pylint: disable=invalid-name
 
 
 def infer_attachment_type(fname):
