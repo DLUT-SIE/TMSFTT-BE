@@ -141,6 +141,32 @@ class RecordService:
 
         return len(records)
 
+    @staticmethod
+    def off_campus_record_dep_admin_review(recordid, passornot):
+        '''Department admin review the off-campus training record.'''
+        record = Record.objects.get(pk=recordid)
+        if record.status != Record.STATUS_SUBMITTED:
+            raise BadRequest('无权更改！')
+        with transaction.atomic():
+            if passornot == 1:
+                record.status = Record.STATUS_FACULTY_ADMIN_REVIEWED
+            record.save()
+        return record
+
+    @staticmethod
+    def off_campus_record_sch_admin_review(recordid, passornot):
+        '''Super admin review the off-campus training record.'''
+        record = Record.objects.get(pk=recordid)
+        if record.status != Record.STATUS_FACULTY_ADMIN_REVIEWED:
+            raise BadRequest('无权更改！')
+        with transaction.atomic():
+            if passornot == 1:
+                record.status = Record.STATUS_SCHOOL_ADMIN_REVIEWED
+            else:
+                record.status = Record.STATUS_SUBMITTED
+            record.save()
+        return record
+
 
 class CampusEventFeedbackService:
     '''Provide services for CampusEventFeedback.'''

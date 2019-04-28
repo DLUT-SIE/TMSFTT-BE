@@ -12,7 +12,7 @@ from infra.exceptions import BadRequest
 from training_record.models import (
     RecordContent, RecordAttachment, CampusEventFeedback, Record)
 from training_record.services import RecordService, CampusEventFeedbackService
-from training_event.models import CampusEvent, EventCoefficient
+from training_event.models import CampusEvent, OffCampusEvent, EventCoefficient
 
 
 User = get_user_model()
@@ -155,6 +155,56 @@ class TestRecordService(TestCase):
 
         count = RecordService.create_campus_records_from_excel(excel)
         self.assertEqual(count, 1)
+
+    def test_off_campus_record_dep_admin_review_no_permission(self):
+        '''Should raise BadRequest if no enough permission.'''
+        off_campus_event = mommy.make(OffCampusEvent)
+        record = mommy.make(Record,
+                            off_campus_event=off_campus_event,
+                            status=Record.STATUS_FACULTY_ADMIN_REVIEWED)
+        with self.assertRaisesMessage(
+                BadRequest, '无权更改！'):
+            RecordService.off_campus_record_dep_admin_review(record.id, 1)
+
+    def test_off_campus_record_dep_admin_review_pass(self):
+        '''Should change the status of off-campus training record.'''
+        off_campus_event = mommy.make(OffCampusEvent)
+        record = mommy.make(Record,
+                            off_campus_event=off_campus_event,
+                            status=Record.STATUS_SUBMITTED)
+        result = RecordService.off_campus_record_dep_admin_review(record.id, 1)
+
+        self.assertEqual(result.status, Record.STATUS_FACULTY_ADMIN_REVIEWED)
+
+    def test_off_campus_record_sch_admin_review_no_permission(self):
+        '''Should raise BadRequest if no enough permission.'''
+        off_campus_event = mommy.make(OffCampusEvent)
+        record = mommy.make(Record,
+                            off_campus_event=off_campus_event,
+                            status=Record.STATUS_SCHOOL_ADMIN_REVIEWED)
+        with self.assertRaisesMessage(
+                BadRequest, '无权更改！'):
+            RecordService.off_campus_record_sch_admin_review(record.id, 1)
+
+    def test_off_campus_record_sch_admin_review_pass(self):
+        '''Should change the status of off-campus training record.'''
+        off_campus_event = mommy.make(OffCampusEvent)
+        record = mommy.make(Record,
+                            off_campus_event=off_campus_event,
+                            status=Record.STATUS_FACULTY_ADMIN_REVIEWED)
+        result = RecordService.off_campus_record_sch_admin_review(record.id, 1)
+
+        self.assertEqual(result.status, Record.STATUS_SCHOOL_ADMIN_REVIEWED)
+
+    def test_off_campus_record_sch_admin_review_not_pass(self):
+        '''Should change the status of off-campus training record.'''
+        off_campus_event = mommy.make(OffCampusEvent)
+        record = mommy.make(Record,
+                            off_campus_event=off_campus_event,
+                            status=Record.STATUS_FACULTY_ADMIN_REVIEWED)
+        result = RecordService.off_campus_record_sch_admin_review(record.id, 0)
+
+        self.assertEqual(result.status, Record.STATUS_SUBMITTED)
 
 
 class TestCampusEventFeedbackService(TestCase):
