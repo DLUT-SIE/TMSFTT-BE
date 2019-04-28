@@ -8,6 +8,7 @@ import infra.utils as utils
 
 
 class TestPositiveInt(TestCase):
+    '''Unit tests for positive_int().'''
     def test_positive_int(self):
         '''Should return int.'''
         expected = 5
