@@ -39,7 +39,7 @@ class Record(models.Model):
                                        auto_now=True)
     campus_event = models.ForeignKey(CampusEvent, verbose_name='校内培训活动',
                                      blank=True, null=True,
-                                     related_name='campus_event',
+                                     related_name='records',
                                      on_delete=models.PROTECT)
     off_campus_event = models.OneToOneField(
         OffCampusEvent, verbose_name='校外培训活动', blank=True, null=True,
