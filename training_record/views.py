@@ -24,18 +24,10 @@ class RecordViewSet(MultiSerializerActionClassMixin,
     )
     filter_class = training_record.filters.RecordFilter
     serializer_action_classes = {
-        'list': ReadOnlyRecordSerializer,
-        'retrieve': ReadOnlyRecordSerializer,
-        'reviewed': ReadOnlyRecordSerializer,
         'create': RecordCreateSerializer,
         'update': RecordCreateSerializer,
     }
     serializer_class = ReadOnlyRecordSerializer
-
-    def get_serializer_class(self):
-        if self.action == 'create':
-            return RecordCreateSerializer
-        return ReadOnlyRecordSerializer
 
 # TODO: rename this action
     def _get_reviewed_status_filtered_records(self, request, is_reviewed):
