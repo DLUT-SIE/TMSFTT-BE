@@ -7,6 +7,42 @@ from django.test import TestCase
 import infra.utils as utils
 
 
+class TestPositiveInt(TestCase):
+    def test_positive_int(self):
+        '''Should return int.'''
+        expected = 5
+        ret = utils.positive_int(f'{expected}')
+
+        self.assertIsInstance(ret, int)
+        self.assertEqual(ret, expected)
+
+    def test_positive_int_with_cutoff(self):
+        '''Should cut off int.'''
+        expected = 5
+        ret = utils.positive_int(f'{expected + 100}', cutoff=5)
+
+        self.assertIsInstance(ret, int)
+        self.assertEqual(ret, expected)
+
+    def test_negative_int(self):
+        '''Should raise exception if int is negative.'''
+        with self.assertRaises(ValueError):
+            utils.positive_int('-10')
+
+    def test_zero_with_strict(self):
+        '''Should raise exception if int is zero and with strict setting.'''
+        with self.assertRaises(ValueError):
+            utils.positive_int('0', strict=True)
+
+    def test_zero_without_strict(self):
+        '''Should return 0 if int is zero and without strict setting.'''
+        expected = 0
+        ret = utils.positive_int(f'{expected}', strict=False)
+
+        self.assertIsInstance(ret, int)
+        self.assertEqual(ret, expected)
+
+
 class TestFormatFileSize(TestCase):
     '''Unit tests for format_file_size().'''
 
