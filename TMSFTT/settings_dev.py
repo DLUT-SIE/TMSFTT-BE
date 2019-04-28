@@ -55,7 +55,7 @@ DATABASES = {
 AUTH_PASSWORD_VALIDATORS = []
 
 # Dynamic contents
-MEDIA_ROOT = os.path.join(BASE_DIR, 'files')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'protected-files')
 MEDIA_URL = '/media/'
 
 # CAS dev settings

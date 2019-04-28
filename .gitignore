@@ -107,4 +107,4 @@ venv.bak/
 .vscode/
 *.swp
 media/
-files/
+protected-files/

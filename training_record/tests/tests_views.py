@@ -35,7 +35,7 @@ class TestRecordViewSet(APITestCase):
         '''Record should be created by POST request.'''
         user = mommy.make(User)
         url = reverse('record-list')
-        off_campus_event_data = {
+        off_campus_event = {
             'name': 'abc',
             'time': '0122-12-31T15:54:17.000Z',
             'location': 'loc',
@@ -43,15 +43,15 @@ class TestRecordViewSet(APITestCase):
             'num_participants': 30,
         }
         event_coefficient = mommy.make(EventCoefficient)
-        attachments_data = [io.BytesIO(b'some content') for _ in range(3)]
-        contents_data = [
+        attachments = [io.BytesIO(b'some content') for _ in range(3)]
+        contents = [
             json.dumps({'content_type': x[0], 'content': 'abc'})
             for x in RecordContent.CONTENT_TYPE_CHOICES]
         data = {
-            'off_campus_event_data': json.dumps(off_campus_event_data),
+            'off_campus_event': json.dumps(off_campus_event),
             'user': user.id,
-            'contents_data': contents_data,
-            'attachments_data': attachments_data,
+            'contents': contents,
+            'attachments': attachments,
             'event_coefficient': event_coefficient.id,
         }
 

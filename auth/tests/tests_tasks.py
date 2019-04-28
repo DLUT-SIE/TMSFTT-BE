@@ -48,7 +48,8 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
 
     @patch('auth.models.DepartmentInformation.save',
            models.Model.save)
-    def test_update_from_department_information(self):
+    @patch('auth.tasks.prod_logger')
+    def test_update_from_department_information(self, _):
         '''Should update department from department information.'''
         num_departments = 10
         infos = [mommy.make(DepartmentInformation,

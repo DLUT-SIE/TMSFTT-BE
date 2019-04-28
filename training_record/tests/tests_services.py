@@ -22,19 +22,19 @@ class TestRecordService(TestCase):
     '''Test services provided by RecordService.'''
     @classmethod
     def setUpTestData(cls):
-        cls.off_campus_event_data = {
+        cls.off_campus_event = {
             'name': 'abc',
             'time': '0122-12-31T15:54:17.000Z',
             'location': 'loc',
             'num_hours': 5,
             'num_participants': 30,
         }
-        cls.attachments_data = [
+        cls.attachments = [
             InMemoryUploadedFile(
                 io.BytesIO(b'some content'),
                 'path', 'name', 'content_type', 'size', 'charset')
             for _ in range(3)]
-        cls.contents_data = [
+        cls.contents = [
             {'content_type': x[0], 'content': 'abc'}
             for x in RecordContent.CONTENT_TYPE_CHOICES]
 
@@ -59,10 +59,10 @@ class TestRecordService(TestCase):
         user = mommy.make(User)
 
         RecordService.create_off_campus_record_from_raw_data(
-            off_campus_event_data=self.off_campus_event_data,
+            off_campus_event=self.off_campus_event,
             user=user,
-            contents_data=None,
-            attachments_data=None,
+            contents=None,
+            attachments=None,
         )
 
         self.assertEqual(
@@ -77,17 +77,17 @@ class TestRecordService(TestCase):
         user = mommy.make(User)
 
         RecordService.create_off_campus_record_from_raw_data(
-            off_campus_event_data=self.off_campus_event_data,
+            off_campus_event=self.off_campus_event,
             user=user,
-            contents_data=self.contents_data,
-            attachments_data=self.attachments_data,
+            contents=self.contents,
+            attachments=self.attachments,
         )
 
         self.assertEqual(
-            RecordContent.objects.all().count(), len(self.contents_data),
+            RecordContent.objects.all().count(), len(self.contents),
         )
         self.assertEqual(
-            RecordAttachment.objects.all().count(), len(self.attachments_data),
+            RecordAttachment.objects.all().count(), len(self.attachments),
         )
 
     def test_create_campus_records_bad_file(self):

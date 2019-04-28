@@ -14,9 +14,7 @@ from training_record.models import (
     CampusEventFeedback,
 )
 from training_record.services import RecordService, CampusEventFeedbackService
-from training_event.serializers import (
-    CampusEventSerializer, OffCampusEventSerializer
-)
+from secure_file.fields import SecureFileField
 
 
 class RecordContentSerializer(BulkSerializerMixin,
@@ -31,6 +29,8 @@ class RecordContentSerializer(BulkSerializerMixin,
 class RecordAttachmentSerializer(BulkSerializerMixin,
                                  serializers.ModelSerializer):
     '''Indicate how to serialize RecordAttachment instance.'''
+    path = SecureFileField()
+
     class Meta:
         model = RecordAttachment
         fields = '__all__'
@@ -48,43 +48,48 @@ class CampusEventFeedbackSerializer(serializers.ModelSerializer):
             **validated_data)
 
 
-class RecordSerializer(serializers.ModelSerializer):
-    '''Indicate how to serialize Record instance.'''
-    # Write-Only fields
-    off_campus_event_data = serializers.JSONField(binary=True, write_only=True)
-    contents_data = serializers.ListField(
-        child=serializers.JSONField(binary=True),
-        write_only=True,
-        default=lambda: [],
-    )
-    attachments_data = serializers.ListField(
-        child=serializers.FileField(),
-        write_only=True,
-        default=lambda: [],
-    )
-
-    # Read-Only fields
+class ReadOnlyRecordSerializer(serializers.ModelSerializer):
+    '''Indicate how to serialize Record instance for reading.'''
     status_str = serializers.CharField(source='get_status_display',
                                        read_only=True)
-    campus_event = CampusEventSerializer(read_only=True)
-    off_campus_event = OffCampusEventSerializer(read_only=True)
-    attachments = RecordAttachmentSerializer(many=True, read_only=True)
-    contents = RecordContentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Record
+        fields = ('id', 'create_time', 'update_time', 'campus_event',
+                  'off_campus_event', 'user', 'status', 'contents',
+                  'attachments', 'status_str', 'feedback')
+
+
+class RecordCreateSerializer(serializers.ModelSerializer):
+    '''Indicate how to serialize Record instance.'''
+    off_campus_event = serializers.JSONField(
+        binary=True,
+        write_only=True,
+        required=True,
+    )
+    contents = serializers.ListField(
+        child=serializers.JSONField(binary=True),
+        write_only=True,
+        required=False,
+    )
+    attachments = serializers.ListField(
+        child=serializers.FileField(),
+        write_only=True,
+        required=False,
+    )
     feedback = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Record
         fields = ('id', 'create_time', 'update_time', 'campus_event',
-                  'off_campus_event', 'off_campus_event_data',
-                  'user', 'status', 'contents', 'contents_data',
-                  'attachments', 'attachments_data',
-                  'status_str', 'feedback')
+                  'off_campus_event', 'user', 'status', 'contents',
+                  'attachments', 'feedback')
 
     def create(self, validated_data):
         return RecordService.create_off_campus_record_from_raw_data(
             **validated_data)
 
-    def validate_attachments_data(self, data):
+    def validate_attachments(self, data):
         '''Validate attachments data.'''
         # TODO(youchen): Use global configs
         if len(data) > 3:

@@ -58,7 +58,7 @@ class OperationLog(models.Model):
         '''Construct instance from request and respnose.'''
         obj = cls(
             remote_ip=request.META['REMOTE_ADDR'],
-            requester=request.user,
+            requester=request.user if not request.user.is_anonymous else None,
             method=cls.HTTP_METHODS_DICT[request.method],
             url=request.get_full_path_info(),
             referrer=request.META.get('HTTP_REFERER', ''),

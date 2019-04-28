@@ -29,6 +29,7 @@ API_URLPATTERNS = [
 
 urlpatterns = [
     path('api/', include(API_URLPATTERNS)),
+    path('', include('secure_file.urls')),
 ]
 
 if settings.DEBUG:

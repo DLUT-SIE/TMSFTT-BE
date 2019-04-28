@@ -36,12 +36,13 @@ INSTALLED_APPS = [
     'corsheaders',  # TODO(youchen): Remove this in production server
     "guardian",
 
+    'secure_file',
     'auth.apps.AuthConfig',
-    'infra.apps.InfraConfig',
-    'training_program.apps.TrainingProgramConfig',
-    'training_event.apps.TrainingEventConfig',
-    'training_record.apps.TrainingRecordConfig',
-    'training_review.apps.TrainingReviewConfig',
+    'infra',
+    'training_program',
+    'training_event',
+    'training_record',
+    'training_review',
 ]
 
 MIDDLEWARE = [
@@ -72,16 +73,16 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
-    'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.JSONRenderer',
-        'infra.utils.BrowsableAPIRendererWithoutForms',
-    ),
+    # 'DEFAULT_RENDERER_CLASSES': (
+    #     'rest_framework.renderers.JSONRenderer',
+    #     'infra.utils.BrowsableAPIRendererWithoutForms',
+    # ),
     # At least we require all users to have been authenticated.
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
     'UPLOADED_FILES_USE_URL': False,
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'DEFAULT_PAGINATION_CLASS': 'infra.paginations.LimitOffsetPagination',
     'PAGE_SIZE': 10,
     'HTML_SELECT_CUTOFF': 100,
 }
