@@ -41,6 +41,18 @@ class TestRecordService(TestCase):
         cls.campus_event = mommy.make(CampusEvent)
         cls.user = mommy.make(User)
         cls.event_coefficient = mommy.make(EventCoefficient)
+        cls.off_campus_event_instance = mommy.make(OffCampusEvent)
+        cls.off_campus_event_data = {
+            'id': cls.off_campus_event_instance.id,
+            'name': cls.off_campus_event_instance.name,
+            'time': cls.off_campus_event_instance.time,
+            'location': cls.off_campus_event_instance.location,
+            'num_hours': cls.off_campus_event_instance.num_hours,
+            'num_participants': cls.off_campus_event_instance.num_participants
+        }
+        cls.record = mommy.make(Record,
+                                off_campus_event=cls.off_campus_event_instance,
+                                user=cls.user)
 
     def test_create_off_campus_record_no_event_data(self):
         '''Should raise ValueError if no off-campus event data.'''
@@ -78,6 +90,83 @@ class TestRecordService(TestCase):
 
         RecordService.create_off_campus_record_from_raw_data(
             off_campus_event=self.off_campus_event,
+            user=user,
+            contents=self.contents,
+            attachments=self.attachments,
+        )
+
+        self.assertEqual(
+            RecordContent.objects.all().count(), len(self.contents),
+        )
+        self.assertEqual(
+            RecordAttachment.objects.all().count(), len(self.attachments),
+        )
+
+    def test_update_off_campus_record_no_event_data(self):
+        '''Should raise ValueError if no off-campus event data.'''
+        with self.assertRaisesMessage(
+                BadRequest, '校外培训活动数据格式无效'):
+            RecordService.update_off_campus_record_from_raw_data(self.record)
+
+    def test_update_off_campus_record_no_user(self):
+        '''Should raise ValueError if no user.'''
+        with self.assertRaisesMessage(
+                BadRequest, '用户无效'):
+            RecordService.update_off_campus_record_from_raw_data(
+                self.record, off_campus_event=self.off_campus_event_data)
+
+    def test_update_off_campus_record_no_contents_and_attachments(self):
+        '''Should skip extra creation if no contents or no attachments.'''
+        user = mommy.make(User)
+
+        RecordService.update_off_campus_record_from_raw_data(
+            record=self.record,
+            off_campus_event=self.off_campus_event_data,
+            user=user,
+            contents=None,
+            attachments=None
+        )
+
+        self.assertEqual(
+            RecordContent.objects.all().count(), 0,
+        )
+        self.assertEqual(
+            RecordAttachment.objects.all().count(), 0,
+        )
+
+    def test_update_off_campus_record_bad_record(self):
+        '''Should raise ValueError if not found record.'''
+        user = mommy.make(User)
+
+        with self.assertRaisesMessage(BadRequest, '校外培训记录无效'):
+            RecordService.update_off_campus_record_from_raw_data(
+                record=self.off_campus_event_instance,
+                off_campus_event=self.off_campus_event_data,
+                user=user,
+                contents=None,
+                attachments=None,
+            )
+
+    def test_update_off_campus_record_bad_event_data(self):
+        '''Should raise ValueError if not found record.'''
+        user = mommy.make(User)
+
+        with self.assertRaisesMessage(BadRequest, '校外培训活动数据格式无效'):
+            RecordService.update_off_campus_record_from_raw_data(
+                record=self.record,
+                off_campus_event=self.off_campus_event,
+                user=user,
+                contents=None,
+                attachments=None,
+            )
+
+    def test_update_off_campus_record(self):
+        '''Should complete full creation.'''
+        user = mommy.make(User)
+
+        RecordService.update_off_campus_record_from_raw_data(
+            record=self.record,
+            off_campus_event=self.off_campus_event_data,
             user=user,
             contents=self.contents,
             attachments=self.attachments,
@@ -131,13 +220,13 @@ class TestRecordService(TestCase):
         sheet = work_book.add_sheet(u'sheet1', cell_overwrite_ok=True)
         sheet.write(0, 0, self.campus_event.id)
         sheet.write(1, 0, self.user.id)
-        sheet.write(1, 1, self.event_coefficient.id + 1)
+        sheet.write(1, 1, self.event_coefficient.id + 1000)
         work_book.save(tup[1])
         with open(tup[0], 'rb') as work_book:
             excel = work_book.read()
         with self.assertRaisesMessage(
                 BadRequest,
-                '编号为' + str(self.event_coefficient.id + 1) +
+                '编号为' + str(self.event_coefficient.id + 1000) +
                 '的活动系数不存在'):
             RecordService.create_campus_records_from_excel(excel)
 

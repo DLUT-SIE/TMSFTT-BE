@@ -81,6 +81,63 @@ class RecordService:
                 )
         return record
 
+    # pylint: disable=invalid-name
+    # pylint: disable=redefined-builtin
+    @staticmethod
+    def update_off_campus_record_from_raw_data(
+            record, off_campus_event=None, user=None,
+            contents=None, attachments=None):
+        '''Update the off-campus record'''
+        if off_campus_event is None:
+            raise BadRequest('校外培训活动数据格式无效')
+        if user is None or not isinstance(user, User):
+            raise BadRequest('用户无效')
+        if contents is None:
+            contents = []
+        if attachments is None:
+            attachments = []
+
+        with transaction.atomic():
+            # get the record to be updated
+            try:
+                record = Record.objects.get(id=record.id)
+            except Exception:
+                raise BadRequest('校外培训记录无效')
+
+            # update the offCampusEvent
+            try:
+                original_off_campus_event = OffCampusEvent.objects.get(
+                    id=off_campus_event.get('id'))
+                original_off_campus_event.name = off_campus_event.get('name')
+                original_off_campus_event.time = off_campus_event.get('time')
+                original_off_campus_event.location = (
+                    off_campus_event.get('location'))
+                original_off_campus_event.num_hours = (
+                    off_campus_event.get('num_hours'))
+                original_off_campus_event.num_participants = (
+                    off_campus_event.get('num_participants'))
+                original_off_campus_event.save()
+
+            except Exception:
+                raise BadRequest('校外培训活动数据格式无效')
+
+            # add attachments
+            for attachment in attachments:
+                RecordAttachment.objects.create(
+                    record=record,
+                    path=attachment,
+                )
+
+            # Remove all contents and create new, whether
+            # they have been changed or not.
+            record.contents.all().delete()
+            for content in contents:
+                RecordContent.objects.create(
+                    record=record,
+                    **content
+                )
+        return record
+
     @staticmethod
     def create_campus_records_from_excel(file):
         '''Create training records of campus training event.
