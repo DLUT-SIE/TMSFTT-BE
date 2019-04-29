@@ -14,7 +14,7 @@ class ProgramViewSet(viewsets.ModelViewSet):
 class ProgramCategoryViewSet(viewsets.ViewSet):
     '''get program categories from background.'''
     @decorators.action(detail=False, methods=['GET'],
-                       url_path='program-categories')
+                       url_path='')
     def get(self, request):
         '''return the program categories which are called '''
         program_category = [

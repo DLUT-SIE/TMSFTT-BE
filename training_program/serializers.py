@@ -1,9 +1,7 @@
 '''Define how to serialize our models.'''
 from rest_framework import serializers
 
-from training_program.models import (
-    Program
-)
+from training_program.models import Program
 
 
 class ProgramSerializer(serializers.ModelSerializer):
