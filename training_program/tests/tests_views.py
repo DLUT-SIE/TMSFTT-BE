@@ -60,7 +60,8 @@ class TestProgram(APITestCase):
         '''Program list should be GET by GET request.'''
         program = mommy.make(training_program.models.Program)
         url = reverse('program-detail', args=(program.pk,))
-        expected_keys = {'id', 'name', 'department', 'category', 'status_str'}
+        expected_keys = {'id', 'name', 'department', 'category',
+                         'category_detail'}
 
         response = self.client.get(url)
 
