@@ -1,7 +1,9 @@
 '''Define ORM models for secure_file module.'''
+from urllib.parse import urlunsplit
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.files import File
+from django.contrib.sites.shortcuts import get_current_site
 from rest_framework import response, status
 
 from secure_file.utils import encrypt_file_download_url
@@ -55,16 +57,29 @@ class SecureFile(models.Model):
             return secure_file
         return cls.objects.create(user=user, path=target)
 
-    def generate_secured_download_response(self):
+    def generate_secured_download_response(self, request):
         '''Generate secured HTTP redirect response for downloading this file.
+
+        Parameters
+        ----------
+        request: Request
+            The request is used to determine the domain and port for current
+            site.
 
         Return
         ------
         response: Response
-            The json response contains only one key named 'url', this url
+            The json response contains only one key named 'url', this full url
             points to the real file created.
         '''
-        return response.Response({
-            'url': encrypt_file_download_url(
-                type(self), 'path', self.path.name, 'download_file')
-        }, status=status.HTTP_201_CREATED)
+        current_site = get_current_site(request)
+        encrypted_url = encrypt_file_download_url(
+            type(self), 'path', self.path.name, 'download_file')
+        url = urlunsplit((
+            request.scheme,  # URL scheme specifier
+            current_site.domain,  # Network location part
+            encrypted_url,  # Hierarchical path
+            '',  # Query component
+            ''  # Fragment identifier
+        ))
+        return response.Response({'url': url}, status=status.HTTP_201_CREATED)
