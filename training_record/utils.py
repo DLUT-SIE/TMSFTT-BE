@@ -1,6 +1,5 @@
 '''Utility functions provided by training_record module.'''
 import re
-from infra.utils import dev_logger, prod_logger
 
 
 def infer_attachment_type(fname):
