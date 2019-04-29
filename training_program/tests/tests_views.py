@@ -28,7 +28,8 @@ class TestProgram(APITestCase):
 
         name = 'program'
         data = {'name': name, 'department': department.id,
-                'category': training_program.models.Program.VALUE_TRAINING}
+                'category': (
+                    training_program.models.Program.PROGRAM_CATEGORY_TRAINING)}
 
         response = self.client.post(url, data, format='json')
 
@@ -87,7 +88,7 @@ class TestProgramCategoryViewSet(APITestCase):
     def test_program_categories(self):
         '''Should get categories according to request.'''
         user = mommy.make(get_user_model())
-        url = reverse('program-categories-get')
+        url = reverse('program-categories-list')
         self.client.force_authenticate(user)
         response = self.client.get(url)
 

@@ -6,18 +6,18 @@ from auth.models import Department
 
 class Program(models.Model):
     """Programs are managed by admins."""
-    VALUE_TRAINING = 1
-    VALUE_PROMOTION = 2
-    VALUE_TECHNOLOGY = 3
-    VALUE_HELP_CLASS = 4
-    VALUE_OTHERS = 5
+    PROGRAM_CATEGORY_TRAINING = 1
+    PROGRAM_CATEGORY_PROMOTION = 2
+    PROGRAM_CATEGORY_TECHNOLOGY = 3
+    PROGRAM_CATEGORY_HELP_CLASS = 4
+    PROGRAM_CATEGORY_OTHERS = 5
 
-    CATEGORY_CHOICES = (
-        (VALUE_TRAINING, '教学培训'),
-        (VALUE_PROMOTION, '教学促进'),
-        (VALUE_TECHNOLOGY, '教学技术'),
-        (VALUE_HELP_CLASS, '青年教师助课'),
-        (VALUE_OTHERS, '其他'),
+    PROGRAM_CATEGORY_CHOICES = (
+        (PROGRAM_CATEGORY_TRAINING, '教学培训'),
+        (PROGRAM_CATEGORY_PROMOTION, '教学促进'),
+        (PROGRAM_CATEGORY_TECHNOLOGY, '教学技术'),
+        (PROGRAM_CATEGORY_HELP_CLASS, '青年教师助课'),
+        (PROGRAM_CATEGORY_OTHERS, '其他'),
     )
 
     class Meta:
@@ -35,8 +35,10 @@ class Program(models.Model):
     department = models.ForeignKey(Department, verbose_name='开设单位',
                                    on_delete=models.PROTECT)
     category = models.PositiveSmallIntegerField(verbose_name='培训类别',
-                                                choices=CATEGORY_CHOICES,
-                                                default=VALUE_OTHERS)
+                                                choices=(
+                                                    PROGRAM_CATEGORY_CHOICES),
+                                                default=(
+                                                    PROGRAM_CATEGORY_OTHERS))
 
     def __str__(self):
         return self.name
