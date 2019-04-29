@@ -134,7 +134,7 @@ JWT_AUTH = {
     'JWT_GET_USER_SECRET_KEY': 'auth.utils.get_user_secret_key',
     'JWT_AUDIENCE': 'TMSFTT clients',
     'JWT_ISSUER': 'TMSFTT server',
-    'JWT_AUTH_COOKIE': 'JWT_TOKEN',
+    'JWT_AUTH_COOKIE': 'ACCESS_TOKEN',
     'JWT_ALLOW_REFRESH': True,
     # JWT expires in 18 hours.
     'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=12),
