@@ -36,7 +36,7 @@ class Program(models.Model):
                                    on_delete=models.PROTECT)
     category = models.PositiveSmallIntegerField(verbose_name='培训类别',
                                                 choices=CATEGORY_CHOICES,
-                                                default=5)
+                                                default=VALUE_OTHERS)
 
     def __str__(self):
         return self.name
