@@ -169,7 +169,7 @@ class TestRecordViewSet(APITestCase):
         url = reverse('record-school-admin-review', args=(record.pk,))
 
         self.client.force_authenticate(user)
-        data = {'passornot': True}
+        data = {'is_approved': True}
         response = self.client.post(url, data)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)

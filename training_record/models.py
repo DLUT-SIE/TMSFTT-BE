@@ -15,6 +15,8 @@ class Record(models.Model):
     STATUS_FEEDBACK_REQUIRED = 4
     STATUS_FEEDBACK_SUBMITTED = 5
     STATUS_DEPARTMENT_ADMIN_REJECTED = 6
+    STATUS_SCHOOL_ADMIN_REJECTED = 7
+    STATUS_CLOSED = 8
     STATUS_CHOICES = (
         (STATUS_SUBMITTED, '已提交'),
         (STATUS_DEPARTMENT_ADMIN_APPROVED, '院系管理员审核通过'),
@@ -22,6 +24,8 @@ class Record(models.Model):
         (STATUS_FEEDBACK_REQUIRED, '培训反馈待提交'),
         (STATUS_FEEDBACK_SUBMITTED, '培训反馈已提交'),
         (STATUS_DEPARTMENT_ADMIN_REJECTED, '院系管理员审核不通过'),
+        (STATUS_SCHOOL_ADMIN_REJECTED, '学校管理员审核不通过'),
+        (STATUS_CLOSED, '审核通过，无法修改')
     )
 
     class Meta:

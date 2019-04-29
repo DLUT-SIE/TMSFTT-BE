@@ -4,10 +4,12 @@ import xlrd
 
 from django.db import transaction
 from django.contrib.auth import get_user_model
+from django.utils.timezone import now
 
 from infra.exceptions import BadRequest
 from training_record.models import (
-    Record, RecordContent, RecordAttachment, CampusEventFeedback,
+    Record, RecordContent, RecordAttachment,
+    CampusEventFeedback, StatusChangeLog
 )
 from training_event.models import OffCampusEvent, CampusEvent, EventCoefficient
 
@@ -142,7 +144,7 @@ class RecordService:
         return len(records)
 
     @staticmethod
-    def department_admin_review(record_id, is_approved):
+    def department_admin_review(record_id, is_approved, user):
         '''Department admin review the off-campus training record.'''
         record = Record.objects.filter(pk=record_id, campus_event__isnull=True)
         if len(record) != 1:
@@ -153,13 +155,31 @@ class RecordService:
         with transaction.atomic():
             if is_approved:
                 record.status = Record.STATUS_DEPARTMENT_ADMIN_APPROVED
+                statuschangelog = (
+                    StatusChangeLog.objects.create(
+                        record=record,
+                        pre_status=Record.STATUS_SUBMITTED,
+                        post_status=(
+                            Record.STATUS_DEPARTMENT_ADMIN_APPROVED),
+                        time=now(),
+                        user=user)
+                )
             else:
                 record.status = Record.STATUS_DEPARTMENT_ADMIN_REJECTED
+                statuschangelog = (
+                    StatusChangeLog.objects.create(
+                        record=record,
+                        pre_status=Record.STATUS_SUBMITTED,
+                        post_status=(
+                            Record.STATUS_DEPARTMENT_ADMIN_REJECTED),
+                        time=now(),
+                        user=user)
+                )
             record.save()
-        return record
+        return [record, statuschangelog]
 
     @staticmethod
-    def school_admin_review(record_id, is_approved):
+    def school_admin_review(record_id, is_approved, user):
         '''School admin review the off-campus training record.'''
         record = Record.objects.filter(pk=record_id, campus_event__isnull=True)
         if len(record) != 1:
@@ -170,10 +190,28 @@ class RecordService:
         with transaction.atomic():
             if is_approved:
                 record.status = Record.STATUS_SCHOOL_ADMIN_APPROVED
+                statuschangelog = (
+                    StatusChangeLog.objects.create(
+                        record=record,
+                        pre_status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED,
+                        post_status=(
+                            Record.STATUS_SCHOOL_ADMIN_APPROVED),
+                        time=now(),
+                        user=user)
+                )
             else:
-                record.status = Record.STATUS_SUBMITTED
+                record.status = Record.STATUS_SCHOOL_ADMIN_REJECTED
+                statuschangelog = (
+                    StatusChangeLog.objects.create(
+                        record=record,
+                        pre_status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED,
+                        post_status=(
+                            Record.STATUS_SCHOOL_ADMIN_REJECTED),
+                        time=now(),
+                        user=user)
+                )
             record.save()
-        return record
+        return [record, statuschangelog]
 
 
 class CampusEventFeedbackService:

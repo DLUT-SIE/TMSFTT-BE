@@ -58,7 +58,8 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         '''Pass the record which is being reviewed.'''
         is_approved = request.data.get('is_approved')
         RecordService.department_admin_review(pk,
-                                              is_approved)
+                                              is_approved,
+                                              request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @decorators.action(detail=True, methods=['POST'],
@@ -67,7 +68,8 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         '''Pass the record which is being reviewed.'''
         is_approved = request.data.get('is_approved')
         RecordService.school_admin_review(pk,
-                                          is_approved)
+                                          is_approved,
+                                          request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

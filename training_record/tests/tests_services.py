@@ -162,9 +162,10 @@ class TestRecordService(TestCase):
         record = mommy.make(Record,
                             campus_event=campus_event,
                             status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
+        user = mommy.make(get_user_model())
         with self.assertRaisesMessage(
                 BadRequest, '无此培训记录！'):
-            RecordService.department_admin_review(record.id, True)
+            RecordService.department_admin_review(record.id, True, user)
 
     def test_department_admin_review_no_permission(self):
         '''Should raise BadRequest if no enough permission.'''
@@ -172,9 +173,10 @@ class TestRecordService(TestCase):
         record = mommy.make(Record,
                             off_campus_event=off_campus_event,
                             status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
+        user = mommy.make(get_user_model())
         with self.assertRaisesMessage(
                 BadRequest, '无权更改！'):
-            RecordService.department_admin_review(record.id, True)
+            RecordService.department_admin_review(record.id, True, user)
 
     def test_department_admin_review_approve(self):
         '''Should change the status of off-campus training record.'''
@@ -182,9 +184,14 @@ class TestRecordService(TestCase):
         record = mommy.make(Record,
                             off_campus_event=off_campus_event,
                             status=Record.STATUS_SUBMITTED)
-        result = RecordService.department_admin_review(record.id, True)
+        user = mommy.make(get_user_model())
+        result = RecordService.department_admin_review(record.id, True, user)
 
-        self.assertEqual(result.status,
+        self.assertEqual(result[0].status,
+                         Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
+        self.assertEqual(result[1].pre_status,
+                         Record.STATUS_SUBMITTED)
+        self.assertEqual(result[1].post_status,
                          Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
 
     def test_department_admin_review_reject(self):
@@ -193,9 +200,14 @@ class TestRecordService(TestCase):
         record = mommy.make(Record,
                             off_campus_event=off_campus_event,
                             status=Record.STATUS_SUBMITTED)
-        result = RecordService.department_admin_review(record.id, False)
+        user = mommy.make(get_user_model())
+        result = RecordService.department_admin_review(record.id, False, user)
 
-        self.assertEqual(result.status,
+        self.assertEqual(result[0].status,
+                         Record.STATUS_DEPARTMENT_ADMIN_REJECTED)
+        self.assertEqual(result[1].pre_status,
+                         Record.STATUS_SUBMITTED)
+        self.assertEqual(result[1].post_status,
                          Record.STATUS_DEPARTMENT_ADMIN_REJECTED)
 
     def test_school_admin_review_no_record(self):
@@ -204,9 +216,10 @@ class TestRecordService(TestCase):
         record = mommy.make(Record,
                             campus_event=campus_event,
                             status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
+        user = mommy.make(get_user_model())
         with self.assertRaisesMessage(
                 BadRequest, '无此培训记录！'):
-            RecordService.school_admin_review(record.id, True)
+            RecordService.school_admin_review(record.id, True, user)
 
     def test_school_admin_review_no_permission(self):
         '''Should raise BadRequest if no enough permission.'''
@@ -214,9 +227,10 @@ class TestRecordService(TestCase):
         record = mommy.make(Record,
                             off_campus_event=off_campus_event,
                             status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
+        user = mommy.make(get_user_model())
         with self.assertRaisesMessage(
                 BadRequest, '无权更改！'):
-            RecordService.school_admin_review(record.id, True)
+            RecordService.school_admin_review(record.id, True, user)
 
     def test_school_admin_review_approve(self):
         '''Should change the status of off-campus training record.'''
@@ -224,9 +238,14 @@ class TestRecordService(TestCase):
         record = mommy.make(Record,
                             off_campus_event=off_campus_event,
                             status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
-        result = RecordService.school_admin_review(record.id, True)
+        user = mommy.make(get_user_model())
+        result = RecordService.school_admin_review(record.id, True, user)
 
-        self.assertEqual(result.status, Record.STATUS_SCHOOL_ADMIN_APPROVED)
+        self.assertEqual(result[0].status, Record.STATUS_SCHOOL_ADMIN_APPROVED)
+        self.assertEqual(result[1].pre_status,
+                         Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
+        self.assertEqual(result[1].post_status,
+                         Record.STATUS_SCHOOL_ADMIN_APPROVED)
 
     def test_school_admin_review_reject(self):
         '''Should change the status of off-campus training record.'''
@@ -234,9 +253,14 @@ class TestRecordService(TestCase):
         record = mommy.make(Record,
                             off_campus_event=off_campus_event,
                             status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
-        result = RecordService.school_admin_review(record.id, False)
+        user = mommy.make(get_user_model())
+        result = RecordService.school_admin_review(record.id, False, user)
 
-        self.assertEqual(result.status, Record.STATUS_SUBMITTED)
+        self.assertEqual(result[0].status, Record.STATUS_SCHOOL_ADMIN_REJECTED)
+        self.assertEqual(result[1].pre_status,
+                         Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
+        self.assertEqual(result[1].post_status,
+                         Record.STATUS_SCHOOL_ADMIN_REJECTED)
 
 
 class TestCampusEventFeedbackService(TestCase):
