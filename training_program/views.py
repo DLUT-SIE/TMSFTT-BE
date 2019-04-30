@@ -17,7 +17,7 @@ class ProgramCategoryViewSet(viewsets.ViewSet):
         '''define how to get program categories'''
         program_categories = [
             {
-                'val': item[0],
+                'type': item[0],
                 'name': item[1],
             } for item in (
                 training_program.models.Program.PROGRAM_CATEGORY_CHOICES)
