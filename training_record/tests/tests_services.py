@@ -187,11 +187,7 @@ class TestRecordService(TestCase):
         user = mommy.make(get_user_model())
         result = RecordService.department_admin_review(record.id, True, user)
 
-        self.assertEqual(result[0].status,
-                         Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
-        self.assertEqual(result[1].pre_status,
-                         Record.STATUS_SUBMITTED)
-        self.assertEqual(result[1].post_status,
+        self.assertEqual(result.status,
                          Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
 
     def test_department_admin_review_reject(self):
@@ -203,11 +199,7 @@ class TestRecordService(TestCase):
         user = mommy.make(get_user_model())
         result = RecordService.department_admin_review(record.id, False, user)
 
-        self.assertEqual(result[0].status,
-                         Record.STATUS_DEPARTMENT_ADMIN_REJECTED)
-        self.assertEqual(result[1].pre_status,
-                         Record.STATUS_SUBMITTED)
-        self.assertEqual(result[1].post_status,
+        self.assertEqual(result.status,
                          Record.STATUS_DEPARTMENT_ADMIN_REJECTED)
 
     def test_school_admin_review_no_record(self):
@@ -241,11 +233,7 @@ class TestRecordService(TestCase):
         user = mommy.make(get_user_model())
         result = RecordService.school_admin_review(record.id, True, user)
 
-        self.assertEqual(result[0].status, Record.STATUS_SCHOOL_ADMIN_APPROVED)
-        self.assertEqual(result[1].pre_status,
-                         Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
-        self.assertEqual(result[1].post_status,
-                         Record.STATUS_SCHOOL_ADMIN_APPROVED)
+        self.assertEqual(result.status, Record.STATUS_SCHOOL_ADMIN_APPROVED)
 
     def test_school_admin_review_reject(self):
         '''Should change the status of off-campus training record.'''
@@ -256,11 +244,7 @@ class TestRecordService(TestCase):
         user = mommy.make(get_user_model())
         result = RecordService.school_admin_review(record.id, False, user)
 
-        self.assertEqual(result[0].status, Record.STATUS_SCHOOL_ADMIN_REJECTED)
-        self.assertEqual(result[1].pre_status,
-                         Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
-        self.assertEqual(result[1].post_status,
-                         Record.STATUS_SCHOOL_ADMIN_REJECTED)
+        self.assertEqual(result.status, Record.STATUS_SCHOOL_ADMIN_REJECTED)
 
 
 class TestCampusEventFeedbackService(TestCase):
