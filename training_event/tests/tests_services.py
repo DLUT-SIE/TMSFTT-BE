@@ -14,7 +14,6 @@ from training_event.services import (
 from training_record.models import Record
 from auth.models import Department
 
-
 User = get_user_model()
 
 
@@ -41,6 +40,21 @@ class TestEnrollmentService(TestCase):
         count = Enrollment.objects.filter(user=self.user).count()
 
         self.assertEqual(count, 1)
+
+    def test_get_user_enrollment_status(self):
+        '''Should get user enrollment status.'''
+        events = [mommy.make(CampusEvent) for _ in range(10)]
+        events_id_list = [event.id for event in events]
+        expected_result = []
+        for idx, event in enumerate(events):
+            if idx >= 3:
+                mommy.make(Enrollment, user=self.user, campus_event=event)
+                expected_result.append({'id': event.id, 'enrolled': True})
+            else:
+                expected_result.append({'id': event.id, 'enrolled': False})
+        results = EnrollmentService.get_user_enrollment_status(
+            events_id_list, self.user.id)
+        self.assertEqual(results, expected_result)
 
 
 class TestCoefficientCalculationService(TestCase):

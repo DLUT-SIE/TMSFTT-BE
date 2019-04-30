@@ -5,6 +5,7 @@ from django.utils.timezone import now
 from model_mommy import mommy
 from rest_framework import status
 from rest_framework.test import APITestCase
+from unittest.mock import patch
 
 import training_program.models
 import training_event.models
@@ -256,3 +257,31 @@ class TestWorkloadFileView(APITestCase):
         data = {}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+    @patch('training_event.views.EnrollmentService')
+    def test_get_enrollment_status(self, mocked_service):
+        '''Should get enrollemnts status according to request.'''
+        user = mommy.make(get_user_model())
+        url = reverse('enrollments-actions-get-enrollment-status')
+        mocked_service.get_user_enrollment_status.return_value = [
+            {
+                "id": 1,
+                "enrolled": False
+            },
+            {
+                "id": 2,
+                "enrolled": False
+            },
+            {
+                "id": 3,
+                "enrolled": True
+            },
+            {
+                "id": 4,
+                "enrolled": True
+            },
+        ]
+        self.client.force_authenticate(user)
+        event_list = [1, 2, 3, 4, 5]
+        response = self.client.get(url, {'event': event_list})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
