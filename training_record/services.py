@@ -162,7 +162,6 @@ class RecordService:
         Returns
         -------
         record: Record
-        statuschangelog: Statuschangelog
         '''
         with transaction.atomic():
             record = (Record
@@ -177,28 +176,17 @@ class RecordService:
             pre_status = record.status
             if is_approved:
                 record.status = Record.STATUS_DEPARTMENT_ADMIN_APPROVED
-                post_status = record.status
-                statuschangelog = (
-                    StatusChangeLog.objects.create(
-                        record=record,
-                        pre_status=pre_status,
-                        post_status=post_status,
-                        time=now(),
-                        user=user)
-                )
             else:
                 record.status = Record.STATUS_DEPARTMENT_ADMIN_REJECTED
-                post_status = record.status
-                statuschangelog = (
-                    StatusChangeLog.objects.create(
-                        record=record,
-                        pre_status=pre_status,
-                        post_status=post_status,
-                        time=now(),
-                        user=user)
-                )
+            post_status = record.status
+            StatusChangeLog.objects.create(
+                record=record,
+                pre_status=pre_status,
+                post_status=post_status,
+                time=now(),
+                user=user)
             record.save()
-        return [record, statuschangelog]
+        return record
 
     @staticmethod
     def school_admin_review(record_id, is_approved, user):
@@ -219,7 +207,6 @@ class RecordService:
         Returns
         -------
         record: Record
-        statuschangelog: Statuschangelog
         '''
         with transaction.atomic():
             record = (Record
@@ -234,28 +221,17 @@ class RecordService:
             pre_status = record.status
             if is_approved:
                 record.status = Record.STATUS_SCHOOL_ADMIN_APPROVED
-                post_status = record.status
-                statuschangelog = (
-                    StatusChangeLog.objects.create(
-                        record=record,
-                        pre_status=pre_status,
-                        post_status=post_status,
-                        time=now(),
-                        user=user)
-                )
             else:
                 record.status = Record.STATUS_SCHOOL_ADMIN_REJECTED
-                post_status = record.status
-                statuschangelog = (
-                    StatusChangeLog.objects.create(
-                        record=record,
-                        pre_status=pre_status,
-                        post_status=post_status,
-                        time=now(),
-                        user=user)
-                )
+            post_status = record.status
+            StatusChangeLog.objects.create(
+                record=record,
+                pre_status=pre_status,
+                post_status=post_status,
+                time=now(),
+                user=user)
             record.save()
-        return [record, statuschangelog]
+        return record
 
 
 class CampusEventFeedbackService:
