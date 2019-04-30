@@ -1,4 +1,5 @@
 '''Provide API views for infra module.'''
+from django.utils.timezone import now
 from rest_framework import mixins, viewsets, decorators, status, permissions
 from rest_framework.response import Response
 from rest_framework_guardian import filters
@@ -13,7 +14,11 @@ class NotificationViewSet(mixins.ListModelMixin,
                           mixins.RetrieveModelMixin,
                           viewsets.GenericViewSet):
     '''Create API views for Notification.'''
-    queryset = infra.models.Notification.objects.all().order_by('-time')
+    queryset = (
+        infra.models.Notification.objects
+        .select_related('sender', 'recipient')
+        .all().order_by('read_time', '-time')
+    )
     serializer_class = infra.serializers.NotificationSerializer
     filter_backends = (filters.DjangoObjectPermissionsFilter,)
     permission_classes = (
@@ -45,6 +50,16 @@ class NotificationViewSet(mixins.ListModelMixin,
     def read(self, request):
         '''Return notifications which are already read.'''
         return self._get_read_status_filtered_notifications(request, True)
+
+    def get_object(self):
+        '''We override this function to update notification read_time.'''
+        obj = super().get_object()
+        if not obj.read_time:
+            # It's not so RESTful, since we update the resource in a GET
+            # method, but it simplify our logic a lot.
+            obj.read_time = now()
+            obj.save()
+        return obj
 
 
 class NotificationActionViewSet(viewsets.ViewSet):
