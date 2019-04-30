@@ -229,6 +229,47 @@ class TestAggregateDataService(TestCase):
         self.assertEqual(records['campus_records'][0].id, record1.id)
         self.assertEqual(records['off_campus_records'][0].id, record2.id)
 
+    @patch('data_warehouse.services.aggregate_data_service'
+           '.CoverageStatisticsService')
+    @patch('data_warehouse.services.aggregate_data_service.TableExportService')
+    def test_coverage_statistics(self, mock_table_export_service,
+                                 mock_coverage_statistics_service):
+        '''Should 根据请求返回分组后的培训记录'''
+        request = Mock()
+        context = {
+            'request': None,
+        }
+        with self.assertRaisesMessage(BadRequest, '参数错误'):
+            AggregateDataService.coverage_statistics(context)
+
+        context['request'] = request
+        with self.assertRaisesMessage(BadRequest, '未指定培训项目ID'):
+            AggregateDataService.coverage_statistics(context)
+
+        context['start_time'] = now()
+        context['end_time'] = now()
+        context['program_id'] = -999
+        context['department_id'] = None
+        AggregateDataService.coverage_statistics(context)
+        (
+            mock_coverage_statistics_service
+            .get_traning_records.assert_called_with(
+                request.user,
+                context['program_id'],
+                context['department_id'],
+                context['start_time'],
+                context['end_time']
+            )
+        )
+        (
+            mock_coverage_statistics_service
+            .groupby_training_records.assert_called()
+        )
+        (
+            mock_table_export_service
+            .export_traning_coverage_summary.assert_called()
+        )
+
 
 class TestTeachersGroupService(TestCase):
     '''test TeachersGroupService'''

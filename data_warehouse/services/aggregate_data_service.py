@@ -11,6 +11,9 @@ from data_warehouse.services.user_core_statistics_service import (
 from data_warehouse.services.user_ranking_service import (
     UserRankingService
 )
+from data_warehouse.services.coverage_statistics_services import (
+    CoverageStatisticsService)
+from data_warehouse.services.table_export_services import TableExportService
 from data_warehouse.consts import EnumData
 from infra.exceptions import BadRequest
 from training_record.models import Record
@@ -207,12 +210,40 @@ class AggregateDataService:
         return records
 
     @classmethod
-    def coverage_statistics(cls, context):
-        '''to get coverage statistics data'''
-
-    @classmethod
     def training_hours_statistics(cls, context):
         '''to get training hours statistics data'''
+
+    @classmethod
+    def trainee_statistics(cls, context):
+        '''培训学时与工作量'''
+
+    @classmethod
+    def coverage_statistics(cls, context):
+        '''专任教师培训覆盖率'''
+        request = context.get('request', None)
+        if request is None:
+            raise BadRequest('参数错误')
+
+        program_id = context.get('program_id', None)
+        if program_id is None:
+            raise BadRequest('未指定培训项目ID')
+        start_time = context.get('start_time', None)
+        end_time = context.get('end_time', None)
+        department_id = context.get('department_id', None)
+
+        user = request.user
+        records = CoverageStatisticsService.get_traning_records(
+            user, program_id, department_id, start_time, end_time)
+        # groupy age, title and department
+        grouped_records = CoverageStatisticsService.groupby_training_records(
+            records)
+        file_path = TableExportService.export_traning_coverage_summary(
+            grouped_records)
+        return file_path
+
+    @classmethod
+    def traning_feedback(cls, ctx):
+        '''培训记录反馈导出'''
 
 
 class TeachersGroupService:
