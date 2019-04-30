@@ -1,6 +1,5 @@
 '''Provide API views for training_event module.'''
 import os
-from rest_framework import mixins, viewsets
 from rest_framework.views import APIView
 from django.utils.timezone import now
 from rest_framework import mixins, viewsets, decorators, status
@@ -45,6 +44,19 @@ class EnrollmentViewSet(mixins.CreateModelMixin,
     queryset = training_event.models.Enrollment.objects.all()
     serializer_class = training_event.serializers.EnrollmentSerailizer
 
+    @decorators.action(detail=False, methods=['GET'],
+                       url_path='user-enrollment-status')
+    def get_enrollment_status(self, request):
+        '''Return status about enrollments.'''
+        user_id = request.user.id
+        events_dict = request.query_params.dict()['event'].split(',')
+        events_list = list(map(int, events_dict))
+
+        result = EnrollmentService.get_user_enrollment_status(events_list,
+                                                              user_id)
+
+        return Response(result, status=status.HTTP_200_OK)
+
 
 class WorkloadFileDownloadView(APIView):
     '''Create API views for downloading workload file'''
@@ -88,17 +100,3 @@ class WorkloadFileDownloadView(APIView):
         os.unlink(file_path)
 
         return secure_file.generate_secured_download_response(request)
-    filter_class = training_event.filters.EnrollmentFilter
-
-    @decorators.action(detail=False, methods=['GET'],
-                       url_path='user-enrollment-status')
-    def get_enrollment_status(self, request):
-        '''Return status about enrollments.'''
-        user_id = request.user.id
-        events_dict = request.query_params.dict()['event'].split(',')
-        events_list = list(map(int, events_dict))
-
-        result = EnrollmentService.get_user_enrollment_status(events_list,
-                                                              user_id)
-
-        return Response(result, status=status.HTTP_200_OK)

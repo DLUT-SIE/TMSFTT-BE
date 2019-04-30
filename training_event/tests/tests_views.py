@@ -257,7 +257,7 @@ class TestWorkloadFileView(APITestCase):
         data = {}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
+
     @patch('training_event.views.EnrollmentService')
     def test_get_enrollment_status(self, mocked_service):
         '''Should get enrollemnts status according to request.'''
