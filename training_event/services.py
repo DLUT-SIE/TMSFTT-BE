@@ -102,7 +102,6 @@ class CoefficientCalculationService:
                 user__in=teachers, off_campus_event__time__gte=start_time,
                 off_campus_event__time__lte=end_time)
         result = {}
-
         for record in chain(campus_records, off_campus_records):
             user = record.user
             result.setdefault(user, 0)
@@ -113,7 +112,7 @@ class CoefficientCalculationService:
         return result
 
     @staticmethod
-    def generate_workload_excel_from_data(workload_dict, filename):
+    def generate_workload_excel_from_data(workload_dict):
         """ 根据传入的工作量汇总字典生成excel
 
         Parameters
@@ -121,8 +120,6 @@ class CoefficientCalculationService:
         workload_dict: dict
             key 为user，value为对应user的工作量，通过调用
             calculate_workload_by_query方法获取相应字典
-        filename: str
-            文件名
         Returns
         -------
         file_path: str
@@ -150,7 +147,7 @@ class CoefficientCalculationService:
             worksheet.write(row+1, 2, teacher[0].first_name)
             worksheet.write(row+1, 3, teacher[1])
 
-        _, file_path = tempfile.mkstemp(suffix=filename)
+        _, file_path = tempfile.mkstemp()
 
         workbook.save(file_path)
         return file_path

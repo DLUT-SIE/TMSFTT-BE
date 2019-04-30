@@ -82,8 +82,7 @@ class TestCoefficientCalculationService(TestCase):
     def test_generate_workload_excel_from_data(self):
         '''Should generate excel correctly'''
         path = (CoefficientCalculationService
-                .generate_workload_excel_from_data(
-                    self.workload_dict, self.filename)
+                .generate_workload_excel_from_data(self.workload_dict)
                 )
         workbook = xlrd.open_workbook(path)
         sheet = workbook.sheet_by_name(
