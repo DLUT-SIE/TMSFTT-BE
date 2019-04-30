@@ -83,15 +83,32 @@ class RecordService:
 
     # pylint: disable=invalid-name
     # pylint: disable=redefined-builtin
+    # pylint: disable=unused-argument
     @staticmethod
     def update_off_campus_record_from_raw_data(
             record, off_campus_event=None, user=None,
             contents=None, attachments=None):
-        '''Update the off-campus record'''
-        if off_campus_event is None:
+        '''Update the off-campus record
+
+        Parameters
+        ----------
+        off_campus_event: dict
+            This dict should have full information needed to update an
+            OffCampusEvent.
+        user: User
+            The user of which the record is related to.
+        contents(optional): list of dict
+            Every dict of this list should have full information needed to
+            create a RecordContent.
+        attachments(optional): list of InMemoryFile
+
+        Returns
+        -------
+        record: Record
+        '''
+        off_campus_event_data = off_campus_event
+        if off_campus_event_data is None:
             raise BadRequest('校外培训活动数据格式无效')
-        if user is None or not isinstance(user, User):
-            raise BadRequest('用户无效')
         if contents is None:
             contents = []
         if attachments is None:
@@ -106,17 +123,13 @@ class RecordService:
 
             # update the offCampusEvent
             try:
-                original_off_campus_event = OffCampusEvent.objects.get(
-                    id=off_campus_event.get('id'))
-                original_off_campus_event.name = off_campus_event.get('name')
-                original_off_campus_event.time = off_campus_event.get('time')
-                original_off_campus_event.location = (
-                    off_campus_event.get('location'))
-                original_off_campus_event.num_hours = (
-                    off_campus_event.get('num_hours'))
-                original_off_campus_event.num_participants = (
-                    off_campus_event.get('num_participants'))
-                original_off_campus_event.save()
+                off_campus_event_instance = (
+                    OffCampusEvent.objects.select_for_update().get(
+                        id=off_campus_event_data.get('id'))
+                )
+                for key, val in off_campus_event_data.items():
+                    setattr(off_campus_event_instance, key, val)
+                off_campus_event_instance.save()
 
             except Exception:
                 raise BadRequest('校外培训活动数据格式无效')

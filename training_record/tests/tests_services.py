@@ -108,13 +108,6 @@ class TestRecordService(TestCase):
                 BadRequest, '校外培训活动数据格式无效'):
             RecordService.update_off_campus_record_from_raw_data(self.record)
 
-    def test_update_off_campus_record_no_user(self):
-        '''Should raise ValueError if no user.'''
-        with self.assertRaisesMessage(
-                BadRequest, '用户无效'):
-            RecordService.update_off_campus_record_from_raw_data(
-                self.record, off_campus_event=self.off_campus_event_data)
-
     def test_update_off_campus_record_no_contents_and_attachments(self):
         '''Should skip extra creation if no contents or no attachments.'''
         user = mommy.make(User)
