@@ -1,17 +1,18 @@
 '''Provide API views for training_event module.'''
 import os
+
 from rest_framework.views import APIView
-from django.utils.timezone import now
 from rest_framework import mixins, viewsets, decorators, status
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
+from django.utils.timezone import now
+from secure_file.models import SecureFile
+from training_event.services import CoefficientCalculationService
+from training_event.services import EnrollmentService
 
 import training_event.models
 import training_event.serializers
 import training_event.filters
-from training_event.services import CoefficientCalculationService
-from secure_file.models import SecureFile
-from training_event.services import EnrollmentService
 
 User = get_user_model()
 
