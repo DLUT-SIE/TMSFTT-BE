@@ -34,11 +34,10 @@ class Program(models.Model):
     name = models.CharField(verbose_name='项目名称', max_length=64)
     department = models.ForeignKey(Department, verbose_name='开设单位',
                                    on_delete=models.PROTECT)
-    category = models.PositiveSmallIntegerField(verbose_name='培训类别',
-                                                choices=(
-                                                    PROGRAM_CATEGORY_CHOICES),
-                                                default=(
-                                                    PROGRAM_CATEGORY_OTHERS))
+    category = models.PositiveSmallIntegerField(
+        verbose_name='培训类别',
+        choices=PROGRAM_CATEGORY_CHOICES,
+        default=PROGRAM_CATEGORY_OTHERS)
 
     def __str__(self):
         return self.name
