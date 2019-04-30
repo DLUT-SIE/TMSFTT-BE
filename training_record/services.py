@@ -145,33 +145,55 @@ class RecordService:
 
     @staticmethod
     def department_admin_review(record_id, is_approved, user):
-        '''Department admin review the off-campus training record.'''
-        record = Record.objects.filter(pk=record_id, campus_event__isnull=True)
-        if len(record) != 1:
-            raise BadRequest('无此培训记录！')
-        record = record[0]
-        if record.status != Record.STATUS_SUBMITTED:
-            raise BadRequest('无权更改！')
+        '''Department admin review the off-campus training record.
+
+        This action is atomic, will fail if there is no enough permissions for
+        admins to change record status or no such record.
+
+        Parameters
+        ----------
+        record_id: number
+            This parameter represents which record's status should be changed.
+        is_approved: Boolean
+            This parameter represents whether the record is passed or not.
+        user: number
+            This parameter represents who reviewed the record.
+
+        Returns
+        -------
+        record: Record
+        statuschangelog: Statuschangelog
+        '''
         with transaction.atomic():
+            record = (Record
+                      .objects
+                      .select_for_update()
+                      .filter(pk=record_id, campus_event__isnull=True))
+            if len(record) != 1:
+                raise BadRequest('无此培训记录！')
+            record = record[0]
+            if record.status != Record.STATUS_SUBMITTED:
+                raise BadRequest('无权更改！')
+            pre_status = record.status
             if is_approved:
                 record.status = Record.STATUS_DEPARTMENT_ADMIN_APPROVED
+                post_status = record.status
                 statuschangelog = (
                     StatusChangeLog.objects.create(
                         record=record,
-                        pre_status=Record.STATUS_SUBMITTED,
-                        post_status=(
-                            Record.STATUS_DEPARTMENT_ADMIN_APPROVED),
+                        pre_status=pre_status,
+                        post_status=post_status,
                         time=now(),
                         user=user)
                 )
             else:
                 record.status = Record.STATUS_DEPARTMENT_ADMIN_REJECTED
+                post_status = record.status
                 statuschangelog = (
                     StatusChangeLog.objects.create(
                         record=record,
-                        pre_status=Record.STATUS_SUBMITTED,
-                        post_status=(
-                            Record.STATUS_DEPARTMENT_ADMIN_REJECTED),
+                        pre_status=pre_status,
+                        post_status=post_status,
                         time=now(),
                         user=user)
                 )
@@ -180,33 +202,55 @@ class RecordService:
 
     @staticmethod
     def school_admin_review(record_id, is_approved, user):
-        '''School admin review the off-campus training record.'''
-        record = Record.objects.filter(pk=record_id, campus_event__isnull=True)
-        if len(record) != 1:
-            raise BadRequest('无此培训记录！')
-        record = record[0]
-        if record.status != Record.STATUS_DEPARTMENT_ADMIN_APPROVED:
-            raise BadRequest('无权更改！')
+        '''School admin review the off-campus training record.
+
+        This action is atomic, will fail if there is no enough permissions for
+        admins to change record status or no such record.
+
+        Parameters
+        ----------
+        record_id: number
+            This parameter represents which record's status should be changed.
+        is_approved: Boolean
+            This parameter represents whether the record is passed or not.
+        user: number
+            This parameter represents who reviewed the record.
+
+        Returns
+        -------
+        record: Record
+        statuschangelog: Statuschangelog
+        '''
         with transaction.atomic():
+            record = (Record
+                      .objects
+                      .select_for_update()
+                      .filter(pk=record_id, campus_event__isnull=True))
+            if len(record) != 1:
+                raise BadRequest('无此培训记录！')
+            record = record[0]
+            if record.status != Record.STATUS_DEPARTMENT_ADMIN_APPROVED:
+                raise BadRequest('无权更改！')
+            pre_status = record.status
             if is_approved:
                 record.status = Record.STATUS_SCHOOL_ADMIN_APPROVED
+                post_status = record.status
                 statuschangelog = (
                     StatusChangeLog.objects.create(
                         record=record,
-                        pre_status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED,
-                        post_status=(
-                            Record.STATUS_SCHOOL_ADMIN_APPROVED),
+                        pre_status=pre_status,
+                        post_status=post_status,
                         time=now(),
                         user=user)
                 )
             else:
                 record.status = Record.STATUS_SCHOOL_ADMIN_REJECTED
+                post_status = record.status
                 statuschangelog = (
                     StatusChangeLog.objects.create(
                         record=record,
-                        pre_status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED,
-                        post_status=(
-                            Record.STATUS_SCHOOL_ADMIN_REJECTED),
+                        pre_status=pre_status,
+                        post_status=post_status,
                         time=now(),
                         user=user)
                 )

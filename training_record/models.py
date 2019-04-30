@@ -25,7 +25,7 @@ class Record(models.Model):
         (STATUS_FEEDBACK_SUBMITTED, '培训反馈已提交'),
         (STATUS_DEPARTMENT_ADMIN_REJECTED, '院系管理员审核不通过'),
         (STATUS_SCHOOL_ADMIN_REJECTED, '学校管理员审核不通过'),
-        (STATUS_CLOSED, '审核通过，无法修改')
+        (STATUS_CLOSED, '状态关闭')
     )
 
     class Meta:
