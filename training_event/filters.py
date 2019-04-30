@@ -3,7 +3,6 @@ from django_filters import rest_framework as filters
 
 from training_event.models import OffCampusEvent
 from training_event.models import CampusEvent
-from training_event.models import Enrollment
 
 
 class OffCampusEventFilter(filters.FilterSet):
@@ -20,10 +19,3 @@ class CampusEventFilter(filters.FilterSet):
     class Meta:
         model = CampusEvent
         fields = ['program']
-
-
-class EnrollmentFilter(filters.FilterSet):
-    '''Provide required enrollments by user'''
-    class Meta:
-        model = Enrollment
-        fields = ['user']
