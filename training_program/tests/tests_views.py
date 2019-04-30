@@ -61,7 +61,7 @@ class TestProgram(APITestCase):
         program = mommy.make(training_program.models.Program)
         url = reverse('program-detail', args=(program.pk,))
         expected_keys = {'id', 'name', 'department', 'category',
-                         'category_detail'}
+                         'category_str'}
 
         response = self.client.get(url)
 
