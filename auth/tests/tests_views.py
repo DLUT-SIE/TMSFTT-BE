@@ -50,7 +50,7 @@ class TestUserViewSet(APITestCase):
     '''Unit tests for User view.'''
     @classmethod
     def setUpTestData(cls):
-        cls.user = mommy.make(User, is_superuser=True)
+        cls.user = mommy.make(User, is_staff=True)
         assign_perm('tmsftt_auth.add_user', cls.user)
         assign_perm('tmsftt_auth.delete_user', cls.user)
         assign_perm('tmsftt_auth.change_user', cls.user)
