@@ -117,7 +117,7 @@ class RecordService:
         with transaction.atomic():
             # get the record to be updated
             try:
-                record = Record.objects.get(id=record.id)
+                record = Record.objects.select_for_update().get(id=record.id)
             except Exception:
                 raise BadRequest('校外培训记录无效')
 
@@ -127,12 +127,12 @@ class RecordService:
                     OffCampusEvent.objects.select_for_update().get(
                         id=off_campus_event_data.get('id'))
                 )
-                for key, val in off_campus_event_data.items():
-                    setattr(off_campus_event_instance, key, val)
-                off_campus_event_instance.save()
-
             except Exception:
                 raise BadRequest('校外培训活动数据格式无效')
+
+            for key, val in off_campus_event_data.items():
+                setattr(off_campus_event_instance, key, val)
+            off_campus_event_instance.save()
 
             # add attachments
             for attachment in attachments:
@@ -140,6 +140,9 @@ class RecordService:
                     record=record,
                     path=attachment,
                 )
+            if RecordAttachment.objects.filter(
+                    record=record).count() > 3:
+                raise BadRequest('最多允许上传3个附件')
 
             # Remove all contents and create new, whether
             # they have been changed or not.

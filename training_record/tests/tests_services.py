@@ -127,6 +127,23 @@ class TestRecordService(TestCase):
             RecordAttachment.objects.all().count(), 0,
         )
 
+    def test_update_off_campus_record_too_much_attachments(self):
+        '''BadRequest should be raised if attachments is too much'''
+        user = mommy.make(User)
+        attachments = [
+            InMemoryUploadedFile(
+                io.BytesIO(b'some content'),
+                'path', 'name', 'content_type', 'size', 'charset')
+            for _ in range(4)]
+        with self.assertRaisesMessage(BadRequest, '最多允许上传3个附件'):
+            RecordService.update_off_campus_record_from_raw_data(
+                record=self.record,
+                off_campus_event=self.off_campus_event_data,
+                user=user,
+                contents=None,
+                attachments=attachments,
+            )
+
     def test_update_off_campus_record_bad_record(self):
         '''Should raise ValueError if not found record.'''
         user = mommy.make(User)
