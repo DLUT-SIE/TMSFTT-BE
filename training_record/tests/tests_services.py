@@ -18,6 +18,7 @@ from training_event.models import CampusEvent, OffCampusEvent, EventCoefficient
 User = get_user_model()
 
 
+# pylint: disable=too-many-public-methods
 class TestRecordService(TestCase):
     '''Test services provided by RecordService.'''
     @classmethod
