@@ -1,6 +1,6 @@
 '''Provide API views for infra module.'''
 from django.utils.timezone import now
-from rest_framework import mixins, viewsets, decorators, status, permissions
+from rest_framework import mixins, viewsets, decorators, status
 from rest_framework.response import Response
 from rest_framework_guardian import filters
 
@@ -24,6 +24,9 @@ class NotificationViewSet(mixins.ListModelMixin,
     permission_classes = (
         auth.permissions.DjangoObjectPermissions,
     )
+    perms_map = {
+        'mark_all_as_read': ['%(app_label)s.view_%(model_name)s']
+    }
 
     def _get_read_status_filtered_notifications(self, request, is_read):
         '''Return filtered notifications based on read status.'''
@@ -61,22 +64,10 @@ class NotificationViewSet(mixins.ListModelMixin,
             obj.save()
         return obj
 
-
-class NotificationActionViewSet(viewsets.ViewSet):
-    '''Define actions for users to manipulate Notification objects.'''
-    permission_classes = (permissions.IsAuthenticated,)
-
     @decorators.action(detail=False, methods=['POST'],
-                       url_path='read-all')
-    def read_all(self, request):
-        '''Mark all notifications as done for user.'''
+                       url_path='mark-all-as-read')
+    def mark_all_as_read(self, request):
+        '''Mark all notifications as read for user.'''
         count = NotificationService.mark_user_notifications_as_read(
             request.user)
-        return Response({'count': count}, status=status.HTTP_201_CREATED)
-
-    @decorators.action(detail=False, methods=['POST'],
-                       url_path='delete-all')
-    def delete_all(self, request):
-        '''Delete all notifications for user.'''
-        count = NotificationService.delete_user_notifications(request.user)
         return Response({'count': count}, status=status.HTTP_201_CREATED)
