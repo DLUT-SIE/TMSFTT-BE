@@ -1,14 +1,20 @@
 '''Provide API views for training_event module.'''
 import os
-from rest_framework import mixins, viewsets
+
 from rest_framework.views import APIView
+from rest_framework import mixins, viewsets, decorators, status
+from rest_framework.response import Response
+from django.contrib.auth import get_user_model
 from django.utils.timezone import now
+from secure_file.models import SecureFile
+from training_event.services import CoefficientCalculationService
+from training_event.services import EnrollmentService
 
 import training_event.models
 import training_event.serializers
 import training_event.filters
-from training_event.services import CoefficientCalculationService
-from secure_file.models import SecureFile
+
+User = get_user_model()
 
 
 class CampusEventViewSet(viewsets.ModelViewSet):
@@ -38,6 +44,19 @@ class EnrollmentViewSet(mixins.CreateModelMixin,
     '''
     queryset = training_event.models.Enrollment.objects.all()
     serializer_class = training_event.serializers.EnrollmentSerailizer
+
+    @decorators.action(detail=False, methods=['GET'],
+                       url_path='user-enrollment-status')
+    def get_enrollment_status(self, request):
+        '''Return status about enrollments.'''
+        user_id = request.user.id
+        events_dict = request.query_params.dict()['event'].split(',')
+        events_list = list(map(int, events_dict))
+
+        result = EnrollmentService.get_user_enrollment_status(events_list,
+                                                              user_id)
+
+        return Response(result, status=status.HTTP_200_OK)
 
 
 class WorkloadFileDownloadView(APIView):

@@ -47,6 +47,29 @@ class EnrollmentService:
 
             return enrollment
 
+    @staticmethod
+    def get_user_enrollment_status(events, user_id):
+        """Provide services for get Enrollment Status.
+        Parameters
+        ----------
+        events: list
+            要查询的校内活动id的列表
+        user_id: number
+            当然的用户id
+
+
+        Returns
+        -------
+        result: list
+        id 为活动的编号
+        enrolled 活动是否报名，True表示该活动已经报名，False表示活动没有报名
+        """
+        enrolled_events = set(Enrollment.objects.filter(
+            user=user_id, campus_event__id__in=events
+        ).values_list('campus_event_id', flat=True))
+        return [{'id': event, 'enrolled': event in enrolled_events}
+                for event in events]
+
 
 class CoefficientCalculationService:
     '''Provide workload calculation method .'''
