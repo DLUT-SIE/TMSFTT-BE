@@ -4,6 +4,7 @@ from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
+from rest_framework_jwt.settings import api_settings
 
 
 class MockedCASLoginView(APIView):
@@ -15,9 +16,12 @@ class MockedCASLoginView(APIView):
         '''Render a list of users.'''
         # The service user wants to use.
         service = request.query_params.get('service')
-        return Response({
+        response = Response({
             'users': get_user_model().objects.all(),
             'service': service}, template_name='cas_login_list.html')
+        if api_settings.JWT_AUTH_COOKIE:
+            response.delete_cookie(api_settings.JWT_AUTH_COOKIE)
+        return response
 
 
 class MockedCASValidateView(APIView):
