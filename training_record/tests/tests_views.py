@@ -129,20 +129,25 @@ class TestRecordViewSet(APITestCase):
 
     def test_update_record(self):
         '''Record should be updated by PATCH request.'''
-        status0 = training_record.models.Record.STATUS_SUBMITTED
-        status1 = (training_record
-                   .models.Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
-        campus_event = mommy.make(training_event.models.CampusEvent)
+        off_campus_event = mommy.make(training_event.models.OffCampusEvent,
+                                      id=1,)
+        off_campus_event_data = {
+            'id': 1,
+            'name': 'abc',
+            'time': '0122-12-31T15:54:17.000Z',
+            'location': 'loc',
+            'num_hours': 5,
+            'num_participants': 30,
+        }
         record = mommy.make(training_record.models.Record,
-                            campus_event=campus_event, status=status0)
+                            off_campus_event=off_campus_event)
+
         url = reverse('record-detail', args=(record.pk,))
-        data = {'status': status1}
+        data = {'off_campus_event': json.dumps(off_campus_event_data)}
 
         response = self.client.patch(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('status', response.data)
-        self.assertEqual(response.data['status'], status1)
 
     def test_department_admin_review(self):
         '''Should call department_admin_review.'''

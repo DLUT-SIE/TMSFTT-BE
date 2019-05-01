@@ -26,6 +26,7 @@ class RecordViewSet(MultiSerializerActionClassMixin,
     filter_class = training_record.filters.RecordFilter
     serializer_action_classes = {
         'create': RecordCreateSerializer,
+        'partial_update': RecordCreateSerializer,
         'update': RecordCreateSerializer,
     }
     serializer_class = ReadOnlyRecordSerializer
