@@ -90,10 +90,6 @@ class TestUserGroupViewSet(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = mommy.make(User, is_staff=True)
-        assign_perm('tmsftt_auth.add_usergroup', cls.user)
-        assign_perm('tmsftt_auth.delete_usergroup', cls.user)
-        assign_perm('tmsftt_auth.change_usergroup', cls.user)
-        assign_perm('tmsftt_auth.view_usergroup', cls.user)
 
     def setUp(self):
         self.client.force_authenticate(self.user)
@@ -135,10 +131,6 @@ class TestGroupPermissionViewSet(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = mommy.make(User, is_staff=True)
-        assign_perm('tmsftt_auth.add_grouppermission', cls.user)
-        assign_perm('tmsftt_auth.delete_grouppermission', cls.user)
-        assign_perm('tmsftt_auth.change_grouppermission', cls.user)
-        assign_perm('tmsftt_auth.view_grouppermission', cls.user)
 
     def setUp(self):
         self.client.force_authenticate(self.user)
