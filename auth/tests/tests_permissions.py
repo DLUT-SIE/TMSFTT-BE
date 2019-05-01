@@ -1,119 +1,269 @@
 '''Unit tests for permissions.'''
-from unittest.mock import Mock
+from unittest.mock import Mock, patch, call
 from django.test import TestCase
+from django.http import Http404
+from rest_framework import exceptions
 
 import auth.permissions as permissions
 
 
-class TestSuperAdminOnlyPermission(TestCase):
-    '''Unit tests for SuperAdminOnlyPermission.'''
+class TestSchoolAdminOnlyPermission(TestCase):
+    '''Unit tests for SchoolAdminOnlyPermission.'''
     def test_unauthenticated_user(self):
         '''Should False if user hasn't been authenticated.'''
         request = Mock()
         request.user = Mock()
         request.user.is_authenticated = False
-        permission = permissions.SuperAdminOnlyPermission()
+        permission = permissions.SchoolAdminOnlyPermission()
 
         has_permission = permission.has_permission(request, None)
 
         self.assertFalse(has_permission)
 
-    def test_non_superadmin_user(self):
-        '''Should False if user isn't superadmin.'''
+    def test_non_schooladmin_user(self):
+        '''Should False if user isn't school admin.'''
         request = Mock()
         request.user = Mock()
         request.user.is_authenticated = True
-        request.user.is_superadmin = False
-        permission = permissions.SuperAdminOnlyPermission()
+        request.user.is_staff = False
+        permission = permissions.SchoolAdminOnlyPermission()
 
         has_permission = permission.has_permission(request, None)
 
         self.assertFalse(has_permission)
 
-    def test_superadmin_user(self):
-        '''Should True if user is superadmin.'''
+    def test_schooladmin_user(self):
+        '''Should True if user is school admin.'''
         request = Mock()
         request.user = Mock()
         request.user.is_authenticated = True
-        request.user.is_superadmin = True
-        permission = permissions.SuperAdminOnlyPermission()
+        request.user.is_staff = True
+        permission = permissions.SchoolAdminOnlyPermission()
 
         has_permission = permission.has_permission(request, None)
 
         self.assertTrue(has_permission)
 
 
-class TestDepartmentAdminOnlyPermission(TestCase):
-    '''Unit tests for DepartmentAdminOnlyPermission.'''
-    def test_unauthenticated_user(self):
-        '''Should False if user hasn't been authenticated.'''
+class TestDjangoModelPermissions(TestCase):
+    '''Test permissions for model.'''
+    @classmethod
+    def setUpTestData(cls):
+        model_cls = Mock()
+        model_cls._meta.app_label = 'my_app'
+        model_cls._meta.model_name = 'FakeModel'
+        cls.model_cls = model_cls
+
+    def test_get_required_permission_invalid_method(self):
+        '''Should raise MethodNotAllowed if method not in perms_map.'''
+        permission = permissions.DjangoModelPermissions()
+        method = 'method-does-not-exist'
+
+        with self.assertRaisesMessage(exceptions.MethodNotAllowed, method):
+            permission.get_required_permissions(method, Mock(), self.model_cls)
+
+    def test_get_required_permission_default_permissions(self):
+        '''Should return default permissions if no `perms_map` on view.'''
+        permission = permissions.DjangoModelPermissions()
+        method = 'GET'
+        view = Mock(spec_set=[])
+        _meta = self.model_cls._meta
+        expected_perms = [f'{_meta.app_label}.view_{_meta.model_name}']
+
+        perms = permission.get_required_permissions(
+            method, view, self.model_cls)
+
+        self.assertEqual(perms, expected_perms)
+
+    def test_get_required_permission_custom_permissions(self):
+        '''Should return custom permissions if `perms_map` on view.'''
+        permission = permissions.DjangoModelPermissions()
+        method = 'GET'
+        view = Mock()
+        view.action = 'retrieve'
+        view.perms_map = {
+            'retrieve': ['%(app_label)s.custom_permission']
+        }
+        expected_perms = [
+            f'{self.model_cls._meta.app_label}.custom_permission']
+
+        perms = permission.get_required_permissions(
+            method, view, self.model_cls)
+
+        self.assertEqual(perms, expected_perms)
+
+    def test_has_permission_for_workaround(self):
+        '''Should return True for a workaround as described.'''
+        view = Mock()
+        # pylint: disable=protected-access
+        view._ignore_model_permission = True
         request = Mock()
-        request.user = Mock()
+        permission = permissions.DjangoModelPermissions()
+
+        has_perm = permission.has_permission(request, view)
+
+        self.assertTrue(has_perm)
+
+    def test_has_permission_unauthenticated(self):
+        '''Should return False for if user is not authenticated.'''
+        view = Mock(spec_set=[])
+        request = Mock()
         request.user.is_authenticated = False
-        permission = permissions.DepartmentAdminOnlyPermission()
+        permission = permissions.DjangoModelPermissions()
 
-        has_permission = permission.has_permission(request, None)
+        has_perm = permission.has_permission(request, view)
 
-        self.assertFalse(has_permission)
+        self.assertFalse(has_perm)
 
-    def test_non_dept_admin_user(self):
-        '''Should False if user isn't department admin.'''
+    @patch('auth.permissions.DjangoModelPermissions.get_required_permissions')
+    @patch('auth.permissions.DjangoModelPermissions._queryset')
+    def test_has_permission(self, _, mocked_get):
+        '''Should return False for if user is not authenticated.'''
+        view = Mock(spec_set=[])
         request = Mock()
-        request.user = Mock()
         request.user.is_authenticated = True
-        request.user.is_department_admin = False
-        permission = permissions.DepartmentAdminOnlyPermission()
+        request.user.has_perms.return_value = True
+        permission = permissions.DjangoModelPermissions()
+        perms = ['perm_name']
+        mocked_get.return_value = perms
 
-        has_permission = permission.has_permission(request, None)
+        has_perm = permission.has_permission(request, view)
 
-        self.assertFalse(has_permission)
+        self.assertTrue(has_perm)
+        request.user.has_perms.assert_called_with(perms)
 
-    def test_dept_admin_user(self):
-        '''Should True if user is department admin.'''
+
+class TestDjangoObjectPermissions(TestCase):
+    '''Test permissions for object.'''
+    @classmethod
+    def setUpTestData(cls):
+        model_cls = Mock()
+        model_cls._meta.app_label = 'my_app'
+        model_cls._meta.model_name = 'FakeModel'
+        cls.model_cls = model_cls
+
+    @patch('auth.permissions.DjangoObjectPermissions.get_required_permissions')
+    def test_get_required_object_permission(self, mocked_get):
+        '''Should call `get_required_permissions`.'''
+        method = 'GET'
+        view = Mock()
+        permission = permissions.DjangoObjectPermissions()
+
+        permission.get_required_object_permissions(
+            method, view, self.model_cls)
+
+        mocked_get.assert_called_with(method, view, self.model_cls)
+
+    @patch(
+        'auth.permissions.DjangoObjectPermissions'
+        '.get_required_object_permissions')
+    @patch('auth.permissions.DjangoModelPermissions._queryset')
+    def test_has_object_permission_true(self, _, mocked_get):
+        '''Should return True if user has permission.'''
+        perms = ['permission_1', 'permission_2']
+        mocked_get.return_value = perms
         request = Mock()
-        request.user = Mock()
-        request.user.is_authenticated = True
-        request.user.is_department_admin = True
-        permission = permissions.DepartmentAdminOnlyPermission()
+        request.user.has_perms.return_value = True
+        view = Mock()
+        obj = Mock()
+        mocked_get.return_value = perms
+        permission = permissions.DjangoObjectPermissions()
 
-        has_permission = permission.has_permission(request, None)
+        has_perm = permission.has_object_permission(request, view, obj)
 
-        self.assertTrue(has_permission)
+        mocked_get.assert_called()
+        request.user.has_perms.assert_called_with(perms, obj)
+        self.assertTrue(has_perm)
 
-
-class TestTeacherOnlyPermission(TestCase):
-    '''Unit tests for TeacherOnlyPermission.'''
-    def test_unauthenticated_user(self):
-        '''Should False if user hasn't been authenticated.'''
+    @patch(
+        'auth.permissions.DjangoObjectPermissions'
+        '.get_required_object_permissions')
+    @patch('auth.permissions.DjangoModelPermissions._queryset')
+    def test_has_object_permission_404_safe(self, mocked_queryset, mocked_get):
+        '''
+        Should return 404 if user doesn't has permission with a safe method.'''
+        perms = ['permission_1', 'permission_2']
+        mocked_get.return_value = perms
+        queryset = Mock()
+        mocked_queryset.return_value = queryset
         request = Mock()
-        request.user = Mock()
-        request.user.is_authenticated = False
-        permission = permissions.TeacherOnlyPermission()
+        request.method = 'GET'
+        request.user.has_perms.return_value = False
+        view = Mock()
+        obj = Mock()
+        mocked_get.return_value = perms
+        permission = permissions.DjangoObjectPermissions()
 
-        has_permission = permission.has_permission(request, None)
+        with self.assertRaises(Http404):
+            permission.has_object_permission(request, view, obj)
 
-        self.assertFalse(has_permission)
+        mocked_get.assert_called_with(request.method, view, queryset.model)
+        request.user.has_perms.assert_called_with(perms, obj)
 
-    def test_non_teacher_user(self):
-        '''Should False if user isn't teacher.'''
+    @patch(
+        'auth.permissions.DjangoObjectPermissions'
+        '.get_required_object_permissions')
+    @patch('auth.permissions.DjangoModelPermissions._queryset')
+    def test_has_object_permission_404_unsafe_without_safe(
+            self, mocked_queryset, mocked_get):
+        '''
+        Should return 404 if user doesn't has permission with an unsafe
+        method, and has no GET permission.'''
+        perms = ['permission_1', 'permission_2']
+        read_perms = ['perm_1']
+        mocked_get.return_value = perms
+        queryset = Mock()
+        mocked_queryset.return_value = queryset
         request = Mock()
-        request.user = Mock()
-        request.user.is_authenticated = True
-        request.user.is_teacher = False
-        permission = permissions.TeacherOnlyPermission()
+        request.method = 'POST'
+        request.user.has_perms.side_effect = [False, False]
+        view = Mock()
+        obj = Mock()
+        mocked_get.side_effect = [perms, read_perms]
+        permission = permissions.DjangoObjectPermissions()
 
-        has_permission = permission.has_permission(request, None)
+        with self.assertRaises(Http404):
+            permission.has_object_permission(request, view, obj)
 
-        self.assertFalse(has_permission)
+        mocked_get.assert_has_calls([
+            call(request.method, view, queryset.model),
+            call('GET', view, queryset.model)
+        ])
+        request.user.has_perms.assert_has_calls([
+            call(perms, obj),
+            call(read_perms, obj),
+        ])
 
-    def test_teacher_user(self):
-        '''Should True if user is teacher.'''
+    @patch(
+        'auth.permissions.DjangoObjectPermissions'
+        '.get_required_object_permissions')
+    @patch('auth.permissions.DjangoModelPermissions._queryset')
+    def test_has_object_permission_404_unsafe_with_safe(
+            self, mocked_queryset, mocked_get):
+        '''
+        Should return 403 if user doesn't has permission with an unsafe
+        method, but has GET permission.'''
+        perms = ['permission_1', 'permission_2']
+        read_perms = ['perm_1']
+        mocked_get.return_value = perms
+        queryset = Mock()
+        mocked_queryset.return_value = queryset
         request = Mock()
-        request.user = Mock()
-        request.user.is_authenticated = True
-        request.user.is_teacher = True
-        permission = permissions.TeacherOnlyPermission()
+        request.method = 'POST'
+        request.user.has_perms.side_effect = [False, True]
+        view = Mock()
+        obj = Mock()
+        mocked_get.side_effect = [perms, read_perms]
+        permission = permissions.DjangoObjectPermissions()
 
-        has_permission = permission.has_permission(request, None)
+        has_perm = permission.has_object_permission(request, view, obj)
 
-        self.assertTrue(has_permission)
+        self.assertFalse(has_perm)
+        mocked_get.assert_has_calls([
+            call(request.method, view, queryset.model),
+            call('GET', view, queryset.model)
+        ])
+        request.user.has_perms.assert_has_calls([
+            call(perms, obj),
+            call(read_perms, obj),
+        ])
