@@ -37,15 +37,43 @@ class UserViewSet(mixins.RetrieveModelMixin,
     filter_fields = ('username',)
 
 
-class GroupViewSet(viewsets.ModelViewSet):
+class GroupViewSet(mixins.ListModelMixin,
+                   viewsets.GenericViewSet):
     '''Create API views for Group.'''
     queryset = Group.objects.all()
     serializer_class = auth.serializers.GroupSerializer
     permission_classes = (
-        auth.permissions.DjangoModelPermissions,
-        auth.permissions.DjangoObjectPermissions,
+        auth.permissions.SchoolAdminOnlyPermission,
     )
     filter_class = auth.filters.GroupFilter
+
+
+class UserGroupViewSet(mixins.CreateModelMixin,
+                       mixins.ListModelMixin,
+                       mixins.RetrieveModelMixin,
+                       mixins.DestroyModelMixin,
+                       viewsets.GenericViewSet):
+    '''Create API views for GroupPermission.'''
+    queryset = auth.models.UserGroup.objects.all()
+    serializer_class = auth.serializers.UserGroupSerializer
+    permission_classes = (
+        auth.permissions.SchoolAdminOnlyPermission,
+    )
+    filter_fields = ('group',)
+
+
+class GroupPermissionViewSet(mixins.CreateModelMixin,
+                             mixins.ListModelMixin,
+                             mixins.RetrieveModelMixin,
+                             mixins.DestroyModelMixin,
+                             viewsets.GenericViewSet):
+    '''Create API views for GroupPermission.'''
+    queryset = (auth.models.GroupPermission.objects.all())
+    serializer_class = auth.serializers.GroupPermissionSerializer
+    permission_classes = (
+        auth.permissions.SchoolAdminOnlyPermission,
+    )
+    filter_fields = ('group',)
 
 
 class UserPermissionViewSet(mixins.CreateModelMixin,
@@ -59,11 +87,9 @@ class UserPermissionViewSet(mixins.CreateModelMixin,
                 .all())
     serializer_class = auth.serializers.UserPermissionSerializer
     permission_classes = (
-        auth.permissions.DjangoModelPermissions,
-        auth.permissions.DjangoObjectPermissions,
+        auth.permissions.SchoolAdminOnlyPermission,
     )
     filter_fields = ('user',)
-    pagination_class = None
 
 
 class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
@@ -72,7 +98,6 @@ class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Permission.objects.filter(content_type_id__gt=13).all()
     serializer_class = auth.serializers.PermissionSerializer
     permission_classes = (
-        auth.permissions.DjangoModelPermissions,
-        auth.permissions.DjangoObjectPermissions,
+        auth.permissions.SchoolAdminOnlyPermission,
     )
     pagination_class = None

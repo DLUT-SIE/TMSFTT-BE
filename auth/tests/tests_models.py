@@ -6,6 +6,8 @@ from auth.models import (
     TeacherInformation, DepartmentInformation
 )
 
+import auth.models
+
 
 class TestUser(TestCase):
     '''Unit tests for model User.'''
@@ -27,6 +29,21 @@ class TestDepartment(TestCase):
         department = Department(name=name)
 
         self.assertEqual(str(department), name)
+
+
+class TestUserGroup(TestCase):
+    '''Unit tests for model UserGroup.'''
+    def test_str(self):
+        '''Should reder string correctly'''
+        user_id = 1
+        group_id = 2
+        expected_str = '用户{}位于用户组{}中'.format(user_id, group_id)
+
+        user_group = auth.models.UserGroup(
+            user_id=user_id,
+            group_id=group_id)
+
+        self.assertEqual(str(user_group), expected_str)
 
 
 class TestUserPermission(TestCase):

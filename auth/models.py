@@ -99,6 +99,25 @@ class User(AbstractUser):
         return self.is_staff or self.is_superuser
 
 
+class UserGroup(models.Model):
+    '''A mapping to User-Group Many-To-Many relationship.'''
+    class Meta:
+        verbose_name = '用户组'
+        verbose_name_plural = '用户组'
+        managed = False  # This model is managed by Django.
+        db_table = 'tmsftt_auth_user_groups'
+        default_permissions = ()
+
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, verbose_name='用户',
+                             on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, verbose_name='用户组',
+                              on_delete=models.CASCADE)
+
+    def __str__(self):
+        return '用户{}位于用户组{}中'.format(self.user_id, self.group_id)
+
+
 class UserPermission(models.Model):
     '''A mapping to User-Permission Many-To-Many relationship.'''
     class Meta:
@@ -107,12 +126,6 @@ class UserPermission(models.Model):
         managed = False  # This model is managed by Django.
         db_table = 'tmsftt_auth_user_user_permissions'
         default_permissions = ()
-        permissions = (
-            ('add_userpermission', '允许添加用户权限'),
-            ('view_userpermission', '允许查看用户权限'),
-            ('change_userpermission', '允许修改用户权限'),
-            ('delete_userpermission', '允许删除用户权限'),
-        )
 
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, verbose_name='用户',
@@ -132,15 +145,9 @@ class GroupPermission(models.Model):
         managed = False  # This model is managed by Django.
         db_table = 'auth_group_permissions'
         default_permissions = ()
-        permissions = (
-            ('add_grouppermission', '允许添加用户组权限'),
-            ('view_grouppermission', '允许查看用户组权限'),
-            ('change_grouppermission', '允许修改用户组权限'),
-            ('delete_grouppermission', '允许删除用户组权限'),
-        )
 
     id = models.AutoField(primary_key=True)
-    group = models.ForeignKey(Group, verbose_name='用户',
+    group = models.ForeignKey(Group, verbose_name='用户组',
                               on_delete=models.CASCADE)
     permission = models.ForeignKey(Permission, verbose_name='权限',
                                    on_delete=models.CASCADE)
