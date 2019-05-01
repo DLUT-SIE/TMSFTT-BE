@@ -108,6 +108,7 @@ class UserGroup(models.Model):
         db_table = 'tmsftt_auth_user_groups'
         default_permissions = ()
 
+    id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, verbose_name='用户',
                              on_delete=models.CASCADE)
     group = models.ForeignKey(Group, verbose_name='用户组',
@@ -216,7 +217,6 @@ class TeacherInformation(models.Model):
                 os.path.dirname(__file__), 'data',
                 mapping_name)
             with open(fpath) as target_file:
-                print(target_file)
                 for line in target_file:
                     mapping.setdefault(*line.strip().split())
             # pylint: disable=attribute-defined-outside-init
