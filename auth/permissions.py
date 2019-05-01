@@ -12,7 +12,7 @@ class SchoolAdminOnlyPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         '''Check school admin role.'''
-        return request.user.is_authenticated and request.user.is_staff
+        return request.user.is_authenticated and request.user.is_school_admin
 
 
 class DjangoModelPermissions(permissions.DjangoModelPermissions):
