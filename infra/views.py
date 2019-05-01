@@ -17,7 +17,6 @@ class NotificationViewSet(mixins.ListModelMixin,
     serializer_class = infra.serializers.NotificationSerializer
     filter_backends = (filters.DjangoObjectPermissionsFilter,)
     permission_classes = (
-        auth.permissions.DjangoModelPermissions,
         auth.permissions.DjangoObjectPermissions,
     )
 
