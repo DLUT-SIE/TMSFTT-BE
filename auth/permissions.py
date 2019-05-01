@@ -2,8 +2,12 @@
 from django.http import Http404
 from rest_framework import permissions, exceptions
 
+from infra.utils import prod_logger
+
 
 SAFE_METHODS = ('GET', 'HEAD', 'OPTIONS')
+STANDARD_ACTIONS = ('create', 'retrieve', 'list', 'update',
+                    'partial', 'destroy')
 
 
 class SchoolAdminOnlyPermission(permissions.BasePermission):
@@ -21,6 +25,16 @@ class DjangoModelPermissions(permissions.DjangoModelPermissions):
     This is similar to the one provided by DRF, but add support for custom
     permissions for extra actions. You can also override perms for default
     action names, such as list, retrieve, update, etc.
+
+    If `perms_map` has been defined on the view, and current action is not a
+    standard action (such as list, partial_update, destroy, etc), then the
+    permissions must be configured for the custom action, otherwise an error
+    with 403 will be raised.
+
+    You can provide permission names in view's `perms_map` as a format string,
+    `%(app_label)s` and `%(model_name)s` will be replaced based on the queryset
+    of the view, for example, `%(app_label)s.view_%(model_name)s` on
+    viewset for `Notification` will be formatted into `infra.view_notification`.
 
     Example
     -------
@@ -58,9 +72,23 @@ class DjangoModelPermissions(permissions.DjangoModelPermissions):
         if method not in perms_map:
             raise exceptions.MethodNotAllowed(method)
 
-        # Here is the magic
-        if hasattr(view, 'perms_map') and view.action in view.perms_map:
-            perms_map = view.perms_map
+        view_perms_map = getattr(view, 'perms_map', {})
+        is_standard_action = view.action in STANDARD_ACTIONS
+        if (is_standard_action is False
+                and (view_perms_map is None
+                     or view.action not in view_perms_map)):
+            # Action is a custom action But perms_map of view is None or
+            # permissions are not configured for the action in the perms_map
+            log = (
+                f'{view}视图中{view.action}为非标准操作，'
+                f'但并未找到相应权限设置(perms_map)，请及时修复'
+            )
+            prod_logger.warning(log)
+            raise exceptions.PermissionDenied(
+                '未找到相应权限设置，请联系系统管理员')
+        elif is_standard_action is False or view.action in view_perms_map:
+            # Permissions for the action are configured in view's perms_map
+            perms_map = view_perms_map
             method = view.action
 
         return [perm % kwargs for perm in perms_map[method]]

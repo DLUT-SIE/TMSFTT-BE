@@ -62,11 +62,13 @@ class TestDjangoModelPermissions(TestCase):
         with self.assertRaisesMessage(exceptions.MethodNotAllowed, method):
             permission.get_required_permissions(method, Mock(), self.model_cls)
 
-    def test_get_required_permission_default_permissions(self):
+    def test_get_required_permission_default_all(self):
         '''Should return default permissions if no `perms_map` on view.'''
         permission = permissions.DjangoModelPermissions()
         method = 'GET'
-        view = Mock(spec_set=[])
+        view = Mock()
+        view.action = 'retrieve'
+        view.perms_map = {}
         _meta = self.model_cls._meta
         expected_perms = [f'{_meta.app_label}.view_{_meta.model_name}']
 
@@ -75,7 +77,7 @@ class TestDjangoModelPermissions(TestCase):
 
         self.assertEqual(perms, expected_perms)
 
-    def test_get_required_permission_custom_permissions(self):
+    def test_get_required_permission_default_action_custom_permission(self):
         '''Should return custom permissions if `perms_map` on view.'''
         permission = permissions.DjangoModelPermissions()
         method = 'GET'
@@ -91,6 +93,53 @@ class TestDjangoModelPermissions(TestCase):
             method, view, self.model_cls)
 
         self.assertEqual(perms, expected_perms)
+
+    def test_get_required_permission_custom_action(self):
+        '''Should return permissions for custom action if `perms_map` on view.'''
+        permission = permissions.DjangoModelPermissions()
+        method = 'POST'
+        view = Mock()
+        view.action = 'custom-action'
+        view.perms_map = {
+            'custom-action': ['%(app_label)s.custom_permission']
+        }
+        expected_perms = [
+            f'{self.model_cls._meta.app_label}.custom_permission']
+
+        perms = permission.get_required_permissions(
+            method, view, self.model_cls)
+
+        self.assertEqual(perms, expected_perms)
+
+    @patch('auth.permissions.prod_logger')
+    def test_get_required_permission_custom_action_no_perms_map(self, _):
+        '''
+        Should raise PermissionDenied for custom action if no `perms_map`.
+        '''
+        permission = permissions.DjangoModelPermissions()
+        method = 'POST'
+        view = Mock(spec_set=['action'])
+        view.action = 'custom-action'
+
+        with self.assertRaises(exceptions.PermissionDenied):
+            permission.get_required_permissions(method, view, self.model_cls)
+
+    @patch('auth.permissions.prod_logger')
+    def test_get_required_permission_custom_action_no_permission(self, _):
+        '''
+        Should raise PermissionDenied for custom action if no permissions are
+        configured in `perms_map`.
+        '''
+        permission = permissions.DjangoModelPermissions()
+        method = 'POST'
+        view = Mock(spec_set=['action', 'perms_map'])
+        view.action = 'custom-action'
+        view.perms_map = {}
+
+        with self.assertRaises(exceptions.PermissionDenied):
+            permission.get_required_permissions(method, view, self.model_cls)
+
+
 
     def test_has_permission_for_workaround(self):
         '''Should return True for a workaround as described.'''
