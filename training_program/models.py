@@ -4,46 +4,22 @@ from django.db import models
 from auth.models import Department
 
 
-class ProgramCategory(models.Model):
-    """Program category holds basic information about a category."""
-    class Meta:
-        verbose_name = '培训类别'
-        verbose_name_plural = '培训类别'
-        default_permissions = ()
-        permissions = (
-            ('add_programcategory', '允许添加通知'),
-            ('view_programcategory', '允许查看通知'),
-            ('change_programcategory', '允许修改通知'),
-            ('delete_programcategory', '允许删除通知'),
-        )
-
-    name = models.CharField(verbose_name='培训类别名称', max_length=64)
-
-    def __str__(self):
-        return self.name
-
-
-class ProgramForm(models.Model):
-    """Program form defines the roles the user can be in a program."""
-    class Meta:
-        verbose_name = '培训形式'
-        verbose_name_plural = '培训形式'
-        default_permissions = ()
-        permissions = (
-            ('add_programform', '允许添加培训形式'),
-            ('view_programform', '允许查看培训形式'),
-            ('change_programform', '允许修改培训形式'),
-            ('delete_programform', '允许删除培训形式'),
-        )
-
-    name = models.CharField(verbose_name='培训形式名称', max_length=64)
-
-    def __str__(self):
-        return self.name
-
-
 class Program(models.Model):
     """Programs are managed by admins."""
+    PROGRAM_CATEGORY_TRAINING = 1
+    PROGRAM_CATEGORY_PROMOTION = 2
+    PROGRAM_CATEGORY_TECHNOLOGY = 3
+    PROGRAM_CATEGORY_HELP_CLASS = 4
+    PROGRAM_CATEGORY_OTHERS = 5
+
+    PROGRAM_CATEGORY_CHOICES = (
+        (PROGRAM_CATEGORY_TRAINING, '教学培训'),
+        (PROGRAM_CATEGORY_PROMOTION, '教学促进'),
+        (PROGRAM_CATEGORY_TECHNOLOGY, '教学技术'),
+        (PROGRAM_CATEGORY_HELP_CLASS, '青年教师助课'),
+        (PROGRAM_CATEGORY_OTHERS, '其他'),
+    )
+
     class Meta:
         verbose_name = '培训项目'
         verbose_name_plural = '培训项目'
@@ -58,10 +34,10 @@ class Program(models.Model):
     name = models.CharField(verbose_name='项目名称', max_length=64)
     department = models.ForeignKey(Department, verbose_name='开设单位',
                                    on_delete=models.PROTECT)
-    category = models.ForeignKey(ProgramCategory, verbose_name='培训类别',
-                                 on_delete=models.PROTECT)
-    form = models.ManyToManyField(ProgramForm, verbose_name='培训形式',
-                                  blank=True)
+    category = models.PositiveSmallIntegerField(
+        verbose_name='培训类别',
+        choices=PROGRAM_CATEGORY_CHOICES,
+        default=PROGRAM_CATEGORY_OTHERS)
 
     def __str__(self):
         return self.name
