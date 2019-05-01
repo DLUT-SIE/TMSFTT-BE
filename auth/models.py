@@ -216,6 +216,7 @@ class TeacherInformation(models.Model):
                 os.path.dirname(__file__), 'data',
                 mapping_name)
             with open(fpath) as target_file:
+                print(target_file)
                 for line in target_file:
                     mapping.setdefault(*line.strip().split())
             # pylint: disable=attribute-defined-outside-init
