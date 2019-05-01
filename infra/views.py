@@ -25,7 +25,9 @@ class NotificationViewSet(mixins.ListModelMixin,
         auth.permissions.DjangoObjectPermissions,
     )
     perms_map = {
-        'mark_all_as_read': ['%(app_label)s.view_%(model_name)s']
+        'read': ['%(app_label)s.view_%(model_name)s'],
+        'unread': ['%(app_label)s.view_%(model_name)s'],
+        'mark_all_as_read': ['%(app_label)s.view_%(model_name)s'],
     }
 
     def _get_read_status_filtered_notifications(self, request, is_read):
