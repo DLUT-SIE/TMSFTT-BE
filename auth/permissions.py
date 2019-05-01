@@ -33,8 +33,8 @@ class DjangoModelPermissions(permissions.DjangoModelPermissions):
 
     You can provide permission names in view's `perms_map` as a format string,
     `%(app_label)s` and `%(model_name)s` will be replaced based on the queryset
-    of the view, for example, `%(app_label)s.view_%(model_name)s` on
-    viewset for `Notification` will be formatted into `infra.view_notification`.
+    of the view, for example, `%(app_label)s.view_%(model_name)s` on viewset
+    for `Notification` will be formatted into `infra.view_notification`.
 
     Example
     -------

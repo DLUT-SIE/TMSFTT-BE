@@ -95,7 +95,9 @@ class TestDjangoModelPermissions(TestCase):
         self.assertEqual(perms, expected_perms)
 
     def test_get_required_permission_custom_action(self):
-        '''Should return permissions for custom action if `perms_map` on view.'''
+        '''
+        Should return permissions for custom action if `perms_map` on view.
+        '''
         permission = permissions.DjangoModelPermissions()
         method = 'POST'
         view = Mock()
@@ -138,8 +140,6 @@ class TestDjangoModelPermissions(TestCase):
 
         with self.assertRaises(exceptions.PermissionDenied):
             permission.get_required_permissions(method, view, self.model_cls)
-
-
 
     def test_has_permission_for_workaround(self):
         '''Should return True for a workaround as described.'''
