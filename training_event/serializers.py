@@ -1,17 +1,22 @@
 '''Define how to serialize our models.'''
 from rest_framework import serializers
-
+from django.utils.timezone import now
 import training_event.models
 from training_event.services import EnrollmentService
 
 
 class CampusEventSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize CampusEvent instance.'''
+    overdue_status = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = training_event.models.CampusEvent
         fields = '__all__'
         read_only_fields = ('num_enrolled',)
+
+    def get_overdue_status(self, obj):
+        '''Get event overdue status.'''
+        return now() > obj.deadline
 
 
 class OffCampusEventSerializer(serializers.ModelSerializer):
