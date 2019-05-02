@@ -5,7 +5,7 @@ from collections import OrderedDict
 
 from django.conf import settings
 
-from infra.utils import dev_logger, encrypt, decrypt
+from infra.utils import dev_logger, encrypt, decrypt, get_full_url
 
 
 def encrypt_file_download_url(
@@ -77,6 +77,36 @@ def decrypt_file_download_url(encrypted_url):
     field_name = query_params.get('field', ['path'])[0]
     perm_name = query_params.get('perm', ['download_file'])[0]
     return model_name, field_name, path, perm_name
+
+
+def get_full_encrypted_file_download_url(
+        request, model_class, field_name, file_path, perm_name=None):
+    '''
+    A helper function for generating full URL for downloading encrypted
+    file.
+
+    Parameters
+    ----------
+    request: Request
+        The original request object.
+    model_class: models.Model
+        The class of the model owning the `FileField` for the file.
+    field_name: str
+        The name of the `FileField` on `model_class`.
+    file_path: str
+        The true path of the file, usually the name of the `FieldFile`.
+    perm_name: str
+        The name of the permission, the corresponding permission will be
+        checked during file download request.
+
+    Returns
+    -------
+    url: str
+        The full URL for downloading encrypted file.
+    '''
+    encrypted_url = encrypt_file_download_url(
+        model_class, field_name, file_path, perm_name)
+    return get_full_url(request, encrypted_url)
 
 
 def infer_content_type(fname):

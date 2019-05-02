@@ -2,7 +2,7 @@
 import os.path as osp
 from rest_framework import fields
 
-from secure_file.utils import encrypt_file_download_url
+from secure_file.utils import get_full_encrypted_file_download_url
 
 
 class SecureFileField(fields.FileField):
@@ -22,8 +22,11 @@ class SecureFileField(fields.FileField):
     def to_representation(self, value):
         if not value:
             return None
+        url = get_full_encrypted_file_download_url(
+            self.context['request'], value.field.model, self.source,
+            value.name, self.perm_name
+        )
         return {
             'name': osp.basename(value.name),
-            'url': encrypt_file_download_url(
-                value.field.model, self.source, value.name, self.perm_name)
+            'url': url,
         }
