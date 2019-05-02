@@ -17,7 +17,7 @@ class NotificationViewSet(mixins.ListModelMixin,
     queryset = (
         infra.models.Notification.objects
         .select_related('sender', 'recipient')
-        .all().order_by('read_time', '-time')
+        .all().order_by('-time')
     )
     serializer_class = infra.serializers.NotificationSerializer
     filter_backends = (filters.DjangoObjectPermissionsFilter,)
@@ -39,6 +39,7 @@ class NotificationViewSet(mixins.ListModelMixin,
             queryset = queryset.filter(read_time=None)
 
         page = self.paginate_queryset(queryset)
+        print(queryset.query)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
