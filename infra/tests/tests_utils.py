@@ -1,6 +1,7 @@
 '''Unit tests for infra utils.'''
 import random
 import string
+from unittest.mock import Mock, patch
 
 from django.test import TestCase
 
@@ -98,3 +99,21 @@ class TestEncryptionandDecryption(TestCase):
 
         with self.assertRaisesMessage(ValueError, '已被篡改的内容'):
             utils.decrypt(encrypted)
+
+
+class TestGetFullURL(TestCase):
+    '''Unit tests for get_full_url.'''
+    @patch('infra.utils.get_current_site')
+    def test_get_full_url(self, mocked_get_current_site):
+        '''Should return full url.'''
+        request = Mock()
+        request.scheme = 'http'
+        current_site = Mock()
+        current_site.domain = 'localhost:8000'
+        mocked_get_current_site.return_value = current_site
+        path = '/abc/def'
+        expected_url = 'http://localhost:8000/abc/def'
+
+        url = utils.get_full_url(request, path)
+
+        self.assertEqual(url, expected_url)

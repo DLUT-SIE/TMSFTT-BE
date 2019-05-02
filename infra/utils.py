@@ -1,9 +1,11 @@
 '''Provide useful utilities shared among modules.'''
 import logging
 import base64
+from urllib.parse import urlunsplit
 
 from Crypto import Random, Cipher, Hash
 from django.conf import settings
+from django.contrib.sites.shortcuts import get_current_site
 from rest_framework.renderers import BrowsableAPIRenderer
 
 
@@ -106,3 +108,31 @@ def decrypt(cipher_text):
     if fingerprint != gt_fingerprint:
         raise ValueError('已被篡改的内容')
     return value.decode()
+
+
+def get_full_url(request, path):
+    '''Generate full URL path for request.
+
+    For example, `/media/abccc` will be converted to full URL like
+    `http://host:port/media/abccc`
+
+    Parameters
+    ----------
+    request: Request
+        The original request object.
+    path: str
+        Partial path.
+
+    Return
+    ------
+    url: str
+        A full URL for given path.
+    '''
+    current_site = get_current_site(request)
+    return urlunsplit((
+        request.scheme,  # URL scheme specifier
+        current_site.domain,  # Network location part
+        path,  # Hierarchical path
+        '',  # Query component
+        ''  # Fragment identifier
+    ))

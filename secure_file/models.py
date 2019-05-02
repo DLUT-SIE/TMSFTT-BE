@@ -1,12 +1,10 @@
 '''Define ORM models for secure_file module.'''
-from urllib.parse import urlunsplit
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.files import File
-from django.contrib.sites.shortcuts import get_current_site
 from rest_framework import response, status
 
-from secure_file.utils import encrypt_file_download_url
+from secure_file.utils import get_full_encrypted_file_download_url
 
 
 User = get_user_model()
@@ -72,14 +70,7 @@ class SecureFile(models.Model):
             The json response contains only one key named 'url', this full url
             points to the real file created.
         '''
-        current_site = get_current_site(request)
-        encrypted_url = encrypt_file_download_url(
-            type(self), 'path', self.path.name, 'download_file')
-        url = urlunsplit((
-            request.scheme,  # URL scheme specifier
-            current_site.domain,  # Network location part
-            encrypted_url,  # Hierarchical path
-            '',  # Query component
-            ''  # Fragment identifier
-        ))
+        url = get_full_encrypted_file_download_url(
+            request, type(self), 'path', self.path.name, 'download_file'
+        )
         return response.Response({'url': url}, status=status.HTTP_201_CREATED)
