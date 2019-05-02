@@ -160,6 +160,11 @@ CELERY_BEAT_SCHEDULE = {
 
 EMAIL_BACKEND = 'infra.backends.SOAPEmailBackend'
 
+# JWT settings
+# Disable cookies for JWT in prod environment to prevent CSRF, we allow
+# this to help debug in browsable API.
+JWT_AUTH['JWT_AUTH_COOKIE'] = None
+
 # SOAP settings
 # TODO(youchen): Update to prod settings
 SOAP_BASE_URL = 'http://message.dlut.edu.cn/mp/service'
