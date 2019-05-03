@@ -82,7 +82,7 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         return Response({'count': count}, status=status.HTTP_201_CREATED)
 
     @decorators.action(detail=False, methods=['GET'],
-                       url_path='get-number-of-records-without-feedback')
+                       url_path='no-feedback-records-count')
     def get_number_of_records_without_feedback(self, request):
         '''Return count of records which requiring feedback'''
         count = RecordService.get_number_of_records_without_feedback(
