@@ -39,7 +39,6 @@ class NotificationViewSet(mixins.ListModelMixin,
             queryset = queryset.filter(read_time=None)
 
         page = self.paginate_queryset(queryset)
-        print(queryset.query)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
