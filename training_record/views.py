@@ -81,6 +81,14 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         count = RecordService.create_campus_records_from_excel(excel)
         return Response({'count': count}, status=status.HTTP_201_CREATED)
 
+    @decorators.action(detail=False, methods=['GET'],
+                       url_path='get-number-of-records-without-feedback')
+    def get_number_of_records_without_feedback(self, request):
+        '''Return count of records which requiring feedback'''
+        count = RecordService.get_number_of_records_without_feedback(
+            request.user)
+        return Response({'count': count}, status=status.HTTP_200_OK)
+
 
 class RecordContentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
     '''Create API views for RecordContent.'''

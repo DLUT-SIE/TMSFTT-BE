@@ -306,6 +306,13 @@ class RecordService:
             record.save()
         return record
 
+    @staticmethod
+    def get_number_of_records_without_feedback(user):
+        '''Get the number of records which requiring feedback'''
+        count = Record.objects.filter(user=user).filter(
+            feedback=None).count()
+        return count
+
 
 class CampusEventFeedbackService:
     '''Provide services for CampusEventFeedback.'''
