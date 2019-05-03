@@ -13,6 +13,4 @@ router.register(r'status-change-logs',
                 training_record.views.StatusChangeLogViewSet)
 router.register(r'campus-event-feedbacks',
                 training_record.views.CampusEventFeedbackViewSet)
-router.register(r'records/actions', training_record.views.RecordActionViewSet,
-                base_name='record-actions')
 urlpatterns = router.urls

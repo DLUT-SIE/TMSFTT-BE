@@ -73,9 +73,6 @@ class RecordViewSet(MultiSerializerActionClassMixin,
                                           request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-class RecordActionViewSet(viewsets.ViewSet):
-    '''Create extra actions for Record objects.'''
     @decorators.action(detail=False, methods=['POST'],
                        url_path='batch-submit')
     def batch_submit(self, request):
