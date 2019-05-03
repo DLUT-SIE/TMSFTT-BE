@@ -346,6 +346,22 @@ class TestRecordService(TestCase):
 
         self.assertEqual(result.status, Record.STATUS_SCHOOL_ADMIN_REJECTED)
 
+    # pylint: disable=unused-variable
+    def test_get_number_of_records_without_feedback(self):
+        '''Should return the count of records which requiring feedback'''
+        user = mommy.make(get_user_model())
+        off_campus_event0 = mommy.make(OffCampusEvent)
+        off_campus_event1 = mommy.make(OffCampusEvent)
+        record0 = mommy.make(Record, user=user,
+                             off_campus_event=off_campus_event0)
+        record1 = mommy.make(Record, user=user,  # noqa
+                             off_campus_event=off_campus_event1)
+        CampusEventFeedbackService.create_feedback(record0, '123')
+
+        result = RecordService.get_number_of_records_without_feedback(user)
+
+        self.assertEqual(result, 1)
+
 
 class TestCampusEventFeedbackService(TestCase):
     '''Test services provided by CampusEventFeedbackService.'''
