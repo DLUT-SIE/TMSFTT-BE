@@ -193,6 +193,19 @@ class TestRecordViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('count', response.data)
 
+    @patch('training_record.views.RecordService')
+    def test_get_number_of_records_without_feedback(self, mocked_service):
+        '''Should return the count of records which requiring feedback'''
+        user = mommy.make(get_user_model())
+        url = reverse('record-get-number-of-records-without-feedback')
+        mocked_service.get_number_of_records_without_feedback.return_value = 2
+
+        self.client.force_authenticate(user)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('count', response.data)
+
 
 class TestRecordContentViewSet(APITestCase):
     '''Unit tests for RecordContent view.'''
