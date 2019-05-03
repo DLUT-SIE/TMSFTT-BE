@@ -179,15 +179,11 @@ class TestRecordViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-
-class TestRecordActionViewSet(APITestCase):
-    '''Unit tests for RecordActionViewSet'''
-
     @patch('training_record.views.RecordService')
     def test_batch_submit(self, mocked_service):
         '''Should batch create records according to request.'''
         user = mommy.make(get_user_model())
-        url = reverse('record-actions-batch-submit')
+        url = reverse('record-batch-submit')
         file_data = io.BytesIO(b'some numbers')
         mocked_service.create_campus_records_from_excel.return_value = 3
 
