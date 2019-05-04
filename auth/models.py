@@ -1,9 +1,14 @@
 '''Define ORM models for auth module.'''
-import os
-from collections import defaultdict
-
 from django.contrib.auth.models import Permission, AbstractUser, Group
 from django.db import models
+
+from auth.services import (
+    EducationBackgroundConverter,
+    TechnicalTitleConverter,
+    GenderConverter,
+    TenureStatusConverter,
+    TeachingTypeConverter
+)
 
 
 class Department(models.Model):
@@ -196,52 +201,25 @@ class TeacherInformation(models.Model):
     def delete(self, *args, **kwargs):
         raise Exception('该表状态为只读')
 
-    @classmethod
-    def _get_mapping(cls, mapping_name):
-        '''Read mapping from ./data/<mapping_name>.
-
-        Parameters
-        ----------
-        mapping_name: string
-            The mapping file name.
-
-        Return
-        ------
-        mapping_dict: dict
-            The code to human-readable string mapping dict.
-        '''
-        private_mapping_name = f'_{mapping_name}'
-        if not hasattr(cls, private_mapping_name):
-            mapping = defaultdict(lambda: '未知')
-            fpath = os.path.join(
-                os.path.dirname(__file__), 'data',
-                mapping_name)
-            with open(fpath) as target_file:
-                for line in target_file:
-                    mapping.setdefault(*line.strip().split())
-            # pylint: disable=attribute-defined-outside-init
-            setattr(cls, private_mapping_name, mapping)
-        return getattr(cls, private_mapping_name)
-
     def get_xl_display(self):
         '''Return human-readable value of xl field.'''
-        return self._get_mapping('education_background')[self.xl]
+        return EducationBackgroundConverter.get_value(self.xl)
 
     def get_zyjszc_display(self):
         '''Return human-readable value of zyjszc field.'''
-        return self._get_mapping('technical_title')[self.zyjszc]
+        return TechnicalTitleConverter.get_value(self.zyjszc)
 
     def get_xb_display(self):
         '''Return human-readable value of xb field.'''
-        return self._get_mapping('gender')[self.xb]
+        return GenderConverter.get_value(self.xb)
 
     def get_rzzt_display(self):
         '''Return human-readable value of rzzt field.'''
-        return self._get_mapping('tenure_status')[self.rzzt]
+        return TenureStatusConverter.get_value(self.rzzt)
 
     def get_rjlx_display(self):
         '''Return human-readable value of rjlx field.'''
-        return self._get_mapping('teaching_type')[self.rjlx]
+        return TeachingTypeConverter.get_value(self.rjlx)
 
 
 class DepartmentInformation(models.Model):
