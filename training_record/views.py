@@ -94,12 +94,14 @@ class RecordContentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
     '''Create API views for RecordContent.'''
     queryset = training_record.models.RecordContent.objects.all()
     serializer_class = training_record.serializers.RecordContentSerializer
+    filter_class = training_record.filters.RecordContentFilter
 
 
 class RecordAttachmentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
     '''Create API views for RecordAttachment.'''
     queryset = training_record.models.RecordAttachment.objects.all()
     serializer_class = training_record.serializers.RecordAttachmentSerializer
+    filter_class = training_record.filters.RecordAttachmentFilter
 
 
 class StatusChangeLogViewSet(viewsets.ModelViewSet):
