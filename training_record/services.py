@@ -307,6 +307,46 @@ class RecordService:
         return record
 
     @staticmethod
+    def close_record(record_id, user):
+        '''School admin close the off-campus training record.
+
+        This action is atomic, will fail if there is no enough permissions for
+        admins to close record or no such record.
+
+        Parameters
+        ----------
+        record_id: number
+            This parameter represents which record should be closed.
+        user: number
+            This parameter represents who closed the record.
+
+        Returns
+        -------
+        record: Record
+        '''
+        with transaction.atomic():
+            record = (Record
+                      .objects
+                      .select_for_update()
+                      .filter(pk=record_id, campus_event__isnull=True))
+            if len(record) != 1:
+                raise BadRequest('无此培训记录！')
+            record = record[0]
+            if record.status != Record.STATUS_SCHOOL_ADMIN_APPROVED:
+                raise BadRequest('无权更改！')
+            pre_status = record.status
+            record.status = Record.STATUS_CLOSED
+            post_status = record.status
+            StatusChangeLog.objects.create(
+                record=record,
+                pre_status=pre_status,
+                post_status=post_status,
+                time=now(),
+                user=user)
+            record.save()
+        return record
+
+    @staticmethod
     def get_number_of_records_without_feedback(user):
         '''Get the number of records which requiring feedback'''
         count = Record.objects.filter(user=user).filter(
