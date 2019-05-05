@@ -332,8 +332,8 @@ class RecordService:
             if len(record) != 1:
                 raise BadRequest('无此培训记录！')
             record = record[0]
-            if ((record.status == Record.STATUS_SCHOOL_ADMIN_APPROVED) | (
-                  record.status == Record.STATUS_CLOSED)):
+            if (record.status == Record.STATUS_SCHOOL_ADMIN_APPROVED |
+                    record.status == Record.STATUS_CLOSED):
                 raise BadRequest('无权更改！')
             pre_status = record.status
             record.status = Record.STATUS_CLOSED
