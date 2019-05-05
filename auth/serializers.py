@@ -23,7 +23,7 @@ class DepartmentSerializer(serializers.ModelSerializer):
         '''Get department admin ids.'''
         groups = Group.objects.filter(name=obj.name+'-管理员')
         if groups.exists():
-            return [user.id for user in groups[0].user_set.all()]
+            return [user.first_name for user in groups[0].user_set.all()]
         return []
 
 
