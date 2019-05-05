@@ -351,7 +351,7 @@ class TestRecordService(TestCase):
         campus_event = mommy.make(CampusEvent)
         record = mommy.make(Record,
                             campus_event=campus_event,
-                            status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
+                            status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
         user = mommy.make(get_user_model())
         with self.assertRaisesMessage(
                 BadRequest, '无此培训记录！'):
@@ -362,7 +362,7 @@ class TestRecordService(TestCase):
         off_campus_event = mommy.make(OffCampusEvent)
         record = mommy.make(Record,
                             off_campus_event=off_campus_event,
-                            status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
+                            status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
         user = mommy.make(get_user_model())
         with self.assertRaisesMessage(
                 BadRequest, '无权更改！'):
@@ -373,7 +373,7 @@ class TestRecordService(TestCase):
         off_campus_event = mommy.make(OffCampusEvent)
         record = mommy.make(Record,
                             off_campus_event=off_campus_event,
-                            status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
+                            status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
         user = mommy.make(get_user_model())
         result = RecordService.close_record(record.id, user)
 
