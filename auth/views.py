@@ -34,7 +34,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
         auth.permissions.DjangoModelPermissions,
         auth.permissions.DjangoObjectPermissions,
     )
-    filter_fields = ('username',)
+    filter_fields = ('username', 'groups')
 
 
 class GroupViewSet(mixins.ListModelMixin,
@@ -46,20 +46,6 @@ class GroupViewSet(mixins.ListModelMixin,
         auth.permissions.SchoolAdminOnlyPermission,
     )
     filter_class = auth.filters.GroupFilter
-
-
-class UserGroupViewSet(mixins.CreateModelMixin,
-                       mixins.ListModelMixin,
-                       mixins.RetrieveModelMixin,
-                       mixins.DestroyModelMixin,
-                       viewsets.GenericViewSet):
-    '''Create API views for GroupPermission.'''
-    queryset = auth.models.UserGroup.objects.all()
-    serializer_class = auth.serializers.UserGroupSerializer
-    permission_classes = (
-        auth.permissions.SchoolAdminOnlyPermission,
-    )
-    filter_fields = ('group',)
 
 
 class GroupPermissionViewSet(mixins.CreateModelMixin,

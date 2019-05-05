@@ -91,17 +91,18 @@ class User(AbstractUser):
     @property
     def is_teacher(self):
         '''Field to indicate whether the user is a teacher.'''
-        return True
+        return self.groups.filter(name__endswith='专任教师').exists()
 
     @property
     def is_department_admin(self):
         '''Field to indicate whether the user is a department admin.'''
-        return True
+        return self.groups.filter(name__endswith='管理员').exists()
 
     @property
     def is_school_admin(self):
         '''Field to indicate whether the user is a superadmin.'''
-        return self.is_staff or self.is_superuser
+        return self.is_staff or self.is_superuser or self.groups.filter(
+            name='大连理工大学-管理员').exists()
 
 
 class UserGroup(models.Model):
