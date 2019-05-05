@@ -189,7 +189,7 @@ class TestRecordViewSet(APITestCase):
         url = reverse('record-close-record', args=(record.pk,))
 
         self.client.force_authenticate(user)
-        response = self.client.post(url, {})
+        response = self.client.post(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
