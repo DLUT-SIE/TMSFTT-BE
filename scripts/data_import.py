@@ -1,7 +1,11 @@
 '''Generate training records from xlsx file.'''
+# pylint: disable=wrong-import-position,ungrouped-imports,invalid-name
+# pylint: disable=missing-docstring
 import sys
 import os
 import random
+from datetime import datetime, timedelta
+
 import django
 
 sys.path.insert(0, os.path.abspath('.'))
@@ -11,15 +15,27 @@ django.setup()
 import xlrd
 
 from faker import Faker
-from model_mommy import mommy
 from django.db import transaction
 from django.contrib.auth.models import Group
+from django.utils.timezone import make_aware, now
 
 from auth.models import User, Department
 from auth.utils import assign_perm
+from auth.services import (
+    GenderConverter, TenureStatusConverter, EducationBackgroundConverter,
+    TechnicalTitleConverter, TeachingTypeConverter
+)
+from infra.models import Notification
 from training_program.models import Program
-from training_event.models import CampusEvent
-from training_record.models import Record
+from training_event.models import CampusEvent, EventCoefficient, Enrollment
+from training_record.models import (
+    Record, RecordContent, RecordAttachment, CampusEventFeedback
+)
+from training_review.models import ReviewNote
+
+
+faker = Faker('zh_CN')
+faker.seed(0)
 
 
 def clean_department_name(department_name):
@@ -119,102 +135,286 @@ def clean_department_name(department_name):
     return mappings.get(department_name, department_name)
 
 
-@transaction.atomic
-def read_content(fpath='~/Desktop/TMSFTT/2018年教师发展工作量-全-0315.xls'):
+__cached_groups = {}
+def get_or_create_group(department, group_type):
+    group_name = f'{department.name}-{group_type}'
+    if group_name not in __cached_groups:
+        group, _ = Group.objects.get_or_create(name=group_name)
+        __cached_groups[group_name] = group
+    return __cached_groups[group_name]
+
+
+def get_dlut_department_and_group():
+    department, _ = Department.objects.get_or_create(
+        raw_department_id='10141', name='大连理工大学')
+    return department, get_or_create_group(department, '专任教师')
+
+
+def make_programs():
+    programs = {
+        Program.PROGRAM_CATEGORY_TRAINING: [
+            '名师讲坛', '青年教学观摩', '教学基本功培训'],
+        Program.PROGRAM_CATEGORY_PROMOTION: [
+            '名师面对面', '学校青年教师讲课竞赛'],
+        Program.PROGRAM_CATEGORY_TECHNOLOGY: [
+            '课程技术服务', '智慧教室建设']
+    }
+    res = []
+    department, group = get_dlut_department_and_group()
+    for category, names in programs.items():
+        res.extend(Program(
+            name=name,
+            department=department,
+            category=category) for name in names)
+    names = [p.name for p in res]
+    res = Program.objects.bulk_create(res)
+    res = Program.objects.filter(name__in=names)
+    for program in res:
+        assign_perm('view_program', group, program)
+    return res
+
+
+def read_worload_content(
+        users, departments,
+        fpath='~/Desktop/TMSFTT/2018年教师发展工作量-全-0315.xls'):
     '''Read xlsx file and generate records.'''
-    faker = Faker('zh_CN')
-    faker.seed(0)
+    users_dict = {u.first_name: u for u in users}
+    departments_dict = {d.name: d for d in departments}
     workbook = xlrd.open_workbook(fpath)
     sheet = workbook.sheet_by_name('原始')
     num_rows = sheet.nrows
-    programs = {}
+    programs = make_programs()
+    event_to_program = {}
     events = {}
-    departments = {}
-    groups = {}
-    users = {}
+    coefficients = {}
+    role_map = {
+        '主讲': '主讲人',
+        '观摩': '参与教师',
+    }
+    _, dlut_group = get_dlut_department_and_group()
     for idx, row in enumerate((sheet.row_values(i)
                                for i in range(1, num_rows))):
         sys.stdout.flush()
         sys.stdout.write(f'{idx:4d} / {num_rows:4d} \r')
         try:
-            event_name, department_name, user_name = row[1:4]
+            (event_name, department_name, user_name,
+             role, num_hours, coef, workload) = row[1:8]
+            if not role:
+                role = '观摩'
+            elif '新增' in role:
+                role = '观摩'
+            elif '专家' in role:
+                role = '主讲'
+            role = EventCoefficient.ROLE_CHOICES_MAP[role_map[role]]
+            if not num_hours or not coef:
+                coef = '1'
+                num_hours = workload
+            num_hours = int(num_hours)
+            coef = int(coef)
         except ValueError:
-            print(row)
+            print(idx, row)
             raise
         if not department_name:
             continue
+
+        # User and Department
         department_name = clean_department_name(department_name)
-        if department_name not in departments:
-            departments[department_name] = mommy.make(
-                Department, name=department_name)
-        department = departments[department_name]
-        regular_group_name = f'{department_name}(普通教师)'
-        if regular_group_name not in groups:
-            groups[regular_group_name] = mommy.make(
-                Group, name=f'{department_name}(普通教师)')
-        regular_group = groups[regular_group_name]
-        admin_group_name = f'{department_name}(院系管理员)'
-        if admin_group_name not in groups:
-            groups[admin_group_name] = mommy.make(
-                Group, name=f'{department_name}(院系管理员)')
-        admin_group = groups[admin_group_name]
-        if user_name not in users:
-            users[user_name] = mommy.make(
-                User, username=f'username{idx}', first_name=user_name)
-        user = users[user_name]
-        user.groups.add(regular_group)
-        if event_name not in programs:
-            programs[event_name] = mommy.make(
-                Program,
-                name=faker.company_prefix(),
-                department=department,
-                category__name='教学培训',
-                )
-        program = programs[event_name]
+        department = departments_dict.get(
+            department_name, random.choice(departments))
+        teachers_group = get_or_create_group(department, '专任教师')
+        user = users_dict.get(
+            user_name, random.choice(users))
+        user.groups.add(teachers_group, dlut_group)
+
+        # Program, Event and Coefficient
+        program = event_to_program.setdefault(
+            event_name, random.choice(programs))
         if event_name not in events:
-            events[event_name] = mommy.make(
-                CampusEvent,
+            events[event_name] = CampusEvent.objects.create(
                 name=event_name,
                 program=program,
-                location=faker.street_address(),
-                num_hours=random.randint(1, 5),
-                num_participants=random.randint(20, 200),
-                description=faker.text(100),
-                )
+                time=now(),
+                deadline=now()+timedelta(days=random.randint(1, 100)),
+                location='大连理工大学',
+                num_hours=num_hours,
+                num_participants=random.randint(20, 100),
+                description=faker.text(100)
+            )
         event = events[event_name]
-        record = mommy.make(
-            Record,
+        assign_perm('view_campusevent', dlut_group, event)
+        if (event.id, role) not in coefficients:
+            coefficients[(event.id, role)] = EventCoefficient.objects.create(
+                campus_event=event,
+                role=role,
+                coefficient=coef
+            )
+        event_coef = coefficients[(event.id, role)]
+
+        # Record
+        record = Record.objects.create(
             campus_event=event,
-            user=user)
-
+            user=user,
+            status=Record.STATUS_FEEDBACK_REQUIRED,
+            event_coefficient=event_coef,
+        )
         assign_perm('view_record', user, record)
-        assign_perm('change_record', user, record)
-        assign_perm('delete_record', user, record)
-
-        assign_perm('view_record', admin_group, record)
-        assign_perm('change_record', admin_group, record)
-        assign_perm('delete_record', admin_group, record)
-    for name, group in groups.items():
-        if name.endswith('(院系管理员)'):
-            assign_perm('training_program.add_programform', group)
-            assign_perm('training_program.add_programcategory', group)
-            assign_perm('training_program.add_program', group)
-
-            assign_perm('training_event.add_campusevent', group)
-
-            assign_perm('training_record.add_record', group)
-            assign_perm('training_record.add_recordcontent', group)
-            assign_perm('training_record.add_recordattachment', group)
-
-        assign_perm('training_program.view_programform', group)
-        assign_perm('training_program.view_programcategory', group)
-        assign_perm('training_program.view_program', group)
-        assign_perm('training_event.view_campusevent', group)
-        assign_perm('training_record.view_record', group)
-        assign_perm('training_record.view_recordcontent', group)
-        assign_perm('training_record.view_recordattachment', group)
     print()
 
 
+def converter_get_or_default(converter, key, default=None):
+    try:
+        return converter.get_value(key)
+    except Exception:
+        return default if default else key
+
+
+def read_departments_information(
+        fpath='~/Desktop/TMSFTT/教师相关信息20190424部分数据.xlsx'):
+    workbook = xlrd.open_workbook(fpath)
+    sheet = workbook.sheet_by_name('单位编码')
+    num_rows = sheet.nrows
+    dlut_department, dlut_teachers_group = get_dlut_department_and_group()
+    departments = []
+    for row in (sheet.row_values(i) for i in range(1, num_rows)):
+        dwid, dwmc, parent = row[:3]
+        if parent != '000001':
+            continue
+        if not any(x in dwmc for x in ['学部', '学院']):
+            continue
+        if any(x in dwmc for x in ['体育', '大连', '国防', '国际', '远程']):
+            continue
+        departments.append(Department(
+            raw_department_id=dwid,
+            name=dwmc,
+        ))
+    res = Department.objects.bulk_create(departments)
+    res = Department.objects.filter(
+        raw_department_id__in=[d.raw_department_id for d in departments])
+    for department in res:
+        assign_perm('view_department', dlut_teachers_group, department)
+    return res
+
+
+def extract_teacher_information(row):
+    zgh, jsxm, csrq, xb, xy, rxsj, rzzt, xl, zyjszc, rjlx = row[:10]
+    if csrq:
+        csrq = make_aware(datetime.strptime(csrq, '%Y-%m-%d'))
+        nl = (now() - csrq).days // 365
+    else:
+        nl = 0
+    if rxsj:
+        rxsj = make_aware(datetime.strptime(rxsj, '%Y-%m-%d'))
+    else:
+        rxsj = None
+    # Convert to human-readable strings
+    xb = converter_get_or_default(GenderConverter, xb)
+    rzzt = converter_get_or_default(TenureStatusConverter, rzzt)
+    xl = converter_get_or_default(EducationBackgroundConverter, xl)
+    zyjszc = converter_get_or_default(TechnicalTitleConverter, zyjszc)
+    rjlx = converter_get_or_default(TeachingTypeConverter, rjlx)
+    return zgh, jsxm, nl, xb, xy, rxsj, rzzt, xl, zyjszc, rjlx
+
+
+def read_teachers_information(
+        departments,
+        fpath='~/Desktop/TMSFTT/教师相关信息20190424部分数据.xlsx'):
+    workbook = xlrd.open_workbook(fpath)
+    sheet = workbook.sheet_by_name('教师基本信息')
+    num_rows = sheet.nrows
+    users = []
+    existing_users = set()
+    for row in (sheet.row_values(i) for i in range(2, num_rows)):
+        if row[0] in existing_users:
+            continue
+        existing_users.add(row[0])
+        (zgh, jsxm, nl, xb, _, rxsj,
+         rzzt, xl, zyjszc, rjlx) = extract_teacher_information(row)
+        users.append(User(
+            username=zgh,
+            first_name=jsxm,
+            department=random.choice(departments),
+            gender=User.GENDER_CHOICES_MAP.get(xb, User.GENDER_UNKNOWN),
+            age=nl,
+            onboard_time=rxsj,
+            tenure_status=rzzt,
+            education_background=xl,
+            technical_title=zyjszc,
+            teaching_type=rjlx
+        ))
+    res = User.objects.bulk_create(users)
+    res = User.objects.filter(username__in=[u.username for u in users])
+    return res
+
+
+def assign_model_perms(departments):
+    models = {
+        # Auth
+        Department: {
+            '管理员': ['add', 'view', 'change'],
+            '专任教师': ['view'],
+        },
+        # Infra
+        Notification: {
+            '管理员': ['view'],
+            '专任教师': ['view'],
+        },
+        # Program
+        Program: {
+            '管理员': ['add', 'view', 'change'],
+            '专任教师': ['view'],
+        },
+        # Event
+        CampusEvent: {
+            '管理员': ['add', 'view', 'change'],
+            '专任教师': ['view'],
+        },
+        Enrollment: {
+            '管理员': ['view'],
+            '专任教师': ['add'],
+        },
+        # Record
+        Record: {
+            '管理员': ['add', 'view', 'change'],
+            '专任教师': ['add', 'view', 'change'],
+        },
+        RecordContent: {
+            '管理员': ['view'],
+            '专任教师': ['add', 'view', 'change'],
+
+        },
+        RecordAttachment: {
+            '管理员': ['view'],
+            '专任教师': ['add', 'view', 'change'],
+        },
+        CampusEventFeedback: {
+            '管理员': ['view'],
+            '专任教师': ['add', 'view', 'change'],
+        },
+        # Review
+        ReviewNote: {
+            '管理员': ['add', 'view', 'change'],
+            '专任教师': ['add', 'view', 'change'],
+        },
+    }
+    for department in departments:
+        for model_class, perm_pairs in models.items():
+            for role, perms in perm_pairs.items():
+                group = get_or_create_group(department, role)
+                for perm in perms:
+                    perm_name = (
+                        f'{model_class._meta.app_label}.'
+                        f'{perm}_{model_class._meta.model_name}'
+                    )
+                    assign_perm(perm_name, group)
+
+
+@transaction.atomic
+def populate():
+    departments = read_departments_information()
+    users = read_teachers_information(departments)
+    read_worload_content(users, departments)
+    assign_model_perms(departments)
+
+
 if __name__ == '__main__':
-    read_content()
+    populate()

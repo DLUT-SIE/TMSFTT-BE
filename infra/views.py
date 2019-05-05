@@ -10,9 +10,7 @@ import infra.serializers
 from infra.services import NotificationService
 
 
-class NotificationViewSet(mixins.ListModelMixin,
-                          mixins.RetrieveModelMixin,
-                          viewsets.GenericViewSet):
+class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     '''Create API views for Notification.'''
     queryset = (
         infra.models.Notification.objects
