@@ -1,3 +1,4 @@
+'''Provide API views for data-graph module.'''
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -9,6 +10,7 @@ class DataGraphView(APIView):
     '''create API views for getting graph data'''
 
     def get(self, request):
+        '''getting data-graph data'''
         request_data = {
             'y_type': request.GET.get('y_type'),
             'x_type': request.GET.get('x_type'),
@@ -33,5 +35,6 @@ class DataGraphParamView(APIView):
     '''create API views for getting graph all params'''
 
     def get(self, request):
+        '''getting data-graph selection param'''
         data = DataGraphParamsService.get_graph_param()
         return Response(data)

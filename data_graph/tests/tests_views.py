@@ -1,3 +1,4 @@
+'''Unit tests for data-graph views.'''
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from rest_framework import status
@@ -38,6 +39,7 @@ class TestDataGraphParamView(APITestCase):
         cls.user = mommy.make(User)
 
     def test_get(self):
+        '''should return 200 when successed'''
         self.client.force_authenticate(self.user)
         url = reverse('data-graph-param')
         response = self.client.get(url)

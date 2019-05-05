@@ -40,6 +40,7 @@ class DataGraphService:
 
     @staticmethod
     def select_sub_service(request_data):
+        '''to call a specific service for getting data'''
         pass
 
 
@@ -94,6 +95,7 @@ class DataGraphParamsService:
 
     @classmethod
     def get_graph_param(cls):
+        '''return a data graph select dictionary'''
         departments = Department.objects.all()
         departments = [department.name for department in departments]
         data = {
