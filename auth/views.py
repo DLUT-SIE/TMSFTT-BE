@@ -2,6 +2,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, Group
 from rest_framework import viewsets, mixins
+from rest_framework_guardian import filters
 
 import auth.models
 import auth.serializers
@@ -15,6 +16,7 @@ class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
     '''Create API views for Department.'''
     queryset = auth.models.Department.objects.all()
     serializer_class = auth.serializers.DepartmentSerializer
+    filter_backends = (filters.DjangoObjectPermissionsFilter,)
     permission_classes = (
         auth.permissions.DjangoModelPermissions,
         auth.permissions.DjangoObjectPermissions,
@@ -100,4 +102,3 @@ class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (
         auth.permissions.SchoolAdminOnlyPermission,
     )
-    pagination_class = None
