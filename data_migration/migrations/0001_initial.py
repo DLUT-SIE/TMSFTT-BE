@@ -96,7 +96,7 @@ def populate_initial_data(apps, _):  # pylint: disable=all
     ) for idx in range(1, 1 + num_departments)]
 
     print('Populate Group')
-    category_names = ('管理员', '教师', '访客')
+    category_names = ('管理员', '专任教师', '访客')
     groups = []
     for idx in range(1, 1 + num_departments):
         department = Department.objects.get(raw_department_id=f'{idx}')

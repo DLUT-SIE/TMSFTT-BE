@@ -1,5 +1,7 @@
 '''Unit tests for auth models.'''
 from django.test import TestCase
+from django.contrib.auth.models import Group
+from model_mommy import mommy
 
 from auth.models import (
     User, Department, UserPermission, GroupPermission,
@@ -18,6 +20,36 @@ class TestUser(TestCase):
         user = User(username=username)
 
         self.assertEqual(str(user), username)
+
+    def test_is_teacher(self):
+        '''Should return True if user is a teacher.'''
+        user = mommy.make(auth.models.User)
+        group = mommy.make(Group, name="创新创业学院-专任教师")
+        user.groups.add(group)
+
+        self.assertTrue(user.is_teacher)
+        self.assertFalse(user.is_department_admin)
+        self.assertFalse(user.is_school_admin)
+
+    def test_is_department_admin(self):
+        '''Should return True if user is a department admin.'''
+        user = mommy.make(auth.models.User)
+        group = mommy.make(Group, name="创新创业学院-管理员")
+        user.groups.add(group)
+
+        self.assertFalse(user.is_teacher)
+        self.assertTrue(user.is_department_admin)
+        self.assertFalse(user.is_school_admin)
+
+    def test_is_school_admin(self):
+        '''Should return True if user is a school admin.'''
+        user = mommy.make(auth.models.User)
+        group = mommy.make(Group, name="大连理工大学-管理员")
+        user.groups.add(group)
+
+        self.assertFalse(user.is_teacher)
+        self.assertTrue(user.is_department_admin)
+        self.assertTrue(user.is_school_admin)
 
 
 class TestDepartment(TestCase):

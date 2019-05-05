@@ -1,6 +1,6 @@
 '''Define how to serialize our models.'''
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Permission, Group
 from rest_framework import serializers
 
 import auth.models
@@ -21,7 +21,9 @@ class DepartmentSerializer(serializers.ModelSerializer):
     # pylint: disable=unused-argument
     def get_admins(self, obj):
         '''Get department admin ids.'''
-        # TODO: rewrite this function
+        groups = Group.objects.filter(name=obj.name+'-管理员')
+        if groups.exists():
+            return [user.id for user in groups[0].user_set.all()]
         return []
 
 
@@ -70,11 +72,3 @@ class UserSerializer(serializers.ModelSerializer):
                   'department', 'department_str',
                   'is_teacher', 'is_department_admin', 'is_school_admin',
                   'groups')
-
-
-class UserGroupSerializer(serializers.ModelSerializer):
-    '''Indicate how to serialize UserGroup instance.'''
-
-    class Meta:
-        model = auth.models.UserGroup
-        fields = ('id', 'user', 'group')
