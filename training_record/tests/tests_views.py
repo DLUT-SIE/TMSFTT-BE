@@ -184,7 +184,7 @@ class TestRecordViewSet(APITestCase):
         off_campus_event = mommy.make(training_event.models.OffCampusEvent)
         record = mommy.make(training_record.models.Record,
                             off_campus_event=off_campus_event,
-                            status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
+                            status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
         user = mommy.make(User)
         url = reverse('record-close-record', args=(record.pk,))
 
