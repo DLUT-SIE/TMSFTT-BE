@@ -1,6 +1,6 @@
 '''Provide API views for infra module.'''
 from django.utils.timezone import now
-from rest_framework import mixins, viewsets, decorators, status
+from rest_framework import viewsets, decorators, status
 from rest_framework.response import Response
 from rest_framework_guardian import filters
 
