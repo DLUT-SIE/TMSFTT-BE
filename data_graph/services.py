@@ -41,7 +41,6 @@ class DataGraphService:
     @staticmethod
     def select_sub_service(request_data):
         '''to call a specific service for getting data'''
-        pass
 
 
 class DataGraphParamsService:
