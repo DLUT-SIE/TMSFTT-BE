@@ -28,4 +28,4 @@ class TestDepartmentSerializer(TestCase):
             user.groups.add(group)
 
         admin = set(serializers.DepartmentSerializer().get_admins(department))
-        self.assertEqual(admin, set(user.id for user in users))
+        self.assertEqual(admin, set(user.first_name for user in users))
