@@ -36,7 +36,7 @@ class PermissonsService:
                 cls.assigin_group_permissions(
                     group, group, instance)
 
-            # ii: assgin Group-Object-Permissions for SchoolGroup
+            # iii: assgin Group-Object-Permissions for SchoolGroup
             for group in Group.objects.filter(
                     name__startswith='大连理工大学').exclude(
                         name='大连理工大学-专任教师'):
@@ -64,10 +64,10 @@ class PermissonsService:
         None
         '''
         with transaction.atomic():
-            contenttype = ContentType.objects.get_for_model(
+            content_type = ContentType.objects.get_for_model(
                 instance._meta.model)
             for perm in group.permissions.all().filter(
-                    content_type_id=contenttype.id):
+                    content_type_id=content_type.id):
                 assign_perm(perm, user_or_group, instance)
 
 
