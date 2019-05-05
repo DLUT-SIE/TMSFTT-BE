@@ -257,7 +257,7 @@ class TestRecordService(TestCase):
         self.assertEqual(count, 1)
 
     def test_department_admin_review_no_record(self):
-        '''Should raise BadRequest if no enough permission.'''
+        '''Should raise BadRequest if no such record.'''
         campus_event = mommy.make(CampusEvent)
         record = mommy.make(Record,
                             campus_event=campus_event,
@@ -303,7 +303,7 @@ class TestRecordService(TestCase):
                          Record.STATUS_DEPARTMENT_ADMIN_REJECTED)
 
     def test_school_admin_review_no_record(self):
-        '''Should raise BadRequest if no enough permission.'''
+        '''Should raise BadRequest if no such record.'''
         campus_event = mommy.make(CampusEvent)
         record = mommy.make(Record,
                             campus_event=campus_event,
@@ -345,6 +345,39 @@ class TestRecordService(TestCase):
         result = RecordService.school_admin_review(record.id, False, user)
 
         self.assertEqual(result.status, Record.STATUS_SCHOOL_ADMIN_REJECTED)
+
+    def test_close_record_no_record(self):
+        '''Should raise BadRequest if no such record.'''
+        campus_event = mommy.make(CampusEvent)
+        record = mommy.make(Record,
+                            campus_event=campus_event,
+                            status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
+        user = mommy.make(get_user_model())
+        with self.assertRaisesMessage(
+                BadRequest, '无此培训记录！'):
+            RecordService.close_record(record.id, user)
+
+    def test_close_record_no_permission(self):
+        '''Should raise BadRequest if no enough permission.'''
+        off_campus_event = mommy.make(OffCampusEvent)
+        record = mommy.make(Record,
+                            off_campus_event=off_campus_event,
+                            status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
+        user = mommy.make(get_user_model())
+        with self.assertRaisesMessage(
+                BadRequest, '无权更改！'):
+            RecordService.close_record(record.id, user)
+
+    def test_close_record_succeed(self):
+        '''Should close the off-campus training record.'''
+        off_campus_event = mommy.make(OffCampusEvent)
+        record = mommy.make(Record,
+                            off_campus_event=off_campus_event,
+                            status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
+        user = mommy.make(get_user_model())
+        result = RecordService.close_record(record.id, user)
+
+        self.assertEqual(result.status, Record.STATUS_CLOSED)
 
     # pylint: disable=unused-variable
     def test_get_number_of_records_without_feedback(self):

@@ -64,13 +64,21 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @decorators.action(detail=True, methods=['POST'],
-                       url_path='school-admin-review')
+                       url_path='close')
     def school_admin_review(self, request, pk):
         '''Pass the record which is being reviewed.'''
         is_approved = request.data.get('is_approved')
         RecordService.school_admin_review(pk,
                                           is_approved,
                                           request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @decorators.action(detail=True, methods=['POST'],
+                       url_path='school-admin-review')
+    def close_record(self, request, pk):
+        '''Close the record which should not be changed any more.'''
+        RecordService.close_record(pk,
+                                   request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @decorators.action(detail=False, methods=['POST'],

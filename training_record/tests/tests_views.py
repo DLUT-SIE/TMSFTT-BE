@@ -179,6 +179,20 @@ class TestRecordViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+    def test_close_record(self):
+        '''Should call close_record.'''
+        off_campus_event = mommy.make(training_event.models.OffCampusEvent)
+        record = mommy.make(training_record.models.Record,
+                            off_campus_event=off_campus_event,
+                            status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
+        user = mommy.make(User)
+        url = reverse('record-close-record', args=(record.pk,))
+
+        self.client.force_authenticate(user)
+        response = self.client.post(url, {})
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
     @patch('training_record.views.RecordService')
     def test_batch_submit(self, mocked_service):
         '''Should batch create records according to request.'''
