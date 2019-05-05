@@ -1,5 +1,74 @@
 '''Provide services related to auth module.'''
 import os.path as osp
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import Group
+from django.db import transaction
+from auth.utils import assign_perm
+
+
+class PermissonsService:
+    '''Provide services for Permissons.'''
+    # pylint: disable=redefined-builtin
+    @classmethod
+    def assigin_object_permissions(cls, user=None, instance=None):
+        '''
+        The function is used to provide permissions for releated user when
+        an object is created (a teacher create a tranning record for exmaple).
+        Parameters
+        ----------
+        user: User
+            the current user who create the object.
+        instance: Model
+            a model instance
+        Returns
+        -------
+        None
+        '''
+        with transaction.atomic():
+            # i: assgin User-Object-Permissions for the current user
+            group = Group.objects.get(name='大连理工大学-专任教师')
+            cls.assigin_group_permissions(
+                group, user, instance)
+
+            # ii: assgin Group-Object-Permissions for DepartmentGroup
+            for group in Group.objects.filter(
+                    name__startswith=user.department.name):
+                cls.assigin_group_permissions(
+                    group, group, instance)
+
+            # ii: assgin Group-Object-Permissions for SchoolGroup
+            for group in Group.objects.filter(
+                    name__startswith='大连理工大学').exclude(
+                        name='大连理工大学-专任教师'):
+                cls.assigin_group_permissions(
+                    group, group, instance)
+
+    # pylint: disable=redefined-builtin
+    @classmethod
+    def assigin_group_permissions(
+            cls, group=None, user_or_group=None, instance=None):
+        '''
+        The function is used to assign object-level-permissons to an user or a
+        group based on model-permissions of a given group.
+
+        Parameters
+        ----------
+        group: Group
+            the group which provide model-permissions
+        user_or_group: User or Group
+            an user or a group which is going to get object-level-permissons
+        instance: Model
+            a model instance
+        Returns
+        -------
+        None
+        '''
+        with transaction.atomic():
+            contenttype = ContentType.objects.get_for_model(
+                instance._meta.model)
+            for perm in group.permissions.all().filter(
+                    content_type_id=contenttype.id):
+                assign_perm(perm, user_or_group, instance)
 
 
 class ChoiceConverter:
