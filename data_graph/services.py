@@ -21,13 +21,13 @@ class StaffGroupingType():
 
 class TraineeNumberCoverageGroupingType():
     '''provide graph params TraineeNumberCoverageGroupingType enum'''
-    BY_DEPARTMENT = 0,
-    BY_STAFF_TITLE = 1,
+    BY_DEPARTMENT = 0
+    BY_STAFF_TITLE = 1
     BY_AGE_DISTRIBUTION = 2
 
 
-class TrainingHoursWorkloadGroupingType():
-    '''provide graph params TrainingHoursWorkloadGroupingType enum'''
+class TrainHoursWorkloadGroupingType():
+    '''provide graph params TrainHoursWorkloadGroupingType enum'''
     BY_TOTAL_STAFF_NUM = 0
     BY_TOTAL_TRAINING_HOURS = 1
     BY_PER_CAPITA_TRAINING_HOURS = 2
@@ -66,45 +66,30 @@ class DataGraphParamsService:
             'name': '按年龄分布'
         }
     ]
-    training_hours_workload_grouping_type = [{
-        'type': TrainingHoursWorkloadGroupingType.BY_TOTAL_STAFF_NUM,
-        'name': '按总人数'
-        }, {
-        'type': TrainingHoursWorkloadGroupingType.BY_TOTAL_TRAINING_HOURS,
-        'name': '按总培训学时'
-        }, {
-        'type': TrainingHoursWorkloadGroupingType.BY_PER_CAPITA_TRAINING_HOURS,
-        'name': '按人均培训学时'
-        }, {
-        'type': TrainingHoursWorkloadGroupingType.BY_TOTAL_WORKLOAD,
-        'name': '按总工作量'
-        }, {
-        'type': TrainingHoursWorkloadGroupingType.BY_PER_CAPITA_WORKLOAD,
-        'name': '按人均工作量'
-        }
+    training_hours_workload_grouping_type = [
+        {'type': TrainHoursWorkloadGroupingType.BY_TOTAL_STAFF_NUM,
+         'name': '按总人数'},
+        {'type': TrainHoursWorkloadGroupingType.BY_TOTAL_TRAINING_HOURS,
+         'name': '按总培训学时'},
+        {'type': TrainHoursWorkloadGroupingType.BY_PER_CAPITA_TRAINING_HOURS,
+         'name': '按人均培训学时'},
+        {'type': TrainHoursWorkloadGroupingType.BY_TOTAL_WORKLOAD,
+         'name': '按总工作量'},
+        {'type': TrainHoursWorkloadGroupingType.BY_PER_CAPITA_WORKLOAD,
+         'name': '按人均工作量'}
     ]
-    statistics_type = [{
-        'type': StatisticsType.STAFF_STATISTICS,
-        'option': {'name': '教职工人数统计', 'subOption': staff_grouping_type}
-        }, {
-        'type': StatisticsType.TRAINEE_STATISTICS,
-        'option': {
-            'name': '培训人数统计',
-            'subOption': trainee_number_coverage_grouping_type
-            }
-        }, {
-        'type': StatisticsType.FULL_TIME_TEACHER_TRAINED_COVERAGE,
-        'option': {
-            'name': '专任教师培训覆盖率统计',
-            'subOption': trainee_number_coverage_grouping_type
-            }
-        }, {
-        'type': StatisticsType.TRAINING_HOURS_WORKLOAD_STATISTICS,
-        'option': {
-            'name': '培训学时与工作量统计',
-            'subOption': training_hours_workload_grouping_type
-            }
-        }
+    statistics_type = [
+        {'type': StatisticsType.STAFF_STATISTICS,
+         'option': {'name': '教职工人数统计', 'subOption': staff_grouping_type}},
+        {'type': StatisticsType.TRAINEE_STATISTICS,
+         'option': {'name': '培训人数统计',
+                    'subOption': trainee_number_coverage_grouping_type}},
+        {'type': StatisticsType.FULL_TIME_TEACHER_TRAINED_COVERAGE,
+         'option': {'name': '专任教师培训覆盖率统计',
+                    'subOption': trainee_number_coverage_grouping_type}},
+        {'type': StatisticsType.TRAINING_HOURS_WORKLOAD_STATISTICS,
+         'option': {'name': '培训学时与工作量统计',
+                    'subOption': training_hours_workload_grouping_type}}
     ]
 
     @classmethod
