@@ -11,6 +11,7 @@ class OffCampusEventFilter(filters.FilterSet):
         model = OffCampusEvent
         fields = {
             'name': ['startswith'],
+            'id': ['in'],
         }
 
 
@@ -18,4 +19,7 @@ class CampusEventFilter(filters.FilterSet):
     '''Provide required information about filtering CampusEvent.'''
     class Meta:
         model = CampusEvent
-        fields = ['program']
+        fields = {
+            'program': ['exact'],
+            'id': ['in'],
+        }

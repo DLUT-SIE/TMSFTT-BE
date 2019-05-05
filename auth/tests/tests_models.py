@@ -78,20 +78,6 @@ class TestGroupPermission(TestCase):
 
 class TestTeacherInformation(TestCase):
     '''Unit tests for TeacherInformation.'''
-    def test_get_mapping_read_file(self):
-        '''Should read from file if no cache found.'''
-        self.assertIsNone(getattr(TeacherInformation, '_gender', None))
-
-        # pylint: disable=protected-access
-        TeacherInformation._get_mapping('gender')
-
-        gender = getattr(TeacherInformation, '_gender', None)
-        self.assertIsNotNone(gender)
-        self.assertIsInstance(gender, dict)
-        # pylint: disable=unsubscriptable-object
-        self.assertEqual(gender['1'], '男性')
-        self.assertEqual(gender['not-exist'], '未知')
-
     def test_get_xl_display(self):
         '''Should return human-readable string.'''
         info = TeacherInformation(xl='11')
