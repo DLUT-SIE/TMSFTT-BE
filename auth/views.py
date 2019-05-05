@@ -100,4 +100,3 @@ class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (
         auth.permissions.SchoolAdminOnlyPermission,
     )
-    pagination_class = None
