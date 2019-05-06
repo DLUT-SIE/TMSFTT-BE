@@ -9,7 +9,7 @@ from infra.exceptions import BadRequest
 
 class CanvasDataViewSet(viewsets.ViewSet):
     '''create API views for getting graph data'''
-    @list_route(url_path='data')
+    @action(detail=False, url_path='data')
     def get_canvas_data(self, request):
         '''getting canvas-data'''
         graph_type = request.GET.get('graph_type')
