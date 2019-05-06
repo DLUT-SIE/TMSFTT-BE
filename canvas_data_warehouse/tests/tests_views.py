@@ -30,9 +30,9 @@ class CanvasDataViewSet(APITestCase):
         response = self.client.get(url)
         self.assertRaisesMessage(BadRequest, '错误的参数格式')
 
-    def test_get_params(self):
+    def test_get_options(self):
         '''should return 200 when successed'''
         self.client.force_authenticate(self.user)
-        url = reverse('canvas-data-get-params')
+        url = reverse('canvas-data-get-canvas-options')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
