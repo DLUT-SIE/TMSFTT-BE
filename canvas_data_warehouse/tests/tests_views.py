@@ -19,7 +19,7 @@ class CanvasDataViewSet(APITestCase):
         '''should return 200 when successed'''
         self.client.force_authenticate(self.user)
 
-        url = reverse('data-graph') + '?y_type=1&x_type=2&'\
+        url = reverse('data-graph-get-canvas-data') + '?y_type=1&x_type=2&'\
             'search_start_year=2019&search_end_year=2019&search_region=1'
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -27,6 +27,6 @@ class CanvasDataViewSet(APITestCase):
     def test_get_params(self):
         '''should return 200 when successed'''
         self.client.force_authenticate(self.user)
-        url = reverse('data-graph-options')
+        url = reverse('data-graph-get-params')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
