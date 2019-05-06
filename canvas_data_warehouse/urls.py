@@ -3,5 +3,7 @@ from rest_framework import routers
 from . import views
 
 router = routers.SimpleRouter()
-router.register(r'data-graph', views.CanvasDataViewSet, base_name='data-graph')
+router.register(r'canvas-data',
+                views.CanvasDataViewSet,
+                base_name='canvas-data')
 urlpatterns = router.urls
