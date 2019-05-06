@@ -100,4 +100,4 @@ class WorkloadFileDownloadView(APIView):
         secure_file = SecureFile.from_path(user, file_name, file_path)
         os.unlink(file_path)
 
-        return secure_file.generate_secured_download_response(request)
+        return secure_file.generate_download_response(request)
