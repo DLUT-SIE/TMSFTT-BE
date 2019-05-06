@@ -1,11 +1,48 @@
 '''Unit tests for secure_file views.'''
 from unittest.mock import patch, Mock
-from urllib.parse import unquote, quote
 
 from django.test import TestCase
 from rest_framework import exceptions
+from model_mommy import mommy
 
+from infra.exceptions import BadRequest
 import secure_file.views as views
+import secure_file.models as models
+
+
+class TestInSecuredFileDownloadView(TestCase):
+    '''Unit tests for INSecureFileDownloadView.'''
+    def setUp(self):
+        self.view = views.InSecuredFileDownloadView()
+        self.request = Mock()
+
+    def test_invalid_id(self):
+        '''Should raise NotFound error.'''
+        file_id = 'abc'
+
+        with self.assertRaises(exceptions.NotFound):
+            self.view.get(self.request, file_id)
+
+    def test_file_does_not_exist(self):
+        '''Should raise NotFound error.'''
+        file_id = '123123'
+
+        with self.assertRaises(exceptions.NotFound):
+            self.view.get(self.request, file_id)
+
+    @patch('secure_file.views.generate_download_response')
+    def test_get_succeed(self, mocked_generate):
+        '''Should return response.'''
+        insecure_file = mommy.make(models.InSecureFile)
+        expected_resp = Mock()
+        mocked_generate.return_value = expected_resp
+
+        resp = self.view.get(self.request, str(insecure_file.id))
+
+        self.assertIs(resp, expected_resp)
+        mocked_generate.assert_called_with(
+            self.request, insecure_file.path, logging=False
+        )
 
 
 # pylint: disable=too-many-arguments
@@ -27,131 +64,29 @@ class TestSecuredFileDownloadView(TestCase):
         with self.assertRaises(exceptions.NotFound):
             self.view.get(self.request, self.encrypted_url)
 
-    @patch('secure_file.views.settings')
-    @patch('secure_file.views.infer_content_type')
-    @patch('secure_file.views.prod_logger')
-    @patch('secure_file.views.decrypt_file_download_url')
     @patch('secure_file.views.SecuredFileDownloadView._verify_validity')
-    def test_get_succeed(self, mocked_verify, mocked_decrypt,
-                         mocked_logger, mocked_infer_content_type,
-                         mocked_settings):
-        '''Should return response if succeed.'''
-        mocked_decrypt.return_value = (
-            self.model_name, self.field_name, self.path, self.perm_name
-        )
-        field_file = Mock()
-        basename = 'abc.png'
-        content = b'Hello World!'
-        field_file.name = f'path/to/file/{basename}'
-        field_file.read.return_value = content
-        mocked_verify.return_value = field_file
-        mocked_infer_content_type.reutrn_value = 'image/png'
-        self.request.user.first_name = 'first_name'
-        self.request.user.username = 'username'
-
-        mocked_settings.DEBUG = True
-        response = self.view.get(self.request, self.encrypted_url)
-
-        self.assertEqual(
-            response['Content-Disposition'],
-            f'attachment; filename={quote(basename)}'
-        )
-        self.assertEqual(
-            response.content, content,
-        )
-        mocked_logger.info.assert_called_with(
-            f'用户 {self.request.user.first_name}'
-            f'(用户名: {self.request.user.username}) '
-            f'请求下载文件: {unquote(self.path)}'
-        )
-        mocked_infer_content_type.assert_called_with(basename)
-        mocked_verify.assert_called_with(
-            self.request, self.model_name, self.field_name,
-            self.path, self.perm_name
-        )
-
-    @patch('secure_file.views.settings')
-    @patch('secure_file.views.infer_content_type')
-    @patch('secure_file.views.dev_logger')
-    @patch('secure_file.views.prod_logger')
+    @patch('secure_file.views.generate_download_response')
     @patch('secure_file.views.decrypt_file_download_url')
-    @patch('secure_file.views.SecuredFileDownloadView._verify_validity')
-    def test_get_read_failed(self, mocked_verify, mocked_decrypt,
-                             mocked_prod_logger, mocked_dev_logger,
-                             mocked_infer_content_type, mocked_settings):
-        '''Should raise NotFound() if read failed.'''
-        mocked_decrypt.return_value = (
-            self.model_name, self.field_name, self.path, self.perm_name
-        )
+    def test_get_succeed(self, mocked_decrypt, mocked_generate, mocked_verify):
+        '''Should return response.'''
+        model_name = 'abc'
+        field_name = 'path'
+        path = 'path/to/file'
+        perm_name = 'download'
+        mocked_decrypt.return_value = (model_name, field_name, path, perm_name)
         field_file = Mock()
-        basename = 'abc.png'
-        field_file.name = f'path/to/file/{basename}'
-        exc = Exception('Failed to read')
-        field_file.read.side_effect = exc
         mocked_verify.return_value = field_file
-        mocked_infer_content_type.reutrn_value = 'image/png'
-        self.request.user.first_name = 'first_name'
-        self.request.user.username = 'username'
+        expected_res = Mock()
+        mocked_generate.return_value = expected_res
 
-        mocked_settings.DEBUG = True
-        with self.assertRaises(exceptions.NotFound):
-            self.view.get(self.request, self.encrypted_url)
+        res = self.view.get(self.request, self.encrypted_url)
 
-        mocked_dev_logger.info.assert_called_with(f'读取文件失败: {exc}')
-        mocked_prod_logger.info.assert_called_with(
-            f'用户 {self.request.user.first_name}'
-            f'(用户名: {self.request.user.username}) '
-            f'请求下载文件: {unquote(self.path)}'
-        )
-        mocked_infer_content_type.assert_called_with(basename)
+        self.assertIs(res, expected_res)
+        mocked_decrypt.assert_called_with(self.encrypted_url)
         mocked_verify.assert_called_with(
-            self.request, self.model_name, self.field_name,
-            self.path, self.perm_name
+            self.request, model_name, field_name, path, perm_name
         )
-
-    @patch('secure_file.views.settings')
-    @patch('secure_file.views.infer_content_type')
-    @patch('secure_file.views.prod_logger')
-    @patch('secure_file.views.decrypt_file_download_url')
-    @patch('secure_file.views.SecuredFileDownloadView._verify_validity')
-    def test_get_succeed_acceel_redirect(
-            self, mocked_verify, mocked_decrypt,
-            mocked_logger, mocked_infer_content_type, mocked_settings):
-        '''Should return redirect response if succeed in prod mode.'''
-        mocked_decrypt.return_value = (
-            self.model_name, self.field_name, self.path, self.perm_name
-        )
-        field_file = Mock()
-        basename = 'abc.png'
-        content = b'Hello World!'
-        field_file.name = f'path/to/file/{basename}'
-        field_file.read.return_value = content
-        mocked_verify.return_value = field_file
-        mocked_infer_content_type.reutrn_value = 'image/png'
-        self.request.user.first_name = 'first_name'
-        self.request.user.username = 'username'
-
-        mocked_settings.DEBUG = False
-        response = self.view.get(self.request, self.encrypted_url)
-
-        self.assertEqual(
-            response['Content-Disposition'],
-            f'attachment; filename={quote(basename)}'
-        )
-        self.assertEqual(
-            response['X-Accel-Redirect'],
-            f'/protected-files/{field_file.name}'
-        )
-        mocked_logger.info.assert_called_with(
-            f'用户 {self.request.user.first_name}'
-            f'(用户名: {self.request.user.username}) '
-            f'请求下载文件: {unquote(self.path)}'
-        )
-        mocked_infer_content_type.assert_called_with(basename)
-        mocked_verify.assert_called_with(
-            self.request, self.model_name, self.field_name,
-            self.path, self.perm_name
-        )
+        mocked_generate.assert_called_with(self.request, field_file)
 
     @patch('secure_file.views.dev_logger')
     @patch('secure_file.views.apps')
@@ -237,3 +172,42 @@ class TestSecuredFileDownloadView(TestCase):
         self.request.user.has_perm.assert_called_with(
             self.perm_name, instance
         )
+
+
+class TestInSecureFileViewSet(TestCase):
+    '''Unit tests for InSecureFileViewSet.'''
+    def setUp(self):
+        self.view = views.InSecureFileViewSet()
+        self.request = Mock()
+
+    def test_create_key_missing(self):
+        '''Should raise BadRequest.'''
+        request = self.request
+        request.FILES = {}
+        with self.assertRaisesMessage(BadRequest, '请指定上传文件'):
+            self.view.create(request)
+
+    @patch('secure_file.models.InSecureFile.from_path')
+    def test_create_file(self, mocked_from_path):
+        '''Should create InSecureFile.'''
+        request = self.request
+        request.user = Mock()
+        uploaded_file = Mock()
+        uploaded_file.name = 'name'
+        request.FILES = {
+            'upload': uploaded_file
+        }
+        mocked_generate = Mock()
+        expected_resp = Mock()
+        mocked_generate.return_value = expected_resp
+        insecure_file = Mock()
+        insecure_file.generate_download_response = mocked_generate
+        mocked_from_path.return_value = insecure_file
+
+        resp = self.view.create(request)
+
+        self.assertIs(resp, expected_resp)
+        mocked_from_path.assert_called_with(
+            request.user, uploaded_file.name, uploaded_file
+        )
+        mocked_generate.assert_called_with(request)

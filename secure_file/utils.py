@@ -1,11 +1,14 @@
 '''Provide utility functions for secure_file module.'''
 import os.path as osp
-from urllib.parse import urljoin, urlencode, urlsplit, parse_qs
+from urllib.parse import urlencode, urlsplit, parse_qs, quote
 from collections import OrderedDict
 
 from django.conf import settings
+from django.http import HttpResponse
+from rest_framework import exceptions
 
-from infra.utils import dev_logger, encrypt, decrypt, get_full_url
+from infra.utils import prod_logger, dev_logger, encrypt, decrypt, get_full_url
+from secure_file import SECURE_FILE_PREFIX, INSECURE_FILE_PREFIX
 
 
 def encrypt_file_download_url(
@@ -43,7 +46,7 @@ def encrypt_file_download_url(
 
     path = f'{file_path}?{urlencode(query_params)}'
     path = encrypt(path)
-    path = urljoin(settings.MEDIA_URL, path)
+    path = osp.join(SECURE_FILE_PREFIX, path)
     return path
 
 
@@ -77,6 +80,14 @@ def decrypt_file_download_url(encrypted_url):
     field_name = query_params.get('field', ['path'])[0]
     perm_name = query_params.get('perm', ['download_file'])[0]
     return model_name, field_name, path, perm_name
+
+
+def get_full_plain_file_download_url(request, path):
+    '''
+    A helper function for generating full URL for downloading insecure files.
+    '''
+    path = osp.join(INSECURE_FILE_PREFIX, path)
+    return get_full_url(request, path)
 
 
 def get_full_encrypted_file_download_url(
@@ -122,3 +133,39 @@ def infer_content_type(fname):
     }
     ext = osp.splitext(fname.lower())[-1]
     return content_types.get(ext, 'text/plain')
+
+
+def populate_file_content(resp, field_file):
+    '''Populate file content for HTTP response.
+
+    If settings.DEBUG is False, then we ask Nginx to serve the file.
+    '''
+    if settings.DEBUG:
+        try:
+            resp.content = field_file.read()
+        except Exception as exc:
+            msg = f'读取文件失败: {exc}'
+            dev_logger.info(msg)
+            raise exceptions.NotFound()
+    else:
+        resp['X-Accel-Redirect'] = (
+            f'/protected-files/{field_file.name}'
+        )
+
+
+def generate_download_response(request, field_file, logging=True):
+    '''Serve file from `field_file` for request.'''
+    basename = osp.basename(field_file.name)
+    if logging:
+        msg = (
+            f'用户 {request.user.first_name}'
+            f'(用户名: {request.user.username}) '
+            f'请求下载文件: {field_file.name}'
+        )
+        prod_logger.info(msg)
+    resp = HttpResponse(content_type=infer_content_type(basename))
+    resp['Content-Disposition'] = (
+        f'attachment; filename={quote(basename)}'
+    )
+    populate_file_content(resp, field_file)
+    return resp

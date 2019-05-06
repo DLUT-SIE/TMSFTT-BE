@@ -9,11 +9,11 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from model_mommy import mommy
 from rest_framework import status
 
-from secure_file.models import SecureFile
+from secure_file.models import SecureFile, InSecureFile
 
 
-class TestSecureFile(TestCase):
-    '''Unit tests for SecureFile model.'''
+class TestSecureFileModels(TestCase):
+    '''Unit tests for SecureFile models.'''
     @classmethod
     def setUpTestData(cls):
         cls.user = mommy.make(get_user_model())
@@ -36,7 +36,7 @@ class TestSecureFile(TestCase):
         self.assertEqual(secure_file.path.read(), content)
 
     @patch('secure_file.models.get_full_encrypted_file_download_url')
-    def test_generate_secured_download_response(self, mocked_get_url):
+    def test_generate_download_response(self, mocked_get_url):
         '''Should generate response for redirecting to download.'''
         secure_file = SecureFile()
         secure_file.path = Mock()
@@ -45,11 +45,28 @@ class TestSecureFile(TestCase):
         expected_url = Mock()
         mocked_get_url.return_value = expected_url
         request = Mock()
-        resp = secure_file.generate_secured_download_response(request)
+        resp = secure_file.generate_download_response(request)
 
         mocked_get_url.assert_called_with(
             request, SecureFile, 'path', path, 'download_file'
         )
+
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.assertIn('url', resp.data)
+        self.assertEqual(resp.data['url'], expected_url)
+
+    @patch('secure_file.models.get_full_plain_file_download_url')
+    def test_generate_download_response_insecure_file(self, mocked_get_url):
+        '''Should generate response for redirecting to download.'''
+        instance_id = 123
+        insecure_file = InSecureFile()
+        insecure_file.pk = instance_id
+        expected_url = Mock()
+        mocked_get_url.return_value = expected_url
+        request = Mock()
+        resp = insecure_file.generate_download_response(request)
+
+        mocked_get_url.assert_called_with(request, str(instance_id))
 
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         self.assertIn('url', resp.data)
