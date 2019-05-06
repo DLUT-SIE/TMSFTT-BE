@@ -4,6 +4,7 @@ from rest_framework.decorators import action, list_route
 from rest_framework import status, viewsets
 
 from canvas_data_warehouse.services import CanvasDataService
+from infra.exceptions import BadRequest
 
 
 class CanvasDataViewSet(viewsets.ViewSet):
@@ -13,13 +14,13 @@ class CanvasDataViewSet(viewsets.ViewSet):
         '''getting canvas-data'''
         graph_type = request.GET.get('graph_type')
         if graph_type is None:
-            return Response("错误的参数格式", status=status.HTTP_400_BAD_REQUEST)
+            raise BadRequest("错误的参数格式")
         request_data = {key: val for (key, val) in request.GET.items()}
-        CanvasDataService.dispatch(graph_type, request_data)
-        return Response(request_data, status=status.HTTP_200_OK)
+        canvas_data = CanvasDataService.dispatch(graph_type, request_data)
+        return Response(canvas_data, status=status.HTTP_200_OK)
 
-    @action(detail=False, url_path='options')
-    def get_params(self, request):
+    @action(detail=False, url_path='canvas-options')
+    def get_canvas_options(self, request):
         '''getting canvas-options selection param'''
-        data = CanvasDataService.get_graph_param()
+        data = CanvasDataService.get_canvas_options()
         return Response(data)
