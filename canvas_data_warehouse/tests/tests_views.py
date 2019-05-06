@@ -9,7 +9,7 @@ from model_mommy import mommy
 User = get_user_model()
 
 
-class TestDataGraphView(APITestCase):
+class CanvasDataViewSet(APITestCase):
     '''Unit tests for DataGraphView.'''
     @classmethod
     def setUpTestData(cls):
@@ -24,16 +24,9 @@ class TestDataGraphView(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-
-class TestDataGraphParamView(APITestCase):
-    '''Unit tests for DataGraphParamView'''
-    @classmethod
-    def setUpTestData(cls):
-        cls.user = mommy.make(User)
-
-    def test_get(self):
+    def test_get_params(self):
         '''should return 200 when successed'''
         self.client.force_authenticate(self.user)
-        url = reverse('data-graph-param')
+        url = reverse('data-graph-options')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
