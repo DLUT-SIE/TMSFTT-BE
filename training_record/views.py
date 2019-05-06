@@ -19,9 +19,12 @@ from infra.mixins import MultiSerializerActionClassMixin
 class RecordViewSet(MultiSerializerActionClassMixin,
                     viewsets.ModelViewSet):
     '''Create API views for Record.'''
+    select = {'custom_sort_field': 'status=4'}
     queryset = (
         training_record.models.Record.objects.all()
         .select_related('feedback', 'campus_event', 'off_campus_event')
+        .extra(select=select)
+        .order_by('-custom_sort_field', '-create_time')
     )
     filter_class = training_record.filters.RecordFilter
     serializer_action_classes = {
