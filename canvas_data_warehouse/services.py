@@ -58,10 +58,12 @@ class CanvasDataService:
     def get_graph_param(cls):
         '''return a data graph select dictionary'''
         statistics_type = [
-            {'type': cls.STAFF_STATISTICS, 'option': {'name': '教职工人数统计',
-             'subOption': cls.tuple_to_dict_list(cls.staff_grouping_type)}},
-            {'type': cls.TRAINEE_STATISTICS, 'option': {'name': '培训人数统计',
-             'subOption': cls.tuple_to_dict_list(cls.trainee_grouping_type)}},
+            {'type': cls.STAFF_STATISTICS,
+             'option': {'name': '教职工人数统计', 'subOption': cls.tuple_to_dict_list(
+                 cls.staff_grouping_type)}},
+            {'type': cls.TRAINEE_STATISTICS,
+             'option': {'name': '培训人数统计', 'subOption': cls.tuple_to_dict_list(
+                 cls.trainee_grouping_type)}},
             {'type': cls.FULL_TIME_TEACHER_TRAINED_COVERAGE,
              'option': {'name': '专任教师培训覆盖率统计', 'subOption':
                         cls.tuple_to_dict_list(cls.trainee_grouping_type)}},
