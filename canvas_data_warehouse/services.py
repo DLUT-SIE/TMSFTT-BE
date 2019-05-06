@@ -1,5 +1,4 @@
 '''Provide services of data graph.'''
-from auth.models import Department
 
 
 class CanvasDataService:
@@ -33,43 +32,38 @@ class CanvasDataService:
         {'type': BY_HIGHEST_DEGREE, 'name': '按最高学位'},
         {'type': BY_AGE_DISTRIBUTION, 'name': '按年龄分布'}
     ]
-    trainee_number_coverage_grouping_type = [
+    trainee_grouping_type = [
         {'type': BY_DEPARTMENT, 'name': '按学院'},
         {'type': BY_STAFF_TITLE, 'name': '按职称'},
         {'type': BY_AGE_DISTRIBUTION, 'name': '按年龄分布'}
     ]
-    training_hours_workload_grouping_type = [
+    training_hours_grouping_type = [
         {'type': BY_TOTAL_STAFF_NUM, 'name': '按总人数'},
         {'type': BY_TOTAL_TRAINING_HOURS, 'name': '按总培训学时'},
         {'type': BY_PER_CAPITA_TRAINING_HOURS, 'name': '按人均培训学时'},
         {'type': BY_TOTAL_WORKLOAD, 'name': '按总工作量'},
         {'type': BY_PER_CAPITA_WORKLOAD, 'name': '按人均工作量'}
     ]
-    statistics_type = [
-        {'type': STAFF_STATISTICS,
-         'option': {'name': '教职工人数统计', 'subOption': staff_grouping_type}},
-        {'type': TRAINEE_STATISTICS,
-         'option': {'name': '培训人数统计',
-                    'subOption': trainee_number_coverage_grouping_type}},
-        {'type': FULL_TIME_TEACHER_TRAINED_COVERAGE,
-         'option': {'name': '专任教师培训覆盖率统计',
-                    'subOption': trainee_number_coverage_grouping_type}},
-        {'type': TRAINING_HOURS_WORKLOAD_STATISTICS,
-         'option': {'name': '培训学时与工作量统计',
-                    'subOption': training_hours_workload_grouping_type}}
-    ]
 
-    @staticmethod
-    def dispatch_sub_service(request_data):
+    @classmethod
+    def dispatch(cls, graph_type, graph_options):
         '''to call a specific service for getting data'''
 
     @classmethod
     def get_graph_param(cls):
         '''return a data graph select dictionary'''
-        departments = Department.objects.all().values_list(
-            'raw_department_id', 'name')
-        data = {
-            'statistics_type': cls.statistics_type,
-            'departments': departments
-        }
-        return data
+        statistics_type = [
+            {'type': cls.STAFF_STATISTICS,
+             'option': {'name': '教职工人数统计',
+                        'subOption': cls.staff_grouping_type}},
+            {'type': cls.TRAINEE_STATISTICS,
+             'option': {'name': '培训人数统计',
+                        'subOption': cls.trainee_grouping_type}},
+            {'type': cls.FULL_TIME_TEACHER_TRAINED_COVERAGE,
+             'option': {'name': '专任教师培训覆盖率统计',
+                        'subOption': cls.trainee_grouping_type}},
+            {'type': cls.TRAINING_HOURS_WORKLOAD_STATISTICS,
+             'option': {'name': '培训学时与工作量统计',
+                        'subOption': cls.training_hours_grouping_type}}
+        ]
+        return statistics_type
