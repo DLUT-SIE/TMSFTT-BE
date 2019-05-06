@@ -1,6 +1,6 @@
 '''Provide API views for data-graph module.'''
 from rest_framework.response import Response
-from rest_framework.decorators import action, list_route
+from rest_framework.decorators import action
 from rest_framework import status, viewsets
 
 from canvas_data_warehouse.services import CanvasDataService
