@@ -49,8 +49,8 @@ class CanvasDataService:
     def dispatch(cls, graph_type, graph_options):
         '''to call a specific service for getting data'''
 
-    @classmethod
-    def tuple_to_dict_list(cls, data):
+    @staticmethod
+    def tuple_to_dict_list(data):
         '''return a data dict list'''
         return [{'type': key, 'name': val} for key, val in data]
 
