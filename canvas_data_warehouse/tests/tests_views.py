@@ -21,11 +21,11 @@ class CanvasDataViewSet(APITestCase):
         '''should return 200 when successed'''
         self.client.force_authenticate(self.user)
 
-        url = reverse('canvas-data-data') + '?graph_type=1&'\
+        url = reverse('canvas-data-get-canvas-data') + '?graph_type=1&'\
             'a=2&b=2019&c=2019&d=1'
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        url = reverse('canvas-data-data') + '?graph=1&a=2&'\
+        url = reverse('canvas-data-get-canvas-data') + '?graph=1&a=2&'\
             'b=2019&c=2019&d=1'
         response = self.client.get(url)
         self.assertRaisesMessage(BadRequest, '错误的参数格式')
