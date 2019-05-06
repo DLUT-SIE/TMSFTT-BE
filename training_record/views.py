@@ -8,6 +8,7 @@ from rest_framework_bulk.mixins import (
 
 import training_record.models
 import training_record.filters
+from training_record.models import Record
 from training_record.services import RecordService
 from training_record.serializers import (CampusEventFeedbackSerializer,
                                          RecordCreateSerializer,
@@ -19,11 +20,11 @@ from infra.mixins import MultiSerializerActionClassMixin
 class RecordViewSet(MultiSerializerActionClassMixin,
                     viewsets.ModelViewSet):
     '''Create API views for Record.'''
-    select = {'custom_sort_field': 'status=4'}
     queryset = (
         training_record.models.Record.objects.all()
         .select_related('feedback', 'campus_event', 'off_campus_event')
-        .extra(select=select)
+        .extra(select={
+            'custom_sort_field': f'status={Record.STATUS_FEEDBACK_REQUIRED}'})
         .order_by('-custom_sort_field', '-create_time')
     )
     filter_class = training_record.filters.RecordFilter
