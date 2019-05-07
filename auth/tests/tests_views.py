@@ -85,6 +85,47 @@ class TestGroupViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+class TestUserGroupViewSet(APITestCase):
+    '''Unit tests for UserGroup view.'''
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = mommy.make(User, is_staff=True)
+
+    def setUp(self):
+        self.client.force_authenticate(self.user)
+
+    def test_list_usergroup(self):
+        '''Should return all user-groups if user is admin.'''
+        url = reverse('usergroup-list')
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_create_user_group(self):
+        '''UserGroup should be created by POST request.'''
+        url = reverse('usergroup-list')
+        user = mommy.make(User)
+        group = mommy.make(Group)
+        data = {
+            'user': user.id,
+            'group': group.id,
+        }
+
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(auth.models.UserGroup.objects.count(), 1)
+
+    def test_delete_user_group(self):
+        '''UserGroup should be deleted by DELETE request.'''
+        usergroup = mommy.make(auth.models.UserGroup)
+        url = reverse('usergroup-detail', args=(usergroup.pk,))
+
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(auth.models.UserGroup.objects.count(), 0)
+
+
 class TestGroupPermissionViewSet(APITestCase):
     '''Unit tests for GroupPermission view.'''
     @classmethod

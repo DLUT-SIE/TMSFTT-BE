@@ -2,6 +2,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, Group
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 import auth.models
 
@@ -18,7 +19,6 @@ class DepartmentSerializer(serializers.ModelSerializer):
         model = auth.models.Department
         fields = ('id', 'name', 'users', 'admins')
 
-    # pylint: disable=unused-argument
     def get_admins(self, obj):
         '''Get department admin ids.'''
         groups = Group.objects.filter(name=obj.name+'-管理员')
@@ -72,3 +72,19 @@ class UserSerializer(serializers.ModelSerializer):
                   'department', 'department_str',
                   'is_teacher', 'is_department_admin', 'is_school_admin',
                   'groups')
+
+
+class UserGroupSerializer(serializers.ModelSerializer):
+    '''Indicate how to serialize UserGroup instance.'''
+    user_first_name = serializers.CharField(
+        source='user.first_name', read_only=True)
+
+    class Meta:
+        model = auth.models.UserGroup
+        fields = ('id', 'user', 'group', 'user_first_name')
+        validators = [
+            UniqueTogetherValidator(
+                queryset=auth.models.UserGroup.objects.all(),
+                fields=['user', 'group']
+            )
+        ]
