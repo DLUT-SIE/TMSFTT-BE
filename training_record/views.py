@@ -24,8 +24,9 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         training_record.models.Record.objects.all()
         .select_related('feedback', 'campus_event', 'off_campus_event')
         .extra(select={
-            'custom_sort_field': f'status={Record.STATUS_FEEDBACK_REQUIRED}'})
-        .order_by('-custom_sort_field', '-create_time')
+            'is_status_feedback_required':
+            f'status={Record.STATUS_FEEDBACK_REQUIRED}'})
+        .order_by('-is_status_feedback_required', '-create_time')
     )
     filter_class = training_record.filters.RecordFilter
     serializer_action_classes = {
