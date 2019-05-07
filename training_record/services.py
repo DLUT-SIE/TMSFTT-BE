@@ -186,29 +186,29 @@ class RecordService:
 
         with transaction.atomic():
             # get event from sheet
-            event_id = sheet.cell(0, 0).value
+            event_id = int(sheet.cell(0, 0).value)
             try:
                 campus_event = CampusEvent.objects.get(pk=event_id)
             except Exception:
-                raise BadRequest('编号为{}的活动不存在'.format(str(int(event_id))))
+                raise BadRequest('编号为{}的活动不存在'.format(event_id))
 
             # process the info of users
             for index in range(1, sheet.nrows):
-                user_id = sheet.cell(index, 0).value
+                user_id = int(sheet.cell(index, 0).value)
 
                 try:
                     user = User.objects.get(pk=user_id)
                 except Exception:
                     raise BadRequest('第{}行，编号为{}的用户不存在'.format(
-                        index + 1, str(int(user_id))))
+                        index + 1, user_id))
 
-                event_coefficient_id = sheet.cell(index, 1).value
+                event_coefficient_id = int(sheet.cell(index, 1).value)
                 try:
                     event_coefficient = EventCoefficient.objects.get(
                         pk=event_coefficient_id)
                 except Exception:
                     raise BadRequest('第{}行，编号为{}的活动系数不存在'.format(
-                        index + 1, str(int(event_coefficient_id))))
+                        index + 1, event_coefficient_id))
 
                 record = Record.objects.create(
                     campus_event=campus_event, user=user,
