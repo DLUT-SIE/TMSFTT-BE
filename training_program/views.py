@@ -3,12 +3,19 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 import training_program.models
 import training_program.serializers
+from infra.mixins import MultiSerializerActionClassMixin
 
 
-class ProgramViewSet(viewsets.ModelViewSet):
+class ProgramViewSet(MultiSerializerActionClassMixin, viewsets.ModelViewSet):
     '''Create API views for Progarm.'''
     queryset = training_program.models.Program.objects.all()
     serializer_class = training_program.serializers.ProgramSerializer
+    serializer_action_classes = {
+        'create': training_program.serializers.ProgramSerializer,
+        'partial_update': training_program.serializers.ProgramSerializer,
+        'update': training_program.serializers.ProgramSerializer,
+    }
+    serializer_class = training_program.serializers.ReadOnlyProgramSerializer
 
 
 class ProgramCategoryViewSet(viewsets.ViewSet):
