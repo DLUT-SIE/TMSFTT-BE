@@ -14,7 +14,7 @@ router.register(r'enrollments/actions', training_event.views.EnrollmentViewSet,
                 base_name='enrollments-actions')
 urlpatterns = router.urls
 urlpatterns.extend([
-    path('download/workload',
+    path('download/workload/',
          training_event.views.WorkloadFileDownloadView.as_view(),
          name='download-workload'),
 ])
