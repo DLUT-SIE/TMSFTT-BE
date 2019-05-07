@@ -16,7 +16,8 @@ class ReadOnlyProgramSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize read_only Program instance.'''
     category_str = serializers.CharField(source='get_category_display',
                                          read_only=True)
-    department = serializers.SlugField(read_only=True, source='department.name')
+    department = serializers.SlugField(read_only=True,
+                                       source='department.name')
 
     class Meta:
         model = Program
