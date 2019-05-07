@@ -48,27 +48,32 @@ class EnrollmentService:
             return enrollment
 
     @staticmethod
-    def get_user_enrollment_status(events, user_id):
+    def get_user_enrollment_status(events, user):
         """Provide services for get Enrollment Status.
         Parameters
         ----------
         events: list
-            要查询的校内活动id的列表
-        user_id: number
-            当然的用户id
+            要查询的校内活动的对象列表或者数字列表
+        user: number or object
+            当然的用户的id或者对象
 
 
         Returns
         -------
-        result: list
-        id 为活动的编号
-        enrolled 活动是否报名，True表示该活动已经报名，False表示活动没有报名
+        result: dict
+        key 为活动的编号
+        value 活动是否报名，True表示该活动已经报名，False表示活动没有报名
         """
+        if events is not None:
+            if isinstance(events[0], CampusEvent):
+                events = [event.id for event in events]
+
         enrolled_events = set(Enrollment.objects.filter(
-            user=user_id, campus_event__id__in=events
+            user=user, campus_event__id__in=events
         ).values_list('campus_event_id', flat=True))
-        return [{'id': event, 'enrolled': event in enrolled_events}
-                for event in events]
+
+        return {event: event in enrolled_events
+                for event in events}
 
 
 class CoefficientCalculationService:
