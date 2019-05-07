@@ -207,7 +207,7 @@ class TestRecordService(TestCase):
         with open(tup[0], 'rb') as work_book:
             excel = work_book.read()
         with self.assertRaisesMessage(
-                BadRequest, '编号为{}的活动不存在'.format(str(self.campus_event.id+1))):
+                BadRequest, '编号为{}的活动不存在'.format(self.campus_event.id+1)):
             RecordService.create_campus_records_from_excel(excel)
 
     def test_create_campus_records_bad_user_id(self):
@@ -222,7 +222,7 @@ class TestRecordService(TestCase):
             excel = work_book.read()
         with self.assertRaisesMessage(
                 BadRequest,
-                '第2行，编号为{}的用户不存在'.format(str(self.user.id+1))):
+                '第2行，编号为{}的用户不存在'.format(self.user.id+1)):
             RecordService.create_campus_records_from_excel(excel)
 
     def test_create_campus_records_bad_event_coefficient_id(self):
@@ -239,7 +239,7 @@ class TestRecordService(TestCase):
         with self.assertRaisesMessage(
                 BadRequest,
                 '第2行，编号为{}的活动系数不存在'.format(
-                    str(self.event_coefficient.id + 1000))):
+                    self.event_coefficient.id + 1000)):
             RecordService.create_campus_records_from_excel(excel)
 
     def test_create_campus_records(self):
