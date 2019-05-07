@@ -44,16 +44,15 @@ class TestEnrollmentService(TestCase):
     def test_get_user_enrollment_status(self):
         '''Should get user enrollment status.'''
         events = [mommy.make(CampusEvent) for _ in range(10)]
-        events_id_list = [event.id for event in events]
-        expected_result = []
+        expected_result = {}
         for idx, event in enumerate(events):
             if idx >= 3:
                 mommy.make(Enrollment, user=self.user, campus_event=event)
-                expected_result.append({'id': event.id, 'enrolled': True})
+                expected_result[event.id] = True
             else:
-                expected_result.append({'id': event.id, 'enrolled': False})
+                expected_result[event.id] = False
         results = EnrollmentService.get_user_enrollment_status(
-            events_id_list, self.user.id)
+            events, self.user.id)
         self.assertEqual(results, expected_result)
 
 

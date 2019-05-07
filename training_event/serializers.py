@@ -8,6 +8,7 @@ from training_event.services import EnrollmentService
 class CampusEventSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize CampusEvent instance.'''
     overdue_status = serializers.SerializerMethodField(read_only=True)
+    enrollments_status = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = training_event.models.CampusEvent
@@ -17,6 +18,23 @@ class CampusEventSerializer(serializers.ModelSerializer):
     def get_overdue_status(self, obj):
         '''Get event overdue status.'''
         return now() > obj.deadline
+
+    def get_enrollments_status(self, obj):
+        '''Get event enrollments status.'''
+        key = 'enrollments_status_cache'
+        user = self.context['request'].user
+        if key not in self.context:
+            if not isinstance(self.instance, list):
+                instances = [self.instance]
+            else:
+                instances = self.instance
+            res = EnrollmentService.get_user_enrollment_status(
+                instances, user
+            )
+            self.context[key] = res
+        else:
+            res = self.context[key]
+        return res[obj.id]
 
 
 class OffCampusEventSerializer(serializers.ModelSerializer):
