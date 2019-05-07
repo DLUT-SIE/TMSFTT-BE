@@ -15,7 +15,7 @@ router.register('insecure-files', InSecureFileViewSet,
                 base_name='insecure-files')
 
 # /media/secure/xxx
-SECURE_FILE_RE_PATH = f'^{SECURE_FILE_PREFIX}/(?P<encrypted_path>.+)$'
+SECURE_FILE_RE_PATH = f'^{SECURE_FILE_PREFIX}/(?P<encrypted_url>.+)$'
 # /media/insecure/xxx
 INSECURE_FILE_RE_PATH = f'^{INSECURE_FILE_PREFIX}/(?P<file_id>.+)$'
 
