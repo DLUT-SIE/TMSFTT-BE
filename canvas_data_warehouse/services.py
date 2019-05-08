@@ -40,8 +40,8 @@ class CanvasDataService:
     TRAINING_HOURS_GROUPING_CHOICES = (
         (BY_TOTAL_STAFF_NUM, '按总人数', 'BY_TOTAL_STAFF_NUM'),
         (BY_TOTAL_TRAINING_HOURS, '按总培训学时', 'BY_TOTAL_TRAINING_HOURS'),
-        (BY_PER_CAPITA_TRAINING_HOURS, '按人均培训学时',
-            'BY_PER_CAPITA_TRAINING_HOURS'),
+        (BY_PER_CAPITA_TRAINING_HOURS, '按人均培训学时', 'BY_PER_CAPITA_\
+            TRAINING_HOURS'),
         (BY_TOTAL_WORKLOAD, '按总工作量', 'BY_TOTAL_WORKLOAD'),
         (BY_PER_CAPITA_WORKLOAD, '按人均工作量', 'BY_PER_CAPITA_WORKLOAD')
     )
