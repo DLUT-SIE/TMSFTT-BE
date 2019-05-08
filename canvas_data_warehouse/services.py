@@ -53,7 +53,11 @@ class CanvasDataService:
     @staticmethod
     def tuple_to_dict_list(data):
         '''return a data dict list'''
-        return [{'type': type_num, 'name': name, 'key': key_name} for type_num, name, key_name in data]
+        return [{
+            'type': type_num,
+            'name': name,
+            'key': key_name
+            } for type_num, name, key_name in data]
 
     @classmethod
     def get_canvas_options(cls):
