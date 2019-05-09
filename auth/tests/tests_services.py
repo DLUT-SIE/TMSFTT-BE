@@ -31,7 +31,7 @@ class TestPermissonsService(TestCase):
         group = mommy.make(Group, name="大连理工大学-专任教师")
         group.permissions.add(*(perm for perm in self.perms))
 
-        self.permissionService.assigin_group_permissions(
+        self.permissionService._assigin_group_permissions(
             group, user, self.object)
 
         for perms in PERMINSSION_MAP:
@@ -46,7 +46,7 @@ class TestPermissonsService(TestCase):
         user.groups.add(group)
         group.permissions.add(*(perm for perm in self.perms))
 
-        self.permissionService.assigin_group_permissions(
+        self.permissionService._assigin_group_permissions(
             group, group, self.object)
 
         for perms in PERMINSSION_MAP:
