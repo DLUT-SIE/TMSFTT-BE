@@ -10,6 +10,7 @@ class PermissonsService:
     '''Provide services for Permissons.'''
     # pylint: disable=redefined-builtin
     @classmethod
+    @transaction.atomic()
     def assigin_object_permissions(cls, user=None, instance=None):
         '''
         The function is used to provide permissions for releated user when
@@ -24,23 +25,23 @@ class PermissonsService:
         -------
         None
         '''
-        with transaction.atomic():
-            # i: assgin User-Object-Permissions for the current user
-            group = Group.objects.get(name='大连理工大学-专任教师')
-            cls.assigin_group_permissions(
-                group, user, instance)
+        # i: assgin User-Object-Permissions for the current user
+        group = Group.objects.get(name='大连理工大学-专任教师')
+        cls.assigin_group_permissions(
+            group, user, instance)
 
-            # ii: assgin Group-Object-Permissions for DepartmentGroup
-            related_department = user.department
-            while related_department:
-                for group in Group.objects.filter(
-                        name__startswith=related_department.name).exclude(
-                            name='大连理工大学-专任教师'):
-                    cls.assigin_group_permissions(group, group, instance)
-                    related_department = related_department.super_department
+        # ii: assgin Group-Object-Permissions for DepartmentGroup
+        related_department = user.department
+        while related_department:
+            for group in Group.objects.filter(
+                    name__startswith=related_department.name).exclude(
+                        name='大连理工大学-专任教师'):
+                cls.assigin_group_permissions(group, group, instance)
+                related_department = related_department.super_department
 
     # pylint: disable=redefined-builtin
     @classmethod
+    @transaction.atomic()
     def assigin_group_permissions(
             cls, group=None, user_or_group=None, instance=None):
         '''
@@ -59,12 +60,11 @@ class PermissonsService:
         -------
         None
         '''
-        with transaction.atomic():
-            content_type = ContentType.objects.get_for_model(
-                instance._meta.model)
-            for perm in group.permissions.all().filter(
-                    content_type_id=content_type.id):
-                assign_perm(perm, user_or_group, instance)
+        content_type = ContentType.objects.get_for_model(
+            instance._meta.model)
+        for perm in group.permissions.all().filter(
+                content_type_id=content_type.id):
+            assign_perm(perm, user_or_group, instance)
 
 
 class ChoiceConverter:
