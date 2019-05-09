@@ -56,21 +56,24 @@ class TestPermissonsService(TestCase):
 
     def test_assigin_object_permissions(self):
         '''Should True if user has permissions of the related project.'''
-        department = mommy.make(Department, name="创新创业学院")
-        user = mommy.make(User, department=department)
+        department_school = mommy.make(Department, name="大连理工大学")
+        department_admin = mommy.make(
+            Department, name="创新创业学院", super_department=department_school)
+
+        user = mommy.make(User, department=department_admin)
         group = mommy.make(Group, name="大连理工大学-专任教师")
 
-        group_ad = mommy.make(Group, name="创新创业学院-管理员")
-        user_ad = mommy.make(User)
-        user_ad.groups.add(group_ad)
+        group_school = mommy.make(Group, name="大连理工大学-管理员")
+        user_school = mommy.make(User)
+        user_school.groups.add(group_school)
 
-        group_add = mommy.make(Group, name="大连理工大学-领导")
-        user_add = mommy.make(User)
-        user_add.groups.add(group_add)
+        group_admin = mommy.make(Group, name="创新创业学院-管理员")
+        user_admin = mommy.make(User)
+        user_admin.groups.add(group_admin)
 
         group.permissions.add(*(perm for perm in self.perms))
-        group_ad.permissions.add(*(perm for perm in self.perms))
-        group_add.permissions.add(*(perm for perm in self.perms))
+        group_admin.permissions.add(*(perm for perm in self.perms))
+        group_school.permissions.add(*(perm for perm in self.perms))
 
         self.permissionService.assigin_object_permissions(user, self.object)
 
@@ -80,15 +83,16 @@ class TestPermissonsService(TestCase):
         self.assertFalse(user.has_perm('add_campusevent', self.object_fake))
 
         for perms in PERMINSSION_MAP:
-            self.assertTrue(user_ad.has_perm(perms, self.object))
-        self.assertFalse(user_ad.has_perm('add_record', self.object))
-        self.assertFalse(user_ad.has_perm('add_campusevent', self.object_fake))
+            self.assertTrue(user_admin.has_perm(perms, self.object))
+        self.assertFalse(user_admin.has_perm('add_record', self.object))
+        self.assertFalse(user_admin.has_perm(
+            'add_campusevent', self.object_fake))
 
         for perms in PERMINSSION_MAP:
-            self.assertTrue(user_add.has_perm(perms, self.object))
-        self.assertFalse(user_add.has_perm('add_record', self.object))
+            self.assertTrue(user_school.has_perm(perms, self.object))
+        self.assertFalse(user_school.has_perm('add_record', self.object))
         self.assertFalse(
-            user_add.has_perm('add_campusevent', self.object_fake))
+            user_school.has_perm('add_campusevent', self.object_fake))
 
 
 class DummyConverter(services.ChoiceConverter):
