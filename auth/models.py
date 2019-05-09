@@ -32,6 +32,9 @@ class Department(models.Model):
     raw_department_id = models.CharField(
         verbose_name='单位原始ID', max_length=20, unique=True)
     name = models.CharField(verbose_name='院系', max_length=50, unique=True)
+    super_department = models.ForeignKey(
+        'self', verbose_name='所属机构', blank=True, null=True,
+        related_name='child_department', on_delete=models.SET_NULL)
     create_time = models.DateTimeField(verbose_name='创建时间',
                                        auto_now_add=True)
     update_time = models.DateTimeField(verbose_name='最近修改时间',

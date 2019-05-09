@@ -31,17 +31,13 @@ class PermissonsService:
                 group, user, instance)
 
             # ii: assgin Group-Object-Permissions for DepartmentGroup
-            for group in Group.objects.filter(
-                    name__startswith=user.department.name):
-                cls.assigin_group_permissions(
-                    group, group, instance)
-
-            # iii: assgin Group-Object-Permissions for SchoolGroup
-            for group in Group.objects.filter(
-                    name__startswith='大连理工大学').exclude(
-                        name='大连理工大学-专任教师'):
-                cls.assigin_group_permissions(
-                    group, group, instance)
+            related_department = user.department
+            while related_department:
+                for group in Group.objects.filter(
+                        name__startswith=related_department.name).exclude(
+                            name='大连理工大学-专任教师'):
+                    cls.assigin_group_permissions(group, group, instance)
+                    related_department = related_department.super_department
 
     # pylint: disable=redefined-builtin
     @classmethod
