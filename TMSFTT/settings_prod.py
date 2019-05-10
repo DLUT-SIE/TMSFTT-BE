@@ -34,7 +34,7 @@ SECRET_KEY = get_secret_from_file('SECRET_KEY_FILE')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = ['localhost', 'tmsftt.local']
 INTERNAL_IPS = ['127.0.0.1']
 
 # Database

@@ -15,6 +15,7 @@ django.setup()
 import xlrd
 
 from faker import Faker
+from model_mommy import mommy
 from django.db import transaction
 from django.contrib.auth.models import Group
 from django.utils.timezone import make_aware, now
@@ -23,13 +24,14 @@ from auth.models import User, Department
 from auth.utils import assign_perm
 from auth.services import (
     GenderConverter, TenureStatusConverter, EducationBackgroundConverter,
-    TechnicalTitleConverter, TeachingTypeConverter
+    TechnicalTitleConverter, TeachingTypeConverter, PermissonsService
 )
 from infra.models import Notification
 from training_program.models import Program
 from training_event.models import CampusEvent, EventCoefficient, Enrollment
 from training_record.models import (
-    Record, RecordContent, RecordAttachment, CampusEventFeedback
+    Record, RecordContent, RecordAttachment, CampusEventFeedback,
+    StatusChangeLog
 )
 from training_review.models import ReviewNote
 
@@ -38,105 +40,23 @@ faker = Faker('zh_CN')
 faker.seed(0)
 
 
-def clean_department_name(department_name):
-    '''Unify department name.'''
-    department_name = department_name.strip()
-    mappings = {
-        '人文': '人文与社会科学学部',
-        '人文学院': '人文与社会科学学部',
-        '人文学部': '人文与社会科学学部',
-        '人文与社会科学学部-中文系': '人文与社会科学学部',
-        '人文与社会科学学部-法律系': '人文与社会科学学部',
-        '人文与社会科学学部-新闻传播学系': '人文与社会科学学部',
+class ProgressBar:
+    def __init__(self, max_cnt, start=0):
+        self.max_cnt = max_cnt - start
+        self.cnt = 0
 
-        '物理学院': '物理与光电工程学院',
-        '光仪学院': '物理与光电工程学院',
-        '光电工程与仪器科学学院': '物理与光电工程学院',
+    def step(self):
+        self.cnt += 1
+        sys.stdout.flush()
+        sys.stdout.write(f'{self.cnt:5d} / {self.max_cnt:5d} \r')
 
-        '外语': '外国语学院',
-
-        '材料': '材料科学与工程学院',
-        '材料学院': '材料科学与工程学院',
-
-        '研院': '研究生院',
-
-        '数学': '数学科学学院',
-
-        '机械': '机械工程学院',
-        '机械学院': '机械工程学院',
-        '机械工程与材料能源学部-机械工程学院': '机械工程学院',
-
-        '电信': '电子信息与电气工程学部',
-        '电信学部': '电子信息与电气工程学部',
-        '电气': '电子信息与电气工程学部',
-        '电气工程学院': '电子信息与电气工程学部',
-        '计算机科学与技术学院': '电子信息与电气工程学部',
-        '生物医学工程系': '电子信息与电气工程学部',
-        '信息与通信工程': '电子信息与电气工程学部',
-        '信息与通信工程学院': '电子信息与电气工程学部',
-        '控制科学与工程学院': '电子信息与电气工程学部',
-
-        '建艺': '建筑与艺术学院',
-        '建艺学院': '建筑与艺术学院',
-
-        '能动学院': '能源与动力学院',
-
-        '管理': '管理与经济学部',
-        '管经学部': '管理与经济学部',
-        '工商管理学院': '管理与经济学部',
-        '管理与经济学部-经济研究所': '管理与经济学部',
-        '管理科学与工程学院': '管理与经济学部',
-
-        '化工与环境生命学部-化学学院': '化工与环境生命学部',
-        '化工与环境生命学部-化工学院': '化工与环境生命学部',
-        '化工与环境生命学部-制药科学与技术学院': '化工与环境生命学部',
-        '制药科学与技术学院': '化工与环境生命学部',
-        '化工与环境生命学部-生命科学与技术学院': '化工与环境生命学部',
-        '生命': '化工与环境生命学部',
-        '生命科学与技术学院': '化工与环境生命学部',
-        '化学': '化工与环境生命学部',
-        '化工': '化工与环境生命学部',
-        '生命学院': '化工与环境生命学部',
-        '环境学院': '化工与环境生命学部',
-        '化工学部': '化工与环境生命学部',
-        '化学学院': '化工与环境生命学部',
-        '化工学院': '化工与环境生命学部',
-        '化工机械学院': '化工与环境生命学部',
-
-        '运载': '运载工程与力学学部',
-        '力学': '运载工程与力学学部',
-        '运载学部': '运载工程与力学学部',
-        '交通运输学院': '运载工程与力学学部',
-        '工程力学系': '运载工程与力学学部',
-        '船舶工程学院': '运载工程与力学学部',
-        '航空航天学院': '运载工程与力学学部',
-
-        '马院': '马克思主义学院',
-        '人文与社会科学学部-马克思主义学院': '马克思主义学院',
-
-        '建设工程学部-土木工程学院': '建设工程学部',
-        '建工': '建设工程学部',
-        '建工学部': '建设工程学部',
-        '水利工程学院': '建设工程学部',
-        '深海工程研究中心': '建设工程学部',
-
-        '微电子': '微电子学院',
-
-        '盘锦': '盘锦校区',
-        '盘锦校区基础教学部': '盘锦校区',
-        '盘锦校区生命与医药学院': '盘锦校区',
-
-        '体教部': '体育教学部',
-
-        '开发区校区': '软件学院',
-        '国家示范性软件学院': '软件学院',
-        '大连理工大学-立命馆大学国际信息与软件学院': '软件学院',
-    }
-    return mappings.get(department_name, department_name)
+    def finish(self):
+        print()
 
 
 __cached_groups = {}
 def get_or_create_group(department, group_type):
+    global __cached_groups
     group_name = f'{department.name}-{group_type}'
     if group_name not in __cached_groups:
         group, _ = Group.objects.get_or_create(name=group_name)
@@ -144,14 +64,28 @@ def get_or_create_group(department, group_type):
     return __cached_groups[group_name]
 
 
-def get_dlut_department_and_group():
+def get_dlut_department():
     department, _ = Department.objects.get_or_create(
         raw_department_id='10141', name='大连理工大学')
-    return department, get_or_create_group(department, '专任教师')
+    return department
 
 
+def get_dlut_admin():
+    department = get_dlut_department()
+    user, _ = User.objects.get_or_create(
+        username='admin', 
+        first_name='管理员',
+        department=department
+    )
+    return user
+
+
+__cached_programs = None
 def make_programs():
-    programs = {
+    global __cached_programs
+    if __cached_programs:
+        return __cached_programs
+    candidate_programs = {
         Program.PROGRAM_CATEGORY_TRAINING: [
             '名师讲坛', '青年教学观摩', '教学基本功培训'],
         Program.PROGRAM_CATEGORY_PROMOTION: [
@@ -159,53 +93,65 @@ def make_programs():
         Program.PROGRAM_CATEGORY_TECHNOLOGY: [
             '课程技术服务', '智慧教室建设']
     }
-    res = []
-    department, group = get_dlut_department_and_group()
-    for category, names in programs.items():
-        res.extend(Program(
+    programs = []
+    department = get_dlut_department()
+    admin = get_dlut_admin()
+    for category, names in candidate_programs.items():
+        programs.extend(Program.objects.create(
             name=name,
             department=department,
             category=category) for name in names)
-    names = [p.name for p in res]
-    res = Program.objects.bulk_create(res)
-    res = Program.objects.filter(name__in=names)
-    for program in res:
-        assign_perm('view_program', group, program)
-    return res
+    PermissonsService.assigin_object_permissions(admin, department)
+    __cached_programs = programs
+    return programs
+
+
+def create_user(username, first_name, **kwargs):
+    user = mommy.make(
+        User,
+        username=username,
+        first_name=first_name,
+        **kwargs
+    )
+    department = kwargs.get('department', None)
+    while department is not None:
+        group = get_or_create_group(department, '专任教师')
+        user.groups.add(group)
+        department = department.super_department
+    return user
+
+
+def row_parser_2018(row):
+    return row[1:9]
+
+
+def row_parser_2017(row):
+    coef = 4 if row[5] == '专家' else 1
+    return row[4], row[2], row[1], row[3], row[5], row[6], coef, 0
 
 
 def read_worload_content(
-        users, departments,
-        fpath='~/Desktop/TMSFTT/2018年教师发展工作量-全-0315.xls'):
+        users, departments, row_parser=row_parser_2018, start_row=1,
+        fpath='~/Desktop/TMSFTT/2018年教师发展工作量-全-0316-工号.xls'):
     '''Read xlsx file and generate records.'''
-    users_dict = {u.first_name: u for u in users}
-    departments_dict = {d.name: d for d in departments}
     workbook = xlrd.open_workbook(fpath)
-    sheet = workbook.sheet_by_name('原始')
+    sheet = workbook.sheet_by_index(0)
     num_rows = sheet.nrows
     programs = make_programs()
     event_to_program = {}
     events = {}
     coefficients = {}
-    role_map = {
-        '主讲': '主讲人',
-        '观摩': '参与教师',
-    }
-    _, dlut_group = get_dlut_department_and_group()
+    departments_list = list(departments.values())
+    pb = ProgressBar(num_rows, start_row)
     for idx, row in enumerate((sheet.row_values(i)
-                               for i in range(1, num_rows))):
-        sys.stdout.flush()
-        sys.stdout.write(f'{idx:4d} / {num_rows:4d} \r')
+                               for i in range(start_row, num_rows))):
+        pb.step()
         try:
-            (event_name, department_name, user_name,
-             role, num_hours, coef, workload) = row[1:8]
-            if not role:
-                role = '观摩'
-            elif '新增' in role:
-                role = '观摩'
-            elif '专家' in role:
-                role = '主讲'
-            role = EventCoefficient.ROLE_CHOICES_MAP[role_map[role]]
+            (event_name, department_name, user_name, user_id,
+             role, num_hours, coef, workload) = row_parser(row)
+            if role == '参加':
+                role = '参与'
+            role = EventCoefficient.ROLE_CHOICES_MAP[role.strip()]
             if not num_hours or not coef:
                 coef = '1'
                 num_hours = workload
@@ -217,20 +163,18 @@ def read_worload_content(
         if not department_name:
             continue
 
-        # User and Department
-        department_name = clean_department_name(department_name)
-        department = departments_dict.get(
-            department_name, random.choice(departments))
-        teachers_group = get_or_create_group(department, '专任教师')
-        user = users_dict.get(
-            user_name, random.choice(users))
-        user.groups.add(teachers_group, dlut_group)
+        user = users.get(user_id, None)
+        if user is None:
+            user = create_user(
+                user_id, user_name,
+                department=random.choice(departments_list))
+            users[user_id] = user
 
         # Program, Event and Coefficient
         program = event_to_program.setdefault(
             event_name, random.choice(programs))
         if event_name not in events:
-            events[event_name] = CampusEvent.objects.create(
+            event = CampusEvent.objects.create(
                 name=event_name,
                 program=program,
                 time=now(),
@@ -240,8 +184,10 @@ def read_worload_content(
                 num_participants=random.randint(20, 100),
                 description=faker.text(100)
             )
+            events[event_name] = event
+
         event = events[event_name]
-        assign_perm('view_campusevent', dlut_group, event)
+        PermissonsService.assigin_object_permissions(user, event)
         if (event.id, role) not in coefficients:
             coefficients[(event.id, role)] = EventCoefficient.objects.create(
                 campus_event=event,
@@ -251,14 +197,13 @@ def read_worload_content(
         event_coef = coefficients[(event.id, role)]
 
         # Record
-        record = Record.objects.create(
+        Record.objects.create(
             campus_event=event,
             user=user,
             status=Record.STATUS_FEEDBACK_REQUIRED,
             event_coefficient=event_coef,
         )
-        assign_perm('view_record', user, record)
-    print()
+    pb.finish()
 
 
 def converter_get_or_default(converter, key, default=None):
@@ -269,30 +214,31 @@ def converter_get_or_default(converter, key, default=None):
 
 
 def read_departments_information(
-        fpath='~/Desktop/TMSFTT/教师相关信息20190424部分数据.xlsx'):
+        fpath='~/Desktop/TMSFTT/教师基本信息20190508(二级单位信息).xlsx'):
     workbook = xlrd.open_workbook(fpath)
     sheet = workbook.sheet_by_name('单位编码')
     num_rows = sheet.nrows
-    dlut_department, dlut_teachers_group = get_dlut_department_and_group()
-    departments = []
-    for row in (sheet.row_values(i) for i in range(1, num_rows)):
-        dwid, dwmc, parent = row[:3]
-        if parent != '000001':
-            continue
-        if not any(x in dwmc for x in ['学部', '学院']):
-            continue
-        if any(x in dwmc for x in ['体育', '大连', '国防', '国际', '远程']):
-            continue
-        departments.append(Department(
+    dlut_department = get_dlut_department()
+    id_to_departments = {
+        dlut_department.raw_department_id: dlut_department,
+    }
+    rows = [sheet.row_values(i) for i in range(2, num_rows)]
+    rows.sort(key=lambda x: 0 if x[8] == '10141' else int(x[8]))
+    pb = ProgressBar(len(rows))
+    for row in rows:
+        dwid, dwmc, department_type, super_department_id = row[5:9]
+        department = Department.objects.create(
             raw_department_id=dwid,
             name=dwmc,
-        ))
-    res = Department.objects.bulk_create(departments)
-    res = Department.objects.filter(
-        raw_department_id__in=[d.raw_department_id for d in departments])
-    for department in res:
-        assign_perm('view_department', dlut_teachers_group, department)
-    return res
+            department_type=department_type,
+            super_department=id_to_departments[super_department_id]
+        )
+        id_to_departments[dwid] = department
+        get_or_create_group(department, '管理员')
+        get_or_create_group(department, '专任教师')
+        pb.step()
+    pb.finish()
+    return id_to_departments
 
 
 def extract_teacher_information(row):
@@ -321,99 +267,141 @@ def read_teachers_information(
     workbook = xlrd.open_workbook(fpath)
     sheet = workbook.sheet_by_name('教师基本信息')
     num_rows = sheet.nrows
-    users = []
-    existing_users = set()
+    users = {}
+    pb = ProgressBar(num_rows, 2)
     for row in (sheet.row_values(i) for i in range(2, num_rows)):
-        if row[0] in existing_users:
+        pb.step()
+        if row[0] in users:
             continue
-        existing_users.add(row[0])
-        (zgh, jsxm, nl, xb, _, rxsj,
+        (zgh, jsxm, nl, xb, department_id, rxsj,
          rzzt, xl, zyjszc, rjlx) = extract_teacher_information(row)
-        users.append(User(
-            username=zgh,
-            first_name=jsxm,
-            department=random.choice(departments),
-            gender=User.GENDER_CHOICES_MAP.get(xb, User.GENDER_UNKNOWN),
-            age=nl,
-            onboard_time=rxsj,
-            tenure_status=rzzt,
-            education_background=xl,
-            technical_title=zyjszc,
-            teaching_type=rjlx
-        ))
-    res = User.objects.bulk_create(users)
-    res = User.objects.filter(username__in=[u.username for u in users])
-    return res
+        kwargs = {
+            'department': departments.get(department_id, None),
+            'gender': User.GENDER_CHOICES_MAP.get(xb, User.GENDER_UNKNOWN),
+            'age': nl,
+            'onboard_time': rxsj,
+            'tenure_status': rzzt,
+            'education_background': xl,
+            'technical_title': zyjszc,
+            'teaching_type': rjlx,
+        }
+        user = create_user(zgh, jsxm, **kwargs)
+        users[zgh] = user
+    pb.finish()
+    return users
 
 
 def assign_model_perms(departments):
-    models = {
+    model_perms = {
         # Auth
         Department: {
-            '管理员': ['add', 'view', 'change'],
-            '专任教师': ['view'],
+            '管理员': ['view'],
+            '专任教师': [],
+            '大连理工大学-专任教师': ['view'],
+        },
+        User: {
+            '管理员': ['view'],
+            '专任教师': [],
+            '大连理工大学-专任教师': ['view'],
         },
         # Infra
         Notification: {
             '管理员': ['view'],
-            '专任教师': ['view'],
+            '专任教师': [],
+            '大连理工大学-专任教师': ['view'],
         },
         # Program
         Program: {
-            '管理员': ['add', 'view', 'change'],
-            '专任教师': ['view'],
+            '管理员': ['add', 'view', 'change', 'delete'],
+            '专任教师': [],
+            '大连理工大学-专任教师': ['view'],
         },
         # Event
         CampusEvent: {
-            '管理员': ['add', 'view', 'change'],
-            '专任教师': ['view'],
+            '管理员': ['add', 'view', 'change', 'delete'],
+            '专任教师': [],
+            '大连理工大学-专任教师': ['view'],
         },
         Enrollment: {
             '管理员': ['view'],
-            '专任教师': ['add'],
+            '专任教师': [],
+            '大连理工大学-专任教师': ['add', 'delete'],
         },
         # Record
         Record: {
             '管理员': ['add', 'view', 'change'],
-            '专任教师': ['add', 'view', 'change'],
+            '专任教师': [],
+            '大连理工大学-专任教师': ['add', 'view', 'change'],
         },
         RecordContent: {
             '管理员': ['view'],
-            '专任教师': ['add', 'view', 'change'],
-
+            '专任教师': [],
+            '大连理工大学-专任教师': ['view'],
         },
         RecordAttachment: {
             '管理员': ['view'],
-            '专任教师': ['add', 'view', 'change'],
+            '专任教师': [],
+            '大连理工大学-专任教师': ['view'],
+        },
+        StatusChangeLog: {
+            '管理员': ['view'],
+            '专任教师': [],
+            '大连理工大学-专任教师': ['view'],
         },
         CampusEventFeedback: {
             '管理员': ['view'],
-            '专任教师': ['add', 'view', 'change'],
+            '专任教师': [],
+            '大连理工大学-专任教师': ['add'],
         },
         # Review
         ReviewNote: {
-            '管理员': ['add', 'view', 'change'],
-            '专任教师': ['add', 'view', 'change'],
+            '管理员': ['add', 'view'],
+            '专任教师': [],
+            '大连理工大学-专任教师': ['add', 'view'],
         },
     }
-    for department in departments:
-        for model_class, perm_pairs in models.items():
+    dlut_department = get_dlut_department()
+    dlut_teachers_group = get_or_create_group(dlut_department, '专任教师')
+    pb = ProgressBar(len(departments))
+    for department in departments.values():
+        for model_class, perm_pairs in model_perms.items():
             for role, perms in perm_pairs.items():
-                group = get_or_create_group(department, role)
+                if role == '大连理工大学-专任教师':
+                    group = dlut_teachers_group
+                else:
+                    group = get_or_create_group(department, role)
                 for perm in perms:
                     perm_name = (
                         f'{model_class._meta.app_label}.'
                         f'{perm}_{model_class._meta.model_name}'
                     )
                     assign_perm(perm_name, group)
+        pb.step()
+    pb.finish()
 
 
 @transaction.atomic
 def populate():
+    print('Creating departments')
     departments = read_departments_information()
-    users = read_teachers_information(departments)
-    read_worload_content(users, departments)
+    print('Assigning model permissions')
     assign_model_perms(departments)
+    print('Creating users')
+    users = read_teachers_information(departments)
+    print('Creating workload for 2017')
+    read_worload_content(
+        users, departments,
+        row_parser=row_parser_2017,
+        start_row=2,
+        fpath='~/Desktop/TMSFTT/2017年教师发展工作量-全-0316-工号.xlsx',
+    )
+    print('Creating workload for 2018')
+    read_worload_content(
+        users, departments,
+        row_parser=row_parser_2018,
+        start_row=1,
+        fpath='~/Desktop/TMSFTT/2018年教师发展工作量-全-0316-工号.xls',
+    )
 
 
 if __name__ == '__main__':

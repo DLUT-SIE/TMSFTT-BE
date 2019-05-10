@@ -109,12 +109,10 @@ class EventCoefficient(models.Model):
     EventCoefficient holds information about the coefficient of role
     in different event"""
     ROLE_PARTICIPATOR = 0
-    ROLE_LECTURER = 1
-    ROLE_JUDGE = 2
+    ROLE_EXPERT = 1
     ROLE_CHOICES = (
-        (ROLE_PARTICIPATOR, '参与教师'),
-        (ROLE_LECTURER, '主讲人'),
-        (ROLE_JUDGE, '评委'),
+        (ROLE_PARTICIPATOR, '参与'),
+        (ROLE_EXPERT, '专家'),
     )
     ROLE_CHOICES_MAP = {v: k for k, v in ROLE_CHOICES}
 
