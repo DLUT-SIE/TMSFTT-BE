@@ -53,12 +53,12 @@ class AggregateDataService:
     @classmethod
     def dispatch(cls, method_name, context):
         '''to call a specific service for getting data'''
-        available_method_list = [
+        available_method_list = (
             'staff_statistics',
             'trainee_statistics',
             'coverage_statistics',
             'training_hours_statistics'
-        ]
+        )
         handler = getattr(cls, method_name, None)
         if method_name not in available_method_list or handler is None:
             raise BadRequest("错误的参数")
