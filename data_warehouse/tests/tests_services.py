@@ -29,4 +29,5 @@ class TestAggregateDataService(TestCase):
     def test_dispatch(self):
         '''Should get a aggregated data'''
         self.graph_type = 0
-        AggregateDataService.dispatch(self.request, self.graph_type, self.graph_options)
+        AggregateDataService.dispatch(
+            self.request, self.graph_type, self.graph_options)
