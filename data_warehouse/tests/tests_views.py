@@ -21,11 +21,11 @@ class AggregateDataViewSet(APITestCase):
         '''should return 200 when successed'''
         self.client.force_authenticate(self.user)
 
-        url = reverse('aggregate-data-get-aggregate-data') + '?graph_type=1&'\
-            'a=2&b=2019&c=2019&d=1'
+        url = reverse('aggregate-data-data') + '?method_name=staff_'\
+            'statistics&a=2&b=2019&c=2019&d=1'
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        url = reverse('aggregate-data-get-aggregate-data') + '?graph=1&a=2&'\
+        url = reverse('aggregate-data-data') + '?graph=1&a=2&'\
             'b=2019&c=2019&d=1'
         response = self.client.get(url)
         self.assertRaisesMessage(BadRequest, '错误的参数格式')
@@ -33,6 +33,6 @@ class AggregateDataViewSet(APITestCase):
     def test_get_options(self):
         '''should return 200 when successed'''
         self.client.force_authenticate(self.user)
-        url = reverse('aggregate-data-get-canvas-options')
+        url = reverse('aggregate-data-options')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
