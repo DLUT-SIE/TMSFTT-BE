@@ -38,7 +38,7 @@ INSTALLED_APPS = [
 
     'secure_file',
     'auth.apps.AuthConfig',
-    'canvas_data_warehouse',
+    'data_warehouse',
     'infra',
     'training_program',
     'training_event',

@@ -25,7 +25,7 @@ API_URLPATTERNS = [
     path('', include('infra.urls')),
     path('', include('training_program.urls')),
     path('', include('training_record.urls')),
-    path('', include('canvas_data_warehouse.urls')),
+    path('', include('data_warehouse.urls')),
 ]
 
 urlpatterns = [
