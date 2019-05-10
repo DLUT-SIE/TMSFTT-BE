@@ -51,39 +51,31 @@ class AggregateDataService:
     )
 
     @classmethod
-    def dispatch(cls, request, graph_type, graph_options):
+    def dispatch(cls, method_name, context):
         '''to call a specific service for getting data'''
-        statistics_method_map = {
-            cls.STAFF_STATISTICS: cls.staff_statistics,
-            cls.TRAINEE_STATISTICS: cls.trainee_statistics,
-            cls.FULL_TIME_TEACHER_TRAINED_COVERAGE: cls.coverage_statistics,
-            cls.TRAINING_HOURS_WORKLOAD_STATISTICS:
-                cls.training_hours_statistics
-        }
-        graph_type = int(graph_type)
-        if graph_type not in statistics_method_map.keys():
+        handle = getattr(cls, method_name, None)
+        if handle is None:
             raise BadRequest("错误的参数格式")
-        return statistics_method_map[graph_type](request.user, graph_options)
+        return handle(context)
 
     @classmethod
-    def staff_statistics(cls, request_user, graph_options):
+    def staff_statistics(cls, context):
         '''to get staff statistics data'''
         User = get_user_model()
         query_set = User.objects.all()
-        users = get_objects_for_user(
-            request_user, 'tmsftt_auth.view_user', query_set)
-        return users, graph_options
+        get_objects_for_user(
+            context['request'].user, 'tmsftt_auth.view_user', query_set)
 
     @classmethod
-    def trainee_statistics(cls, request_user, graph_options):
+    def trainee_statistics(cls, context):
         '''to get trainee statistics data'''
 
     @classmethod
-    def coverage_statistics(cls, request_user, graph_options):
+    def coverage_statistics(cls, context):
         '''to get coverage statistics data'''
 
     @classmethod
-    def training_hours_statistics(cls, request_user, graph_options):
+    def training_hours_statistics(cls, context):
         '''to get training hours statistics data'''
 
     @staticmethod

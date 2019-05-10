@@ -17,17 +17,17 @@ class TestAggregateDataService(TestCase):
         self.user = mommy.make(User)
         self.request = HttpRequest()
         self.request.user = self.user
-        self.graph_type = 5
-        self.graph_options = {}
+        self.method_name = 'abcd'
+        self.context = {'request': self.request, 'data': ''}
 
     def test_dispatch_error(self):
-        '''Should raise BadRequest if graph_type not in map's keys.'''
+        '''Should raise BadRequest if method_name not in map's keys.'''
         with self.assertRaisesMessage(BadRequest, '错误的参数格式'):
             AggregateDataService.dispatch(
-                self.request, self.graph_type, self.graph_options)
+                self.method_name, self.context)
 
     def test_dispatch(self):
         '''Should get a aggregated data'''
-        self.graph_type = 0
+        self.method_name = 'staff_statistics'
         AggregateDataService.dispatch(
-            self.request, self.graph_type, self.graph_options)
+            self.method_name, self.context)
