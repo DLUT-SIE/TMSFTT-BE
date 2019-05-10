@@ -68,11 +68,6 @@ class AggregateDataService:
     @classmethod
     def staff_statistics(cls, request_user, graph_options):
         '''to get staff statistics data'''
-        User = get_user_model()
-        query_set = User.objects.all()
-        users = get_objects_for_user(
-            request_user, 'tmsftt_auth.view_user', query_set)
-        return users
 
     @classmethod
     def trainee_statistics(cls, request_user, graph_options):
