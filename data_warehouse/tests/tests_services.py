@@ -22,7 +22,11 @@ class TestAggregateDataService(TestCase):
 
     def test_dispatch_error(self):
         '''Should raise BadRequest if method_name not in map's keys.'''
-        with self.assertRaisesMessage(BadRequest, '错误的参数格式'):
+        with self.assertRaisesMessage(BadRequest, '错误的参数'):
+            AggregateDataService.dispatch(
+                self.method_name, self.context)
+        self.method_name = 'get_canvas_options'
+        with self.assertRaisesMessage(BadRequest, '错误的参数'):
             AggregateDataService.dispatch(
                 self.method_name, self.context)
 
