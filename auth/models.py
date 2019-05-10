@@ -18,6 +18,25 @@ class Department(models.Model):
     business-logic related, in most cases, we use this model to categorize
     other objects.
     '''
+    DEPARTMENT_TYPE_T1 = 'T1'
+    DEPARTMENT_TYPE_T2 = 'T2'
+    DEPARTMENT_TYPE_T3 = 'T3'
+    DEPARTMENT_TYPE_T4 = 'T4'
+    DEPARTMENT_TYPE_T5 = 'T5'
+    DEPARTMENT_TYPE_T6 = 'T6'
+    DEPARTMENT_TYPE_T7 = 'T7'
+    DEPARTMENT_TYPE_T8 = 'T8'
+    DEPARTMENT_TYPE_CHOICES = (
+        (DEPARTMENT_TYPE_T1, '职能部处'),
+        (DEPARTMENT_TYPE_T2, '直附属单位'),
+        (DEPARTMENT_TYPE_T3, '学部院系'),
+        (DEPARTMENT_TYPE_T4, '其他'),
+        (DEPARTMENT_TYPE_T5, '职能部门及直附属单位'),
+        (DEPARTMENT_TYPE_T6, '书院'),
+        (DEPARTMENT_TYPE_T7, '学院'),
+        (DEPARTMENT_TYPE_T8, '其他机构'),
+    )
+
     class Meta:
         verbose_name = '院系'
         verbose_name_plural = '院系'
@@ -39,6 +58,13 @@ class Department(models.Model):
                                        auto_now_add=True)
     update_time = models.DateTimeField(verbose_name='最近修改时间',
                                        auto_now=True)
+    department_type = models.CharField(
+        verbose_name='单位类型',
+        max_length=2,
+        choices=DEPARTMENT_TYPE_CHOICES,
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
         return str(self.name)

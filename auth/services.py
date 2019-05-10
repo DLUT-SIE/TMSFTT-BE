@@ -36,7 +36,7 @@ class PermissonsService:
                     name__startswith=related_department.name).exclude(
                         name='大连理工大学-专任教师'):
                 cls._assigin_group_permissions(group, group, instance)
-                related_department = related_department.super_department
+            related_department = related_department.super_department
 
     # pylint: disable=redefined-builtin
     @classmethod
