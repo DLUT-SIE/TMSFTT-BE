@@ -15,8 +15,8 @@ class AggregateDataViewSet(viewsets.ViewSet):
         method_name = request.GET.get('method_name')
         if method_name is None:
             raise BadRequest("错误的参数格式")
-        request_data = {key: val for (key, val) in request.GET.items()}
-        context = {'request': request, 'data': request_data}
+        context = {key: val for (key, val) in request.GET.items()}
+        context['request'] = request
         canvas_data = AggregateDataService.dispatch(
             method_name, context)
         return Response(canvas_data, status=status.HTTP_200_OK)
