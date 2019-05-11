@@ -17,7 +17,7 @@ class DepartmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = auth.models.Department
-        fields = ('id', 'name', 'users', 'admins')
+        fields = ('id', 'name', 'users', 'admins', 'super_department')
 
     def get_admins(self, obj):
         '''Get department admin ids.'''
