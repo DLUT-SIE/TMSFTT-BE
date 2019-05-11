@@ -50,13 +50,10 @@ class UserPermissionSerializer(serializers.ModelSerializer):
 
 class GroupSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize Group instance.'''
-    user_set = serializers.SlugRelatedField(
-        many=True, read_only=True, slug_field='first_name')
-    permissions = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
 
     class Meta:
         model = auth.models.Group
-        fields = ('id', 'name', 'user_set', 'permissions')
+        fields = ('id', 'name',)
 
 
 class GroupPermissionSerializer(BulkSerializerMixin,
