@@ -2,6 +2,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, Group
 from rest_framework import viewsets, mixins
+from rest_framework_bulk.mixins import BulkCreateModelMixin
 
 import auth.models
 import auth.serializers
@@ -63,11 +64,8 @@ class UserGroupViewSet(mixins.CreateModelMixin,
     filter_fields = ('group',)
 
 
-class GroupPermissionViewSet(mixins.CreateModelMixin,
-                             mixins.ListModelMixin,
-                             mixins.RetrieveModelMixin,
-                             mixins.DestroyModelMixin,
-                             viewsets.GenericViewSet):
+class GroupPermissionViewSet(BulkCreateModelMixin,
+                             viewsets.ModelViewSet):
     '''Create API views for GroupPermission.'''
     queryset = (auth.models.GroupPermission.objects.all())
     serializer_class = auth.serializers.GroupPermissionSerializer
