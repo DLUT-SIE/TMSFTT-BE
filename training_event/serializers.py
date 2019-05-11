@@ -16,12 +16,12 @@ class CampusEventSerializer(serializers.ModelSerializer):
         read_only_fields = ('num_enrolled',)
 
     def get_expired(self, obj):
-        '''Get event overdue status.'''
+        '''Get event expired status.'''
         return now() > obj.deadline
 
     def get_enrolled(self, obj):
         '''Get event enrollments status.'''
-        key = 'enrollments_status_cache'
+        key = 'enrolled_cache'
         user = self.context['request'].user
         if key not in self.context:
             if not isinstance(self.instance, list):
