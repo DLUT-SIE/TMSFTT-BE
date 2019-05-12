@@ -8,6 +8,9 @@ from django.db.models import functions
 from django.db.models.functions import Coalesce
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
+from guardian.shortcuts import get_objects_for_user
+import django.utils.timezone as timezone
+import pytz
 
 from auth.models import Department
 from infra.exceptions import BadRequest
@@ -15,8 +18,6 @@ from training_event.models import Enrollment, EventCoefficient
 from training_record.models import Record
 from data_warehouse.models import Ranking
 from training_record.models import Record
-from django.utils import timezone
-import pytz
 
 
 class UserRankingService:
@@ -619,18 +620,18 @@ class AggregateDataService:
         queryset = User.objects.all()
         users = get_objects_for_user(
             context['request'].user, 'tmsftt_auth.view_user', queryset)
-        for i in range(len(query_label)):
+        for _, value in enumerate(query_label):
             if group_by == cls.BY_STAFF_TITLE:
                 users_count = users.filter(
-                    technical_title=query_label[i]).count()
+                    technical_title=value).count()
             elif group_by == cls.BY_HIGHEST_DEGREE:
                 users_count = users.filter(
-                    education_background=query_label[i]).count()
+                    education_background=value).count()
             elif group_by == cls.BY_AGE_DISTRIBUTION:
-                users_count = users.filter(age__range=query_label[i]).count()
+                users_count = users.filter(age__range=value).count()
             else:
                 users_count = users.filter(
-                    department__name=query_label[i]).count()
+                    department__name=value).count()
             data['group_by_data'][0]['data'].append(users_count)
         return data
 
@@ -640,7 +641,7 @@ class AggregateDataService:
         group_by = context.get('group_by', '')
         start_year = context.get('start_year', 2016)
         end_year = context.get('end_year', 2016)
-        region = context.get('region', 0)
+        # region = context.get('region', 0)
         data = {
             'label': [],
             'group_by_data': [{'seriesNum': 0,
@@ -654,7 +655,7 @@ class AggregateDataService:
             group_by = int(group_by)
             start_year = int(start_year)
             end_year = int(end_year)
-            region = int(region)
+            # region = int(region)
         except ValueError:
             raise BadRequest("错误的参数")
         labels = {
@@ -683,22 +684,22 @@ class AggregateDataService:
                 timezone.datetime(start_year, 1, 1, tzinfo=pytz.UTC),
                 timezone.datetime(end_year, 12, 31, tzinfo=pytz.UTC)
             ))
-        for i in range(len(query_label)):
+        for _, value in enumerate(query_label):
             if group_by == cls.BY_STAFF_TITLE:
                 campus_records_count = campus_records.filter(
-                    user__technical_title=query_label[i]).count()
+                    user__technical_title=value).count()
                 off_campus_records_count = off_campus_records.filter(
-                    user__technical_title=query_label[i]).count()
+                    user__technical_title=value).count()
             elif group_by == cls.BY_AGE_DISTRIBUTION:
                 campus_records_count = campus_records.filter(
-                    user__age__range=query_label[i]).count()
+                    user__age__range=value).count()
                 off_campus_records_count = off_campus_records.filter(
-                    user__age__range=query_label[i]).count()
+                    user__age__range=value).count()
             else:
                 campus_records_count = campus_records.filter(
-                    user__department__name=query_label[i]).count()
+                    user__department__name=value).count()
                 off_campus_records_count = off_campus_records.filter(
-                    user__department__name=query_label[i]).count()
+                    user__department__name=value).count()
             data['group_by_data'][0]['data'].append(campus_records_count)
             data['group_by_data'][1]['data'].append(
                 off_campus_records_count)
