@@ -38,12 +38,12 @@ INSTALLED_APPS = [
 
     'secure_file',
     'auth.apps.AuthConfig',
-    'data_warehouse',
     'infra',
     'training_program',
     'training_event',
     'training_record',
     'training_review',
+    'data_warehouse',
 ]
 
 MIDDLEWARE = [

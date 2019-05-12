@@ -97,8 +97,6 @@ class Enrollment(models.Model):
     enroll_method = models.PositiveSmallIntegerField(
         verbose_name='报名渠道', choices=ENROLL_METHOD_CHOICES,
         default=ENROLL_METHOD_WEB)
-    is_participated = models.BooleanField(verbose_name='是否参加',
-                                          default=False)
 
     def __str__(self):
         return '{} 报名 {} 的记录'.format(self.user_id, self.campus_event_id)

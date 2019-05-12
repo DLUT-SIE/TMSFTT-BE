@@ -154,6 +154,10 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'auth.tasks.update_teachers_and_departments_information',
         'schedule': crontab(minute=0, hour=0)  # Daily at midnight.
     },
+    'generate_user_rankings': {
+        'task': 'data_warehouse.tasks.generate_user_rankings',
+        'schedule': crontab(minute=10, hour=0)  # Daily at midnight.
+    }
 }
 
 # Email settings

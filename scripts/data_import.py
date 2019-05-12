@@ -54,14 +54,31 @@ class ProgressBar:
         print()
 
 
-__cached_groups = {}
+cached_groups = {}
 def get_or_create_group(department, group_type):
-    global __cached_groups
     group_name = f'{department.name}-{group_type}'
-    if group_name not in __cached_groups:
+    if group_name not in cached_groups:
         group, _ = Group.objects.get_or_create(name=group_name)
-        __cached_groups[group_name] = group
-    return __cached_groups[group_name]
+        cached_groups[group_name] = group
+    return cached_groups[group_name]
+
+
+administrative_departments = {}
+def get_administrative_department(department):
+    if department is None:
+        return None
+    if department.id not in administrative_departments:
+        deps = [department]
+        while department.super_department:
+            department = department.super_department
+            deps.append(department)
+        if len(deps) < 3:
+            admin_department = deps[0]
+        else:
+            admin_department = deps[-3]
+        department = deps[0]
+        administrative_departments[department.id] = admin_department
+    return administrative_departments[department.id]
 
 
 def get_dlut_department():
@@ -72,11 +89,13 @@ def get_dlut_department():
 
 def get_dlut_admin():
     department = get_dlut_department()
-    user, _ = User.objects.get_or_create(
+    user, created = User.objects.get_or_create(
         username='admin', 
         first_name='管理员',
         department=department
     )
+    if created:
+        user.groups.add(get_or_create_group(department, '管理员'))
     return user
 
 
@@ -147,7 +166,7 @@ def read_worload_content(
                                for i in range(start_row, num_rows))):
         pb.step()
         try:
-            (event_name, department_name, user_name, user_id,
+            (event_name, department_name, user_name, username,
              role, num_hours, coef, workload) = row_parser(row)
             if role == '参加':
                 role = '参与'
@@ -163,17 +182,26 @@ def read_worload_content(
         if not department_name:
             continue
 
-        user = users.get(user_id, None)
+        if not username:
+            continue
+        username = f'{int(username)}'
+        user = users.get(username, None)
         if user is None:
             user = create_user(
-                user_id, user_name,
+                username, user_name,
                 department=random.choice(departments_list))
-            users[user_id] = user
+            users[username] = user
 
         # Program, Event and Coefficient
         program = event_to_program.setdefault(
             event_name, random.choice(programs))
-        if event_name not in events:
+        event = events.get(event_name, None)
+        if (event is not None
+                and Enrollment.objects.filter(
+                    user=user, campus_event=event).exists()):
+            event_name = event_name + '1'
+            event = None
+        if event is None:
             event = CampusEvent.objects.create(
                 name=event_name,
                 program=program,
@@ -187,7 +215,7 @@ def read_worload_content(
             events[event_name] = event
 
         event = events[event_name]
-        PermissonsService.assigin_object_permissions(user, event)
+        Enrollment.objects.create(user=user, campus_event=event)
         if (event.id, role) not in coefficients:
             coefficients[(event.id, role)] = EventCoefficient.objects.create(
                 campus_event=event,
@@ -197,12 +225,13 @@ def read_worload_content(
         event_coef = coefficients[(event.id, role)]
 
         # Record
-        Record.objects.create(
+        record = Record.objects.create(
             campus_event=event,
             user=user,
             status=Record.STATUS_FEEDBACK_REQUIRED,
             event_coefficient=event_coef,
         )
+        PermissonsService.assigin_object_permissions(user, record)
     pb.finish()
 
 
@@ -275,8 +304,12 @@ def read_teachers_information(
             continue
         (zgh, jsxm, nl, xb, department_id, rxsj,
          rzzt, xl, zyjszc, rjlx) = extract_teacher_information(row)
+        zgh = f'{int(zgh)}'
+        department = departments.get(department_id, None)
+        administrative_department = get_administrative_department(department)
         kwargs = {
-            'department': departments.get(department_id, None),
+            'department': department,
+            'administrative_department': administrative_department,
             'gender': User.GENDER_CHOICES_MAP.get(xb, User.GENDER_UNKNOWN),
             'age': nl,
             'onboard_time': rxsj,
@@ -382,12 +415,19 @@ def assign_model_perms(departments):
 
 @transaction.atomic
 def populate():
+    print('Creating admin')
+    get_dlut_admin()
     print('Creating departments')
-    departments = read_departments_information()
+    departments = read_departments_information(
+        fpath='~/Desktop/TMSFTT/教师基本信息20190508(二级单位信息).xlsx'
+    )
     print('Assigning model permissions')
     assign_model_perms(departments)
     print('Creating users')
-    users = read_teachers_information(departments)
+    users = read_teachers_information(
+        departments,
+        fpath='~/Desktop/TMSFTT/教师相关信息20190424部分数据.xlsx'
+    )
     print('Creating workload for 2017')
     read_worload_content(
         users, departments,
@@ -400,7 +440,7 @@ def populate():
         users, departments,
         row_parser=row_parser_2018,
         start_row=1,
-        fpath='~/Desktop/TMSFTT/2018年教师发展工作量-全-0316-工号.xls',
+        fpath='~/Desktop/TMSFTT/2018年教师发展工作量-全-0316-工号-获奖情况.xls',
     )
 
 
