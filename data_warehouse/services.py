@@ -255,7 +255,7 @@ class UserCoreStatisticsService:
         competition_award_info = (
             Record.objects
             .filter(user=user)
-            .filter(campus_event__name__regex=r'(校|市|省|国家)级(.*?奖)')
+            .filter(campus_event__name__regex=r'(校|市|省|国家)级(.*奖)')
             .order_by('-campus_event__time')
             .values_list('campus_event__name', flat=True)
             .first()
