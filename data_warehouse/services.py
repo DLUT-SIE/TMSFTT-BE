@@ -9,7 +9,7 @@ from django.db.models.functions import Coalesce
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 from guardian.shortcuts import get_objects_for_user
-import django.utils.timezone as timezone
+from django.utils.timezone import datetime
 import pytz
 
 from auth.models import Department
@@ -669,20 +669,20 @@ class AggregateDataService:
         query_label = data['label']
         if group_by == cls.BY_AGE_DISTRIBUTION:
             query_label = ((0, 35), (36, 45), (46, 55), (56, 1000))
-        queryset = Record.objects.all()
+        records = Record.objects.all()
         records = get_objects_for_user(
-            context['request'].user, 'training_record.view_record', queryset)
+            context['request'].user, 'training_record.view_record', records)
         campus_records = records.filter(
             campus_event__isnull=False,
             campus_event__time__range=(
-                timezone.datetime(start_year, 1, 1, tzinfo=pytz.UTC),
-                timezone.datetime(end_year, 12, 31, tzinfo=pytz.UTC)
+                datetime(start_year, 1, 1, tzinfo=pytz.UTC),
+                datetime(end_year, 12, 31, tzinfo=pytz.UTC)
             ))
         off_campus_records = records.filter(
             off_campus_event__isnull=False,
             off_campus_event__time__range=(
-                timezone.datetime(start_year, 1, 1, tzinfo=pytz.UTC),
-                timezone.datetime(end_year, 12, 31, tzinfo=pytz.UTC)
+                datetime(start_year, 1, 1, tzinfo=pytz.UTC),
+                datetime(end_year, 12, 31, tzinfo=pytz.UTC)
             ))
         for _, value in enumerate(query_label):
             if group_by == cls.BY_STAFF_TITLE:
