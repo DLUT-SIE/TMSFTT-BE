@@ -9,8 +9,10 @@ from django.db.models.functions import Coalesce
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 from guardian.shortcuts import get_objects_for_user
-from django.utils.timezone import datetime
 import pytz
+from django.contrib.auth import get_user_model
+from django.utils.timezone import datetime
+from guardian.shortcuts import get_objects_for_user
 
 from auth.models import Department
 from infra.exceptions import BadRequest
@@ -497,7 +499,7 @@ class AggregateDataService:
     '''provide services for getting data'''
 
     STAFF_STATISTICS = 0
-    TRAINEE_STATISTICS = 1
+    RECORDS_STATISTICS = 1
     FULL_TIME_TEACHER_TRAINED_COVERAGE = 2
     TRAINING_HOURS_WORKLOAD_STATISTICS = 3
 
@@ -544,7 +546,7 @@ class AggregateDataService:
         '''to call a specific service for getting data'''
         available_method_list = (
             'staff_statistics',
-            'trainee_statistics',
+            'records_statistics',
             'coverage_statistics',
             'training_hours_statistics',
             'personal_summary',
@@ -636,7 +638,7 @@ class AggregateDataService:
         return data
 
     @classmethod
-    def trainee_statistics(cls, context):
+    def records_statistics(cls, context):
         '''to get trainee statistics data'''
         group_by = context.get('group_by', '')
         start_year = context.get('start_year', 2016)
@@ -684,8 +686,8 @@ class AggregateDataService:
                 datetime(start_year, 1, 1, tzinfo=pytz.UTC),
                 datetime(end_year, 12, 31, tzinfo=pytz.UTC)
             ))
+        campus_records_count = off_campus_records_count = 0
         for _, value in enumerate(query_label):
-            campus_records_count = off_campus_records_count = 0
             if group_by == cls.BY_STAFF_TITLE:
                 campus_records_count = campus_records.filter(
                     user__technical_title=value).count()
@@ -731,9 +733,9 @@ class AggregateDataService:
              'name': '教职工人数统计',
              'key': 'STAFF_STATISTICS',
              'subOption': cls.tuple_to_dict_list(cls.STAFF_GROUPING_CHOICES)},
-            {'type': cls.TRAINEE_STATISTICS,
+            {'type': cls.RECORDS_STATISTICS,
              'name': '培训人数统计',
-             'key': 'TRAINEE_STATISTICS',
+             'key': 'RECORDS_STATISTICS',
              'subOption': cls.tuple_to_dict_list(
                  cls.TRAINEE_GROUPING_CHOICES)},
             {'type': cls.FULL_TIME_TEACHER_TRAINED_COVERAGE,
