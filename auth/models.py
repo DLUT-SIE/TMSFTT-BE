@@ -99,6 +99,10 @@ class User(AbstractUser):
         Department, verbose_name='所属院系', on_delete=models.PROTECT,
         blank=True, null=True,
         related_name='users')
+    administrative_department = models.ForeignKey(
+        Department, verbose_name='所属行政单位', on_delete=models.PROTECT,
+        blank=True, null=True,
+        related_name='administrative_users')
     gender = models.PositiveSmallIntegerField(
         verbose_name='性别', choices=GENDER_CHOICES, default=GENDER_UNKNOWN,
     )
