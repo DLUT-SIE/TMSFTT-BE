@@ -685,6 +685,7 @@ class AggregateDataService:
                 datetime(end_year, 12, 31, tzinfo=pytz.UTC)
             ))
         for _, value in enumerate(query_label):
+            campus_records_count = off_campus_records_count = 0
             if group_by == cls.BY_STAFF_TITLE:
                 campus_records_count = campus_records.filter(
                     user__technical_title=value).count()
