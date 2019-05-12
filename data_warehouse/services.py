@@ -14,6 +14,9 @@ from infra.exceptions import BadRequest
 from training_event.models import Enrollment, EventCoefficient
 from training_record.models import Record
 from data_warehouse.models import Ranking
+from training_record.models import Record
+from django.utils import timezone
+import pytz
 
 
 class UserRankingService:
@@ -498,14 +501,9 @@ class AggregateDataService:
     TRAINING_HOURS_WORKLOAD_STATISTICS = 3
 
     BY_DEPARTMENT = 0
-    BY_TEACHING_TYPE = 1
-    BY_STAFF_TITLE = 2
-    BY_HIGHEST_DEGREE = 3
-    BY_AGE_DISTRIBUTION = 4
-
-    BY_DEPARTMENT = 0
     BY_STAFF_TITLE = 1
     BY_AGE_DISTRIBUTION = 2
+    BY_HIGHEST_DEGREE = 3
 
     BY_TOTAL_STAFF_NUM = 0
     BY_TOTAL_TRAINING_HOURS = 1
@@ -515,10 +513,9 @@ class AggregateDataService:
 
     STAFF_GROUPING_CHOICES = (
         (BY_DEPARTMENT, '按学院', 'BY_DEPARTMENT'),
-        (BY_TEACHING_TYPE, '按人员类别', 'BY_TEACHING_TYPE'),
         (BY_STAFF_TITLE, '按职称', 'BY_STAFF_TITLE'),
-        (BY_HIGHEST_DEGREE, '按最高学位', 'BY_HIGHEST_DEGREE'),
-        (BY_AGE_DISTRIBUTION, '按年龄分布', 'BY_AGE_DISTRIBUTION')
+        (BY_AGE_DISTRIBUTION, '按年龄分布', 'BY_AGE_DISTRIBUTION'),
+        (BY_HIGHEST_DEGREE, '按最高学位', 'BY_HIGHEST_DEGREE')
     )
     TRAINEE_GROUPING_CHOICES = (
         (BY_DEPARTMENT, '按学院', 'BY_DEPARTMENT'),
@@ -533,6 +530,13 @@ class AggregateDataService:
         (BY_TOTAL_WORKLOAD, '按总工作量', 'BY_TOTAL_WORKLOAD'),
         (BY_PER_CAPITA_WORKLOAD, '按人均工作量', 'BY_PER_CAPITA_WORKLOAD')
     )
+
+    TITLE_LABEL = ('教授', '副教授', '讲师（高校）', '助教（高校）', '研究员', '副研究员',
+                   '助理研究员', '工程师', '高级工程师', '教授级高工')
+    DEGREE_LABEL = ('博士研究生毕业', '研究生毕业', '大学本科毕业')
+    AGE_LABEL = ('35岁及以下', '36~45岁', '46~55岁', '56岁及以上')
+    DEPARTMENT_LABEL = ('建筑与艺术学院', '机械工程学院', '能源与动力学院', '材料科学与工程学院',
+                        '化工学院', '外国语学院', '马克思主义学院', '开发区校区')
 
     @classmethod
     def dispatch(cls, method_name, context):
@@ -588,10 +592,117 @@ class AggregateDataService:
     @classmethod
     def staff_statistics(cls, context):
         '''to get staff statistics data'''
+        group_by = context.get('group_by', '')
+        data = {
+            'label': [],
+            'group_by_data': [{'seriesNum': 0,
+                               'seriesName': '专任教师',
+                               'data': []}]
+        }
+        try:
+            group_by = int(group_by)
+        except ValueError:
+            raise BadRequest("错误的参数")
+        labels = {
+            cls.BY_STAFF_TITLE: cls.TITLE_LABEL,
+            cls.BY_HIGHEST_DEGREE: cls.DEGREE_LABEL,
+            cls.BY_AGE_DISTRIBUTION: cls.AGE_LABEL,
+            cls.BY_DEPARTMENT: cls.DEPARTMENT_LABEL
+        }
+        if group_by not in labels.keys():
+            raise BadRequest("错误的参数")
+        data['label'] = labels[group_by]
+        query_label = data['label']
+        if group_by == cls.BY_AGE_DISTRIBUTION:
+            query_label = ((0, 35), (36, 45), (46, 55), (56, 1000))
+        User = get_user_model()
+        queryset = User.objects.all()
+        users = get_objects_for_user(
+            context['request'].user, 'tmsftt_auth.view_user', queryset)
+        for i in range(len(query_label)):
+            if group_by == cls.BY_STAFF_TITLE:
+                users_count = users.filter(
+                    technical_title=query_label[i]).count()
+            elif group_by == cls.BY_HIGHEST_DEGREE:
+                users_count = users.filter(
+                    education_background=query_label[i]).count()
+            elif group_by == cls.BY_AGE_DISTRIBUTION:
+                users_count = users.filter(age__range=query_label[i]).count()
+            else:
+                users_count = users.filter(
+                    department__name=query_label[i]).count()
+            data['group_by_data'][0]['data'].append(users_count)
+        return data
 
     @classmethod
     def trainee_statistics(cls, context):
         '''to get trainee statistics data'''
+        group_by = context.get('group_by', '')
+        start_year = context.get('start_year', 2016)
+        end_year = context.get('end_year', 2016)
+        region = context.get('region', 0)
+        data = {
+            'label': [],
+            'group_by_data': [{'seriesNum': 0,
+                               'seriesName': '校内培训',
+                               'data': []},
+                              {'seriesNum': 1,
+                               'seriesName': '校外培训',
+                               'data': []}]
+        }
+        try:
+            group_by = int(group_by)
+            start_year = int(start_year)
+            end_year = int(end_year)
+            region = int(region)
+        except ValueError:
+            raise BadRequest("错误的参数")
+        labels = {
+            cls.BY_STAFF_TITLE: cls.TITLE_LABEL,
+            cls.BY_AGE_DISTRIBUTION: cls.AGE_LABEL,
+            cls.BY_DEPARTMENT: cls.DEPARTMENT_LABEL
+        }
+        if group_by not in labels.keys() or start_year > end_year:
+            raise BadRequest("错误的参数")
+        data['label'] = labels[group_by]
+        query_label = data['label']
+        if group_by == cls.BY_AGE_DISTRIBUTION:
+            query_label = ((0, 35), (36, 45), (46, 55), (56, 1000))
+        queryset = Record.objects.all()
+        records = get_objects_for_user(
+            context['request'].user, 'training_record.view_record', queryset)
+        campus_records = records.filter(
+            campus_event__isnull=False,
+            campus_event__time__range=(
+                timezone.datetime(start_year, 1, 1, tzinfo=pytz.UTC),
+                timezone.datetime(end_year, 12, 31, tzinfo=pytz.UTC)
+            ))
+        off_campus_records = records.filter(
+            off_campus_event__isnull=False,
+            off_campus_event__time__range=(
+                timezone.datetime(start_year, 1, 1, tzinfo=pytz.UTC),
+                timezone.datetime(end_year, 12, 31, tzinfo=pytz.UTC)
+            ))
+        for i in range(len(query_label)):
+            if group_by == cls.BY_STAFF_TITLE:
+                campus_records_count = campus_records.filter(
+                    user__technical_title=query_label[i]).count()
+                off_campus_records_count = off_campus_records.filter(
+                    user__technical_title=query_label[i]).count()
+            elif group_by == cls.BY_AGE_DISTRIBUTION:
+                campus_records_count = campus_records.filter(
+                    user__age__range=query_label[i]).count()
+                off_campus_records_count = off_campus_records.filter(
+                    user__age__range=query_label[i]).count()
+            else:
+                campus_records_count = campus_records.filter(
+                    user__department__name=query_label[i]).count()
+                off_campus_records_count = off_campus_records.filter(
+                    user__department__name=query_label[i]).count()
+            data['group_by_data'][0]['data'].append(campus_records_count)
+            data['group_by_data'][1]['data'].append(
+                off_campus_records_count)
+        return data
 
     @classmethod
     def coverage_statistics(cls, context):
@@ -600,10 +711,6 @@ class AggregateDataService:
     @classmethod
     def training_hours_statistics(cls, context):
         '''to get training hours statistics data'''
-
-    @staticmethod
-    def group_by_teaching_type(objects, start_year, end_year, region):
-        '''group data by teaching type'''
 
     @staticmethod
     def tuple_to_dict_list(data):

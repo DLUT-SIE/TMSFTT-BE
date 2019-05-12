@@ -474,7 +474,7 @@ class TestAggregateDataService(TestCase):
         self.request = HttpRequest()
         self.request.user = self.user
         self.method_name = 'abcd'
-        self.context = {'request': self.request, 'data': ''}
+        self.context = {'request': self.request}
 
     def test_dispatch_error(self):
         '''Should raise BadRequest if method_name not in map's keys.'''
@@ -489,6 +489,8 @@ class TestAggregateDataService(TestCase):
     def test_dispatch(self):
         '''Should get a aggregated data'''
         self.method_name = 'staff_statistics'
+        self.context = {'request': self.request}
+        self.context['group_by'] = '0'
         AggregateDataService.dispatch(
             self.method_name, self.context)
 
@@ -547,3 +549,43 @@ class TestAggregateDataService(TestCase):
             .get_total_training_hours_ranking_in_school
             .assert_called_with(self.user)
         )
+
+    def test_staff_statistics(self):
+        '''Should get a staff_statistics data'''
+        self.context = {'request': self.request}
+        with self.assertRaisesMessage(BadRequest, '错误的参数'):
+            AggregateDataService.staff_statistics(self.context)
+        self.context['group_by'] = '100'
+        with self.assertRaisesMessage(BadRequest, '错误的参数'):
+            AggregateDataService.staff_statistics(self.context)
+        self.context['group_by'] = '0'
+        self.context['region'] = '0'
+        AggregateDataService.staff_statistics(self.context)
+        self.context['group_by'] = '1'
+        AggregateDataService.staff_statistics(self.context)
+        self.context['group_by'] = '2'
+        AggregateDataService.staff_statistics(self.context)
+        self.context['group_by'] = '3'
+        AggregateDataService.staff_statistics(self.context)
+
+    def test_trainee_statistics(self):
+        '''Should get a trainee_statistics data'''
+        self.context = {'request': self.request}
+        with self.assertRaisesMessage(BadRequest, '错误的参数'):
+            AggregateDataService.trainee_statistics(self.context)
+        self.context['group_by'] = '100'
+        with self.assertRaisesMessage(BadRequest, '错误的参数'):
+            AggregateDataService.trainee_statistics(self.context)
+        self.context['group_by'] = '0'
+        self.context['start_year'] = '2018'
+        self.context['end_year'] = '2016'
+        with self.assertRaisesMessage(BadRequest, '错误的参数'):
+            AggregateDataService.trainee_statistics(self.context)
+        self.context['group_by'] = '0'
+        self.context['start_year'] = '2016'
+        self.context['end_year'] = '2019'
+        AggregateDataService.trainee_statistics(self.context)
+        self.context['group_by'] = '1'
+        AggregateDataService.trainee_statistics(self.context)
+        self.context['group_by'] = '2'
+        AggregateDataService.trainee_statistics(self.context)
