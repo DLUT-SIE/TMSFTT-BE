@@ -7,21 +7,21 @@ from training_event.services import EnrollmentService
 
 class CampusEventSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize CampusEvent instance.'''
-    overdue_status = serializers.SerializerMethodField(read_only=True)
-    enrollments_status = serializers.SerializerMethodField(read_only=True)
+    expired = serializers.SerializerMethodField(read_only=True)
+    enrolled = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = training_event.models.CampusEvent
         fields = '__all__'
         read_only_fields = ('num_enrolled',)
 
-    def get_overdue_status(self, obj):
-        '''Get event overdue status.'''
+    def get_expired(self, obj):
+        '''Get event expired status.'''
         return now() > obj.deadline
 
-    def get_enrollments_status(self, obj):
+    def get_enrolled(self, obj):
         '''Get event enrollments status.'''
-        key = 'enrollments_status_cache'
+        key = 'enrolled_cache'
         user = self.context['request'].user
         if key not in self.context:
             if not isinstance(self.instance, list):

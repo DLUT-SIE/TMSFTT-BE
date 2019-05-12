@@ -3,6 +3,10 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, Group
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
+from rest_framework_bulk import (
+    BulkListSerializer,
+    BulkSerializerMixin,
+)
 
 import auth.models
 
@@ -49,15 +53,17 @@ class GroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = auth.models.Group
-        fields = ('id', 'name')
+        fields = ('id', 'name',)
 
 
-class GroupPermissionSerializer(serializers.ModelSerializer):
+class GroupPermissionSerializer(BulkSerializerMixin,
+                                serializers.ModelSerializer):
     '''Indicate how to serialize GroupPermission instance.'''
 
     class Meta:
         model = auth.models.GroupPermission
         fields = ('id', 'group', 'permission')
+        list_serializer_class = BulkListSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
