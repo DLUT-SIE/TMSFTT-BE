@@ -21,7 +21,7 @@ class TestCampusEventSerializer(TestCase):
         serializer.context['request'] = Mock()
         serializer.context['request'].user = 23
         data = serializer.data
-        self.assertIn('overdue_status', data[0])
+        self.assertIn('expired', data[0])
 
 
 class TestEnrollmentSerializer(TestCase):
