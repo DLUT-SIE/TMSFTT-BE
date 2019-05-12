@@ -17,6 +17,7 @@ install:
 
 before_script:
   - mysql -uroot -proot -e 'CREATE DATABASE IF NOT EXISTS TMSFTT character set UTF8;'
+  - mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -uroot -proot mysql
 
 script:
   - python -m flake8
