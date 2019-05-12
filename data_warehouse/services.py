@@ -641,8 +641,9 @@ class AggregateDataService:
     def records_statistics(cls, context):
         '''to get trainee statistics data'''
         group_by = context.get('group_by', '')
-        start_year = context.get('start_year', 2016)
-        end_year = context.get('end_year', 2016)
+        query_time = {}
+        query_time['start_year'] = context.get('start_year', 2016)
+        query_time['end_year'] = context.get('end_year', 2016)
         # region = context.get('region', 0)
         data = {
             'label': [],
@@ -655,8 +656,8 @@ class AggregateDataService:
         }
         try:
             group_by = int(group_by)
-            start_year = int(start_year)
-            end_year = int(end_year)
+            query_time['start_year'] = int(query_time['start_year'])
+            query_time['end_year'] = int(query_time['end_year'])
             # region = int(region)
         except ValueError:
             raise BadRequest("错误的参数")
@@ -665,7 +666,8 @@ class AggregateDataService:
             cls.BY_AGE_DISTRIBUTION: cls.AGE_LABEL,
             cls.BY_DEPARTMENT: cls.DEPARTMENT_LABEL
         }
-        if group_by not in labels.keys() or start_year > end_year:
+        if (group_by not in labels.keys() or
+                query_time['start_year'] > query_time['end_year']):
             raise BadRequest("错误的参数")
         data['label'] = labels[group_by]
         query_label = data['label']
@@ -677,16 +679,15 @@ class AggregateDataService:
         campus_records = records.filter(
             campus_event__isnull=False,
             campus_event__time__range=(
-                datetime(start_year, 1, 1, tzinfo=pytz.UTC),
-                datetime(end_year, 12, 31, tzinfo=pytz.UTC)
+                datetime(query_time['start_year'], 1, 1, tzinfo=pytz.UTC),
+                datetime(query_time['end_year'], 12, 31, tzinfo=pytz.UTC)
             ))
         off_campus_records = records.filter(
             off_campus_event__isnull=False,
             off_campus_event__time__range=(
-                datetime(start_year, 1, 1, tzinfo=pytz.UTC),
-                datetime(end_year, 12, 31, tzinfo=pytz.UTC)
+                datetime(query_time['start_year'], 1, 1, tzinfo=pytz.UTC),
+                datetime(query_time['end_year'], 12, 31, tzinfo=pytz.UTC)
             ))
-        campus_records_count = off_campus_records_count = 0
         for _, value in enumerate(query_label):
             if group_by == cls.BY_STAFF_TITLE:
                 campus_records_count = campus_records.filter(
