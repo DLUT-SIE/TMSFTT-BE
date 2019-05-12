@@ -568,24 +568,24 @@ class TestAggregateDataService(TestCase):
         self.context['group_by'] = '3'
         AggregateDataService.staff_statistics(self.context)
 
-    def test_trainee_statistics(self):
-        '''Should get a trainee_statistics data'''
+    def test_records_statistics(self):
+        '''Should get a records_statistics data'''
         self.context = {'request': self.request}
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
-            AggregateDataService.trainee_statistics(self.context)
+            AggregateDataService.records_statistics(self.context)
         self.context['group_by'] = '100'
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
-            AggregateDataService.trainee_statistics(self.context)
+            AggregateDataService.records_statistics(self.context)
         self.context['group_by'] = '0'
         self.context['start_year'] = '2018'
         self.context['end_year'] = '2016'
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
-            AggregateDataService.trainee_statistics(self.context)
+            AggregateDataService.records_statistics(self.context)
         self.context['group_by'] = '0'
         self.context['start_year'] = '2016'
         self.context['end_year'] = '2019'
-        AggregateDataService.trainee_statistics(self.context)
+        AggregateDataService.records_statistics(self.context)
         self.context['group_by'] = '1'
-        AggregateDataService.trainee_statistics(self.context)
+        AggregateDataService.records_statistics(self.context)
         self.context['group_by'] = '2'
-        AggregateDataService.trainee_statistics(self.context)
+        AggregateDataService.records_statistics(self.context)
