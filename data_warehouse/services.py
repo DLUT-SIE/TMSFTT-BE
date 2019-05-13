@@ -11,8 +11,8 @@ from django.utils.timezone import now
 from guardian.shortcuts import get_objects_for_user
 import pytz
 from django.contrib.auth import get_user_model
-from django.utils.timezone import datetime
-from guardian.shortcuts import get_objects_for_user
+from django.db.models import Count
+from django.utils.timezone import datetime, make_aware
 
 from auth.models import Department
 from infra.exceptions import BadRequest
@@ -493,6 +493,7 @@ class UserCoreStatisticsService:
         }
         cache.set(cache_key, res, 8 * 3600)  # Cache for 8 hours
         return res
+from auth.models import Department
 
 
 class AggregateDataService:
@@ -538,8 +539,10 @@ class AggregateDataService:
                    '助理研究员', '工程师', '高级工程师', '教授级高工')
     DEGREE_LABEL = ('博士研究生毕业', '研究生毕业', '大学本科毕业')
     AGE_LABEL = ('35岁及以下', '36~45岁', '46~55岁', '56岁及以上')
-    DEPARTMENT_LABEL = ('建筑与艺术学院', '机械工程学院', '能源与动力学院', '材料科学与工程学院',
-                        '化工学院', '外国语学院', '马克思主义学院', '开发区校区')
+    TOP_DEPARTMENT_LIST = ('凌水主校区', '开发区校区', '盘锦校区')
+    DEPARTMENT_LIST = Department.objects.filter(
+        super_department__name__in=TOP_DEPARTMENT_LIST,
+        department_type='T3').values_list('id', 'name')
 
     @classmethod
     def dispatch(cls, method_name, context):
@@ -596,6 +599,7 @@ class AggregateDataService:
     def staff_statistics(cls, context):
         '''to get staff statistics data'''
         group_by = context.get('group_by', '')
+        region = context.get('region', '')
         data = {
             'label': [],
             'group_by_data': [{'seriesNum': 0,
@@ -604,37 +608,44 @@ class AggregateDataService:
         }
         try:
             group_by = int(group_by)
+            region = int(region)
         except ValueError:
             raise BadRequest("错误的参数")
+        label_department = list(
+            zip(*cls.DEPARTMENT_LIST))[-1] if cls.DEPARTMENT_LIST else []
         labels = {
-            cls.BY_STAFF_TITLE: cls.TITLE_LABEL,
-            cls.BY_HIGHEST_DEGREE: cls.DEGREE_LABEL,
-            cls.BY_AGE_DISTRIBUTION: cls.AGE_LABEL,
-            cls.BY_DEPARTMENT: cls.DEPARTMENT_LABEL
+            cls.BY_STAFF_TITLE: {'technical_title__in': cls.TITLE_LABEL},
+            cls.BY_HIGHEST_DEGREE: {
+                'education_background__in': cls.DEGREE_LABEL},
+            cls.BY_AGE_DISTRIBUTION: {'age__range': cls.AGE_LABEL},
+            cls.BY_DEPARTMENT: {'department__name__in': label_department}
         }
-        if group_by not in labels.keys():
+        if group_by not in labels.keys() or region and region\
+           not in list(zip(*cls.DEPARTMENT_LIST))[0]:
             raise BadRequest("错误的参数")
-        data['label'] = labels[group_by]
-        query_label = data['label']
-        if group_by == cls.BY_AGE_DISTRIBUTION:
-            query_label = ((0, 35), (36, 45), (46, 55), (56, 1000))
         User = get_user_model()
-        queryset = User.objects.all()
-        users = get_objects_for_user(
-            context['request'].user, 'tmsftt_auth.view_user', queryset)
-        for _, value in enumerate(query_label):
-            if group_by == cls.BY_STAFF_TITLE:
-                users_count = users.filter(
-                    technical_title=value).count()
-            elif group_by == cls.BY_HIGHEST_DEGREE:
-                users_count = users.filter(
-                    education_background=value).count()
-            elif group_by == cls.BY_AGE_DISTRIBUTION:
-                users_count = users.filter(age__range=value).count()
+        request_user = context['request'].user
+        if region != 0:
+            region_name = cls.DEPARTMENT_LIST.filter(id=region)[0][-1]
+            if (request_user.is_department_admin and
+                    request_user.usergroup_set.all().filter(
+                        name=region_name + '-管理员')) or\
+                    request_user.is_school_admin:
+                users = User.objects.filter(department__name=region_name)
             else:
-                users_count = users.filter(
-                    department__name=value).count()
-            data['group_by_data'][0]['data'].append(users_count)
+                return data
+        elif request_user.is_school_admin:
+            users = User.objects.all()
+        else:
+            return data
+        data['label'] = list(labels[group_by].values())[0]
+        if group_by != cls.BY_AGE_DISTRIBUTION:
+            kwargs = [labels.get(group_by), {'id_count': Count('id')}]
+            cls.aggregate_data(
+                data, users, 0, kwargs, True)
+        else:
+            kwargs = [{'age__range': ''}]
+            cls.aggregate_data(data, users, 0, kwargs, False)
         return data
 
     @classmethod
@@ -644,7 +655,7 @@ class AggregateDataService:
         query_time = {}
         query_time['start_year'] = context.get('start_year', 2016)
         query_time['end_year'] = context.get('end_year', 2016)
-        # region = context.get('region', 0)
+        region = context.get('region', 0)
         data = {
             'label': [],
             'group_by_data': [{'seriesNum': 0,
@@ -658,56 +669,86 @@ class AggregateDataService:
             group_by = int(group_by)
             query_time['start_year'] = int(query_time['start_year'])
             query_time['end_year'] = int(query_time['end_year'])
-            # region = int(region)
+            region = int(region)
         except ValueError:
             raise BadRequest("错误的参数")
+        label_department = list(
+            zip(*cls.DEPARTMENT_LIST))[-1] if cls.DEPARTMENT_LIST else []
         labels = {
-            cls.BY_STAFF_TITLE: cls.TITLE_LABEL,
-            cls.BY_AGE_DISTRIBUTION: cls.AGE_LABEL,
-            cls.BY_DEPARTMENT: cls.DEPARTMENT_LABEL
+            cls.BY_STAFF_TITLE: {'user__technical_title__in': cls.TITLE_LABEL},
+            cls.BY_AGE_DISTRIBUTION: {'user__age__range': cls.AGE_LABEL},
+            cls.BY_DEPARTMENT: {'user__department__name__in': label_department}
         }
-        if (group_by not in labels.keys() or
-                query_time['start_year'] > query_time['end_year']):
+        if (group_by not in labels.keys()) or (
+                query_time['start_year'] > query_time['end_year']) or (
+                    region and region not in list(
+                        zip(*cls.DEPARTMENT_LIST))[0]):
             raise BadRequest("错误的参数")
-        data['label'] = labels[group_by]
-        query_label = data['label']
-        if group_by == cls.BY_AGE_DISTRIBUTION:
-            query_label = ((0, 35), (36, 45), (46, 55), (56, 1000))
-        records = Record.objects.all()
-        records = get_objects_for_user(
-            context['request'].user, 'training_record.view_record', records)
+
+        request_user = context['request'].user
+        if region != 0:
+            region_name = cls.DEPARTMENT_LIST.filter(id=region)[0][-1]
+            if (request_user.is_department_admin and
+                    request_user.usergroup_set.all().filter(
+                        name=region_name + '-管理员')) or request_user\
+                    .is_school_admin:
+                records = Record.objects.filter(
+                    user__department__name=region_name)
+            else:
+                return data
+        elif request_user.is_school_admin:
+            records = Record.objects.all()
+        else:
+            return data
         campus_records = records.filter(
             campus_event__isnull=False,
             campus_event__time__range=(
-                datetime(query_time['start_year'], 1, 1, tzinfo=pytz.UTC),
-                datetime(query_time['end_year'], 12, 31, tzinfo=pytz.UTC)
-            ))
+                make_aware(datetime(query_time['start_year'], 1, 1)),
+                make_aware(datetime(query_time['end_year'] + 1, 1, 1))))
         off_campus_records = records.filter(
             off_campus_event__isnull=False,
             off_campus_event__time__range=(
-                datetime(query_time['start_year'], 1, 1, tzinfo=pytz.UTC),
-                datetime(query_time['end_year'], 12, 31, tzinfo=pytz.UTC)
-            ))
-        for _, value in enumerate(query_label):
-            if group_by == cls.BY_STAFF_TITLE:
-                campus_records_count = campus_records.filter(
-                    user__technical_title=value).count()
-                off_campus_records_count = off_campus_records.filter(
-                    user__technical_title=value).count()
-            elif group_by == cls.BY_AGE_DISTRIBUTION:
-                campus_records_count = campus_records.filter(
-                    user__age__range=value).count()
-                off_campus_records_count = off_campus_records.filter(
-                    user__age__range=value).count()
-            else:
-                campus_records_count = campus_records.filter(
-                    user__department__name=value).count()
-                off_campus_records_count = off_campus_records.filter(
-                    user__department__name=value).count()
-            data['group_by_data'][0]['data'].append(campus_records_count)
-            data['group_by_data'][1]['data'].append(
-                off_campus_records_count)
+                make_aware(datetime(query_time['start_year'], 1, 1)),
+                make_aware(datetime(query_time['end_year'] + 1, 1, 1))))
+        data['label'] = list(labels[group_by].values())[0]
+        if group_by != cls.BY_AGE_DISTRIBUTION:
+            kwargs = [labels.get(group_by),
+                      {'campus_count': Count('campus_event')}]
+            cls.aggregate_data(
+                data, campus_records, 0, kwargs, True)
+            kwargs[1] = {'off_campus_event': Count('off_campus_event')}
+            cls.aggregate_data(
+                data, off_campus_records, 1, kwargs, True)
+        else:
+            kwargs = [{'user__age__range': ''}]
+            cls.aggregate_data(data, campus_records, 0, kwargs, False)
+            cls.aggregate_data(
+                data, off_campus_records, 1, kwargs, False)
         return data
+
+    @staticmethod
+    def aggregate_data(data, objects, num, kwargs, is_age):
+        '''aggregate data'''
+        if is_age:
+            (kwargs_key, kwargs_value), = kwargs[0].items()
+            data_aggregate = list(objects.filter(**(kwargs[0])).values(
+                kwargs_key[:-4]).annotate(**(kwargs[1])))
+            data_aggregate.sort(
+                key=lambda x: kwargs_value.index(x[kwargs_key[:-4]]))
+            data_aggregate = {
+                k_v[kwargs_key[:-4]]: k_v[list(
+                    (kwargs[1]).keys())[0]] for k_v in
+                data_aggregate}
+            data['group_by_data'][num]['data'] =\
+                [data_aggregate[x] if x in data_aggregate.keys() else
+                 0 for x in kwargs_value]
+        else:
+            key = list(kwargs[0].keys())[0]
+            query_label = ((0, 35), (36, 45), (46, 55), (56, 1000))
+            for _, value in enumerate(query_label):
+                kwargs = {key: value}
+                data['group_by_data'][num]['data'].append(
+                    objects.filter(**kwargs).count())
 
     @classmethod
     def coverage_statistics(cls, context):

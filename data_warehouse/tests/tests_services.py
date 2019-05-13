@@ -491,6 +491,7 @@ class TestAggregateDataService(TestCase):
         self.method_name = 'staff_statistics'
         self.context = {'request': self.request}
         self.context['group_by'] = '0'
+        self.context['region'] = '0'
         AggregateDataService.dispatch(
             self.method_name, self.context)
 
@@ -553,27 +554,29 @@ class TestAggregateDataService(TestCase):
     def test_staff_statistics(self):
         '''Should get a staff_statistics data'''
         self.context = {'request': self.request}
+        self.context['region'] = '0'
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
             AggregateDataService.staff_statistics(self.context)
         self.context['group_by'] = '100'
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
             AggregateDataService.staff_statistics(self.context)
         self.context['group_by'] = '0'
-        self.context['region'] = '0'
-        AggregateDataService.staff_statistics(self.context)
+        data = AggregateDataService.staff_statistics(self.context)
+        self.assertEqual(len(data['label']), 0)
         self.context['group_by'] = '1'
-        AggregateDataService.staff_statistics(self.context)
+        data = AggregateDataService.staff_statistics(self.context)
+        self.assertEqual(len(data['label']), 0)
         self.context['group_by'] = '2'
-        AggregateDataService.staff_statistics(self.context)
+        data = AggregateDataService.staff_statistics(self.context)
+        self.assertEqual(len(data['label']), 0)
         self.context['group_by'] = '3'
-        AggregateDataService.staff_statistics(self.context)
+        data = AggregateDataService.staff_statistics(self.context)
+        self.assertEqual(len(data['label']), 0)
 
     def test_records_statistics(self):
         '''Should get a records_statistics data'''
         self.context = {'request': self.request}
-        with self.assertRaisesMessage(BadRequest, '错误的参数'):
-            AggregateDataService.records_statistics(self.context)
-        self.context['group_by'] = '100'
+        self.context['region'] = '0'
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
             AggregateDataService.records_statistics(self.context)
         self.context['group_by'] = '0'
@@ -584,8 +587,11 @@ class TestAggregateDataService(TestCase):
         self.context['group_by'] = '0'
         self.context['start_year'] = '2016'
         self.context['end_year'] = '2019'
-        AggregateDataService.records_statistics(self.context)
+        data = AggregateDataService.records_statistics(self.context)
+        self.assertEqual(len(data['label']), 0)
         self.context['group_by'] = '1'
-        AggregateDataService.records_statistics(self.context)
+        data = AggregateDataService.records_statistics(self.context)
+        self.assertEqual(len(data['label']), 0)
         self.context['group_by'] = '2'
-        AggregateDataService.records_statistics(self.context)
+        data = AggregateDataService.records_statistics(self.context)
+        self.assertEqual(len(data['label']), 0)
