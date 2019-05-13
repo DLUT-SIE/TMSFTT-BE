@@ -80,14 +80,12 @@ class DepartmentService:
             the dict of top_level_departments
         '''
         departments = auth.models.Department.objects.filter(name='大连理工大学')
-        department_id = []
+        top_department = []
         if departments.exists():
-            department = departments[0]
-            department_id = [
-                it.id for it in auth.models.Department.objects.all().filter(
-                    super_department=department)]
+            dlut_department = departments[0]
+            top_department = dlut_department.child_departments.all()
         return auth.models.Department.objects.all().filter(
-            super_department__in=department_id, department_type='T3')
+            super_department__in=top_department, department_type='T3')
 
 
 class ChoiceConverter:
