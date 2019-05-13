@@ -87,7 +87,7 @@ class DepartmentService:
                 it.id for it in auth.models.Department.objects.all().filter(
                     super_department=department)]
         return auth.models.Department.objects.all().filter(
-                super_department__in=department_id, department_type='T3')
+            super_department__in=department_id, department_type='T3')
 
 
 class ChoiceConverter:
