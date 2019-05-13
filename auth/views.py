@@ -2,8 +2,9 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, Group
 from rest_framework import viewsets, mixins, status, decorators
-from rest_framework_bulk.mixins import BulkCreateModelMixin
 from rest_framework.response import Response
+from rest_framework_bulk.mixins import BulkCreateModelMixin
+
 
 from auth.services import DepartmentService
 import auth.models

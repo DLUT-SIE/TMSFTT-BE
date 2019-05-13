@@ -84,8 +84,8 @@ class DepartmentService:
         if departments.exists():
             department = departments[0]
             department_id = [
-                item.id for item in auth.models.Department.objects.all(
-                    ).filter(super_department=department)]
+                it.id for it in auth.models.Department.objects.all().filter(
+                    super_department=department)]
         return auth.models.Department.objects.all().filter(
                 super_department__in=department_id, department_type='T3')
 
