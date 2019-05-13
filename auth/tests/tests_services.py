@@ -97,6 +97,25 @@ class TestPermissonsService(TestCase):
             user_school.has_perm('add_campusevent', self.object_fake))
 
 
+class TestDepartmentService(TestCase):
+    '''Unit tests for DepartmentService.'''
+    def test_get_top_level_departments(self):
+        '''Should return top level departments'''
+        depart1 = mommy.make(Department, name='大连理工大学')
+        depart2 = mommy.make(
+            Department, name='盘锦校区', super_department=depart1)
+        depart3 = mommy.make(Department, name='电子信息与电气工程学部')
+        depart4 = mommy.make(
+            Department, super_department=depart2, department_type='T3')
+        depart5 = mommy.make(
+            Department, super_department=depart3, department_type='T3')
+
+        queryset = services.DepartmentService.get_top_level_departments()
+
+        self.assertTrue(queryset.filter(id=depart4.id).exists())
+        self.assertFalse(queryset.filter(id=depart5.id).exists())
+
+
 class DummyConverter(services.ChoiceConverter):
     '''Read test mapping.'''
     mapping_name = 'test'

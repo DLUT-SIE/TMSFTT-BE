@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Group
 from django.db import transaction
 from auth.utils import assign_perm
+import auth.models
 
 
 class PermissonsService:
@@ -63,6 +64,30 @@ class PermissonsService:
         for perm in group.permissions.all().filter(
                 content_type_id=content_type.id):
             assign_perm(perm, user_or_group, instance)
+
+
+class DepartmentService:
+    '''
+    Provide services for Departments.
+    '''
+    @staticmethod
+    def get_top_level_departments():
+        '''Get top level departments.
+
+        Returns
+        -------
+        result: dict
+            the dict of top_level_departments
+        '''
+        departments = auth.models.Department.objects.filter(name='大连理工大学')
+        department_id = []
+        if departments.exists():
+            department = departments[0]
+            department_id = [
+                item.id for item in auth.models.Department.objects.all(
+                    ).filter(super_department=department)]
+        return auth.models.Department.objects.all().filter(
+                super_department__in=department_id, department_type='T3')
 
 
 class ChoiceConverter:

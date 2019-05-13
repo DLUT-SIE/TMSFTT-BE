@@ -1,9 +1,11 @@
 '''Provide API views for auth module.'''
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, Group
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, status, decorators
 from rest_framework_bulk.mixins import BulkCreateModelMixin
+from rest_framework.response import Response
 
+from auth.services import DepartmentService
 import auth.models
 import auth.serializers
 import auth.permissions
@@ -20,6 +22,17 @@ class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
         auth.permissions.DjangoModelPermissions,
         auth.permissions.DjangoObjectPermissions,
     )
+    perms_map = {
+        'top_level_departments': ['%(app_label)s.view_%(model_name)s'],
+    }
+
+    @decorators.action(detail=False, methods=['GET'],
+                       url_path='top-level-departments')
+    def top_level_departments(self, request):
+        '''return top level departments'''
+        queryset = DepartmentService.get_top_level_departments()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class UserViewSet(mixins.RetrieveModelMixin,
