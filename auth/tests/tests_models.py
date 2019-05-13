@@ -51,7 +51,7 @@ class TestUser(TestCase):
         self.assertTrue(user.is_department_admin)
         self.assertTrue(user.is_school_admin)
 
-    def test_is_exact_department_admin(self):
+    def check_department_admin(self):
         '''Should return True if user is a exact department admin.'''
         department1 = mommy.make(Department, name="创新创业学院")
         department2 = mommy.make(Department, name="机械工程学院")
