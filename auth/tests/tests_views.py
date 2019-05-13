@@ -45,6 +45,14 @@ class TestDepartmentViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(set(response.data.keys()), expected_keys)
 
+    def test_top_level_departments(self):
+        '''test top level departments.'''
+        url = reverse('department-top-level-departments')
+        self.client.force_authenticate(self.user)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 class TestUserViewSet(APITestCase):
     '''Unit tests for User view.'''
