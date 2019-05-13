@@ -45,6 +45,44 @@ class TestSchoolAdminOnlyPermission(TestCase):
         self.assertTrue(has_permission)
 
 
+class TestDeparmentAdminOnlyPermission(TestCase):
+    '''Unit tests for DepartmentAdminOnlyPermission.'''
+    def test_unauthenticated_user(self):
+        '''Should False if user hasn't been authenticated.'''
+        request = Mock()
+        request.user = Mock()
+        request.user.is_authenticated = False
+        permission = permissions.DepartmentAdminOnlyPermission()
+
+        has_permission = permission.has_permission(request, None)
+
+        self.assertFalse(has_permission)
+
+    def test_non_departmentadmin_user(self):
+        '''Should False if user isn't school admin.'''
+        request = Mock()
+        request.user = Mock()
+        request.user.is_authenticated = True
+        request.user.is_department_admin = False
+        permission = permissions.DepartmentAdminOnlyPermission()
+
+        has_permission = permission.has_permission(request, None)
+
+        self.assertFalse(has_permission)
+
+    def test_deparmentadmin_user(self):
+        '''Should True if user is school admin.'''
+        request = Mock()
+        request.user = Mock()
+        request.user.is_authenticated = True
+        request.user.is_deparment_admin = True
+        permission = permissions.DepartmentAdminOnlyPermission()
+
+        has_permission = permission.has_permission(request, None)
+
+        self.assertTrue(has_permission)
+
+
 class TestDjangoModelPermissions(TestCase):
     '''Test permissions for model.'''
     @classmethod

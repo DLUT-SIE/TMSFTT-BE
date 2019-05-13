@@ -137,6 +137,10 @@ class User(AbstractUser):
         return self.is_staff or self.is_superuser or self.groups.filter(
             name='大连理工大学-管理员').exists()
 
+    def is_exact_department_admin(self, department):
+        '''Field to indicate whether the user is a exact department admin.'''
+        return self.groups.filter(name=department.name+'-管理员').exists()
+
 
 class UserGroup(models.Model):
     '''A mapping to User-Group Many-To-Many relationship.'''
