@@ -8,9 +8,6 @@ from django.db.models import functions
 from django.db.models.functions import Coalesce
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
-from guardian.shortcuts import get_objects_for_user
-import pytz
-from django.contrib.auth import get_user_model
 from django.db.models import Count
 from django.utils.timezone import datetime, make_aware
 
@@ -19,7 +16,6 @@ from infra.exceptions import BadRequest
 from training_event.models import Enrollment, EventCoefficient
 from training_record.models import Record
 from data_warehouse.models import Ranking
-from training_record.models import Record
 
 
 class UserRankingService:
@@ -493,7 +489,6 @@ class UserCoreStatisticsService:
         }
         cache.set(cache_key, res, 8 * 3600)  # Cache for 8 hours
         return res
-from auth.models import Department
 
 
 class AggregateDataService:
