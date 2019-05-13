@@ -51,6 +51,17 @@ class TestUser(TestCase):
         self.assertTrue(user.is_department_admin)
         self.assertTrue(user.is_school_admin)
 
+    def test_is_exact_department_admin(self):
+        '''Should return True if user is a exact department admin.'''
+        department1 = mommy.make(Department, name="创新创业学院")
+        department2 = mommy.make(Department, name="机械工程学院")
+        user = mommy.make(auth.models.User)
+        group = mommy.make(Group, name="创新创业学院-管理员")
+        user.groups.add(group)
+
+        self.assertTrue(user.is_exact_department_admin(department1))
+        self.assertFalse(user.is_exact_department_admin(department2))
+
 
 class TestDepartment(TestCase):
     '''Unit tests for model Department.'''
