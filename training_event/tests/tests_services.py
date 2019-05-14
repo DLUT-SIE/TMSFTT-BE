@@ -38,14 +38,14 @@ class TestEnrollmentService(TestCase):
         self.event.num_participants = 10
         self.event.save()
 
-        EnrollmentService.create_enrollment(self.data, self.context)
+        EnrollmentService.create_enrollment(self.data, None)
 
         count = Enrollment.objects.filter(user=self.user).count()
 
         self.assertEqual(count, 1)
 
     def test_create_enrollment_data_without_user(self):
-        '''Should create enrollment.'''
+        '''Should create enrollment by data without user.'''
         self.event.num_participants = 10
         self.event.save()
 

@@ -27,23 +27,27 @@ class EnrollmentService:
             This dict should have full information needed to
             create an Enrollment.
         context: dict
-            This context should have contextual content.
+            An optional dict to provide contextual information. Default: None
 
         Returns
         -------
         enrollment: Enrollment
         '''
+        if context is None:
+            context = {}
+
         with transaction.atomic():
             # Lock the event until the end of the transaction
             event = CampusEvent.objects.select_for_update().get(
                 id=enrollment_data['campus_event'].id)
 
+            if event.num_enrolled >= event.num_participants:
+                raise BadRequest('报名人数已满')
+
             if 'user' not in enrollment_data and 'request' in context:
                 enrollment_data['user'] = context['request'].user
 
             enrollment = Enrollment.objects.create(**enrollment_data)
-            if event.num_enrolled >= event.num_participants:
-                raise BadRequest('报名人数已满')
             # Update the number of enrolled participants
             event.num_enrolled += 1
             event.save()
