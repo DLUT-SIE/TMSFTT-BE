@@ -16,6 +16,7 @@ class ProgramViewSet(MultiSerializerActionClassMixin, viewsets.ModelViewSet):
         'update': training_program.serializers.ProgramSerializer,
     }
     serializer_class = training_program.serializers.ReadOnlyProgramSerializer
+    filter_fields = ('department',)
 
 
 class ProgramCategoryViewSet(viewsets.ViewSet):
