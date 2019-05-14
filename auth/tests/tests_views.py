@@ -92,6 +92,14 @@ class TestGroupViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_top_department_related_groups(self):
+        '''test top department related groups'''
+        url = reverse('group-top-department-related-groups')
+        self.client.force_authenticate(self.user)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 class TestUserGroupViewSet(APITestCase):
     '''Unit tests for UserGroup view.'''

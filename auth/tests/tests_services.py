@@ -116,6 +116,30 @@ class TestDepartmentService(TestCase):
         self.assertFalse(queryset.filter(id=depart5.id).exists())
 
 
+class TestGroupService(TestCase):
+    '''Unit tests for GroupService.'''
+    def test_get_top_level_departments(self):
+        '''Should return top level departments'''
+        depart1 = mommy.make(Department, name='大连理工大学')
+        depart2 = mommy.make(
+            Department, name='凌水主校区', super_department=depart1)
+        mommy.make(
+            Department, name='电子信息与电气工程学部', super_department=depart2)
+
+        group1 = mommy.make(Group, name="大连理工大学-管理员")
+        group2 = mommy.make(Group, name="凌水主校区-专任教师")
+        group3 = mommy.make(Group, name="电子信息与电气工程学部-管理员")
+        group4 = mommy.make(Group, name="创新创业学院-管理员")
+
+        queryset = services.GroupService.get_all_groups_by_department_id(
+            depart1.id)
+
+        self.assertTrue(queryset.filter(id=group1.id).exists())
+        self.assertTrue(queryset.filter(id=group2.id).exists())
+        self.assertTrue(queryset.filter(id=group3.id).exists())
+        self.assertFalse(queryset.filter(id=group4.id).exists())
+
+
 class DummyConverter(services.ChoiceConverter):
     '''Read test mapping.'''
     mapping_name = 'test'
