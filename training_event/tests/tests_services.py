@@ -37,7 +37,6 @@ class TestEnrollmentService(TestCase):
         '''Should create enrollment.'''
         self.event.num_participants = 10
         self.event.save()
-
         EnrollmentService.create_enrollment(self.data, )
 
         count = Enrollment.objects.filter(user=self.user).count()
@@ -68,6 +67,15 @@ class TestEnrollmentService(TestCase):
         results = EnrollmentService.get_user_enrollment_status(
             events, self.user.id)
         self.assertEqual(results, expected_result)
+
+    def test_change_num_enrolled(self):
+        '''Should change the number of enrolled people.'''
+        self.event.num_participants = 10
+        self.event.num_enrolled = 2
+        self.event.save()
+        self.event = EnrollmentService.change_num_enrolled(self.event)
+        self.assertEqual(self.event.num_enrolled, 1)
+
 
 
 class TestCoefficientCalculationService(TestCase):

@@ -58,6 +58,13 @@ class EnrollmentViewSet(mixins.CreateModelMixin,
 
         return Response(result, status=status.HTTP_200_OK)
 
+    def destroy(self, request, *args, **kwargs):
+        '''Return status about delete enrollments.'''
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        event = EnrollmentService.change_num_enrolled(instance.campus_event)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class WorkloadFileDownloadView(APIView):
     '''Create API views for downloading workload file'''
