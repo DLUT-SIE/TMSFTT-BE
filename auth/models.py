@@ -2,7 +2,7 @@
 from django.contrib.auth.models import Permission, AbstractUser, Group
 from django.db import models
 
-from auth.services import (
+from auth.utils import (
     EducationBackgroundConverter,
     TechnicalTitleConverter,
     GenderConverter,
