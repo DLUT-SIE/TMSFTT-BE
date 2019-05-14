@@ -21,11 +21,12 @@ from django.contrib.auth.models import Group
 from django.utils.timezone import make_aware, now
 
 from auth.models import User, Department
-from auth.utils import assign_perm
-from auth.services import (
-    GenderConverter, TenureStatusConverter, EducationBackgroundConverter,
-    TechnicalTitleConverter, TeachingTypeConverter, PermissonsService
+from auth.utils import (
+    assign_perm, GenderConverter, TenureStatusConverter,
+    EducationBackgroundConverter, TechnicalTitleConverter,
+    TeachingTypeConverter
 )
+from auth.services import PermissonsService
 from infra.models import Notification
 from training_program.models import Program
 from training_event.models import CampusEvent, EventCoefficient, Enrollment
