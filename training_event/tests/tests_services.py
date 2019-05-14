@@ -38,7 +38,7 @@ class TestEnrollmentService(TestCase):
         self.event.num_participants = 10
         self.event.save()
 
-        EnrollmentService.create_enrollment(self.data, None)
+        EnrollmentService.create_enrollment(self.data, )
 
         count = Enrollment.objects.filter(user=self.user).count()
 
