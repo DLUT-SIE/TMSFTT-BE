@@ -88,6 +88,37 @@ class DepartmentService:
             super_department__in=top_department, department_type='T3')
 
 
+class GroupService:
+    '''
+    Provide services for Groups.
+    '''
+    # pylint: disable=redefined-builtin
+    @staticmethod
+    def get_all_groups_by_department_id(department_id):
+        '''Get all Groups by DepartmentId.
+        Parameters
+        ------------
+        id: int
+            the id of target Top Department
+        Returns
+        -------
+        result: queryset
+            the queryset of all the groups which belongs to a
+            top_level_department
+        '''
+        departments = list(auth.models.Department.objects.filter(
+            id=department_id))
+        if not departments:
+            return []
+        search_list = departments
+        while search_list:
+            search_list = list(auth.models.Department.objects.filter(
+                super_department__in=[d.id for d in search_list]))
+            departments.extend(search_list)
+        regex = '^({})'.format('|'.join(d.name for d in departments))
+        return Group.objects.filter(name__regex=regex)
+
+
 class ChoiceConverter:
     '''
     A helper converter to convert values between keys and values.
