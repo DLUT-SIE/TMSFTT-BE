@@ -17,7 +17,7 @@ def _update_from_department_information():
 
     dlut_id = 10141
     dlut_name = '大连理工大学'
-    dlut,_ = Department.objects.get_or_create(raw_department_id=dlut_id)
+    dlut, _ = Department.objects.get_or_create(raw_department_id=dlut_id)
     if dlut.name is None or dlut.name != dlut_name:
         dlut.name = dlut_name
         dlut.save()
