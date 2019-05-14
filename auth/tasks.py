@@ -24,18 +24,25 @@ def _update_from_department_information():
 
     raw_departments = DepartmentInformation.objects.all()
     dwid_to_department = {}
-
     for raw_department in raw_departments:
         department, _ = Department.objects.get_or_create(
-            raw_department_id=raw_department.dwid)
+            raw_department_id=raw_department.dwid,
+            defaults={'name': raw_department.dwmc})
+
         updated = False
         # 同步隶属单位
+
         if (department.super_department is None or
                 department.super_department.raw_department_id !=
                 raw_department.lsdw):
             super_department, _ = Department.objects.get_or_create(
-                raw_department_id=raw_department.lsdw)
+                raw_department_id=raw_department.lsdw,
+                defaults={'name': DepartmentInformation.objects.get(
+                    dwid=raw_department.lsdw).dwmc}
+            )
+
             department.super_department = super_department
+            super_department.save()
             updated = True
 
         # 同步单位名称

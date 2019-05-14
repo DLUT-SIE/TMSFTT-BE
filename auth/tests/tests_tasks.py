@@ -52,18 +52,26 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
     def test_update_from_department_information(self, _):
         '''Should update department from department information.'''
         num_departments = 10
+        dlut_name = '大连理工大学'
+        dlut_id = '10141'
         infos = [mommy.make(DepartmentInformation,
                             dwid=f'{idx}',
-                            dwmc=f'Department{idx}', _fill_optional=True)
+                            dwmc=f'Department{idx}',
+                            lsdw=1,
+                            _fill_optional=True)
                  for idx in range(num_departments)]
-
         dwid_to_department = _update_from_department_information()
 
-        departments = Department.objects.all().order_by('raw_department_id')
+        departments = Department.objects.exclude(
+            raw_department_id=dlut_id).order_by('raw_department_id')
+
         self.assertEqual(len(departments), num_departments)
         self.assertEqual(len(dwid_to_department), num_departments)
 
+
         for info, department in zip(infos, departments):
+            if info.dwmc == dlut_name:
+                continue
             self.assertEqual(info.dwmc, department.name)
             self.assertEqual(info.dwid, department.raw_department_id)
 

@@ -117,8 +117,7 @@ class CoefficientCalculationService:
         if end_time is None:
             end_time = now()
         if start_time is None:
-            start_time = end_time.replace(year=end_time.year - 1,
-                                          month=12, day=31, hour=16, minute=0,
+            start_time = end_time.replace(month=1, day=1, hour=0, minute=0,
                                           second=0)
         if teachers is None:
             teachers = User.objects.all()
