@@ -232,6 +232,10 @@ class TeacherInformation(models.Model):
                               db_column='ZYJSZC', blank=True, null=True)
     rjlx = models.CharField(verbose_name='任教类型', max_length=40,
                             db_column='RJLX', blank=True, null=True)
+    yxdz = models.CharField(verbose_name='邮箱地址', max_length=40,
+                            db_column='YXDZ', blank=True, null=True)
+    sjh = models.CharField(verbose_name='手机号', max_length=40,
+                           db_column='SJH', blank=True, null=True)
 
     def save(self, *args, **kwargs):
         raise Exception('该表状态为只读')
@@ -285,6 +289,8 @@ class DepartmentInformation(models.Model):
                             db_column='LSDW', blank=True, null=True)
     sfyx = models.CharField(verbose_name='是否有效', max_length=1,
                             db_column='SFYX', blank=True, null=True)
+    dwlx = models.CharField(verbose_name='单位类型', max_length=4,
+                            db_column='DWLX', blank=True, null=True)
 
     def save(self, *args, **kwargs):
         raise Exception('该表状态为只读')
