@@ -9,7 +9,6 @@ from rest_framework.test import APITestCase
 import auth.models
 from auth.utils import assign_perm
 
-
 User = get_user_model()
 
 
@@ -99,6 +98,16 @@ class TestGroupViewSet(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_top_department_related_groups_incorrect_id(self):
+        '''test top department related groups if id is incorrect'''
+        url = reverse('group-top-department-related-groups')
+        data = {
+            'department_id': "www"
+        }
+        response = self.client.get(url, data=data)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class TestUserGroupViewSet(APITestCase):

@@ -74,7 +74,7 @@ class GroupViewSet(mixins.ListModelMixin,
         '''return top department related groups'''
         department_id = request.GET.get('department_id')
         if department_id and not department_id.isdigit():
-            raise BadRequest
+            raise BadRequest('部门ID无效')
         queryset = GroupService.get_all_groups_by_department_id(department_id)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
