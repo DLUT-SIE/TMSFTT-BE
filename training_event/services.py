@@ -15,17 +15,19 @@ from auth.models import User
 class EnrollmentService:
     '''Provide services for Enrollment.'''
     @staticmethod
-    def create_enrollment(enrollment_data):
+    def create_enrollment(enrollment_data, context):
         '''Create a enrollment for specific campus event.
 
         This action is atomic, will fail if there are no more head counts for
         the campus event or duplicated enrollments are created.
 
-        Parameters
+        Parametsers
         ----------
         enrollment_data: dict
             This dict should have full information needed to
             create an Enrollment.
+        context: dict
+            This context should have contextual content.
 
         Returns
         -------
@@ -36,11 +38,12 @@ class EnrollmentService:
             event = CampusEvent.objects.select_for_update().get(
                 id=enrollment_data['campus_event'].id)
 
-            if event.num_enrolled >= event.num_participants:
-                raise BadRequest('报名人数已满')
+            if 'user' not in enrollment_data and 'request' in context:
+                enrollment_data['user'] = context['request'].user
 
             enrollment = Enrollment.objects.create(**enrollment_data)
-
+            if event.num_enrolled >= event.num_participants:
+                raise BadRequest('报名人数已满')
             # Update the number of enrolled participants
             event.num_enrolled += 1
             event.save()
