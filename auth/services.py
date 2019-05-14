@@ -105,19 +105,17 @@ class GroupService:
         result: dict
             the dict of all the groups which belongs to a top_level_department
         '''
-        search_list = [department_id, ]
-        department_list = []
-        group_set = Group.objects.none()
+        departments = list(auth.models.Department.objects.filter(
+            id=department_id))
+        if not departments:
+            return []
+        search_list = departments
         while search_list:
-            department_list.extend(search_list)
-            search_list = [
-                depart.id for depart in auth.models.Department.objects.filter(
-                    super_department__in=search_list)]
-        for depart in auth.models.Department.objects.filter(
-                id__in=department_list):
-            group_set = group_set | Group.objects.filter(
-                name__startswith=depart.name)
-        return group_set
+            search_list = list(auth.models.Department.objects.filter(
+                super_department__in=[d.id for d in search_list]))
+            departments.extend(search_list)
+        regex = '^({})'.format('|'.join(d.name for d in departments))
+        return Group.objects.filter(name__regex=regex)
 
 
 class ChoiceConverter:
