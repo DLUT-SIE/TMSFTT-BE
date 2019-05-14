@@ -7,10 +7,12 @@ from rest_framework_bulk.mixins import BulkCreateModelMixin
 
 
 from auth.services import DepartmentService
+from auth.services import GroupService
 import auth.models
 import auth.serializers
 import auth.permissions
 import auth.filters
+from infra.exceptions import BadRequest
 
 User = get_user_model()
 
@@ -62,6 +64,20 @@ class GroupViewSet(mixins.ListModelMixin,
         auth.permissions.SchoolAdminOnlyPermission,
     )
     filter_class = auth.filters.GroupFilter
+    perms_map = {
+        'top_department_related_groups': ['%(app_label)s.view_%(model_name)s'],
+    }
+
+    @decorators.action(detail=False, methods=['GET'],
+                       url_path='top-department-related-groups')
+    def top_department_related_groups(self, request):
+        '''return top department related groups'''
+        department_id = request.GET.get('department_id')
+        if department_id and not department_id.isdigit():
+            raise BadRequest('部门ID无效')
+        queryset = GroupService.get_all_groups_by_department_id(department_id)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class UserGroupViewSet(mixins.CreateModelMixin,

@@ -52,4 +52,5 @@ class EnrollmentSerailizer(serializers.ModelSerializer):
         read_only_fields = ('is_participated',)
 
     def create(self, validated_data):
-        return EnrollmentService.create_enrollment(validated_data)
+        return EnrollmentService.create_enrollment(validated_data,
+                                                   self.context)
