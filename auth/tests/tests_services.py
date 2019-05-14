@@ -116,53 +116,25 @@ class TestDepartmentService(TestCase):
         self.assertFalse(queryset.filter(id=depart5.id).exists())
 
 
-class DummyConverter(services.ChoiceConverter):
-    '''Read test mapping.'''
-    mapping_name = 'test'
+class TestGroupService(TestCase):
+    '''Unit tests for GroupService.'''
+    def test_get_top_level_departments(self):
+        '''Should return top level departments'''
+        depart1 = mommy.make(Department, name='大连理工大学')
+        depart2 = mommy.make(
+            Department, name='凌水主校区', super_department=depart1)
+        mommy.make(
+            Department, name='电子信息与电气工程学部', super_department=depart2)
 
+        group1 = mommy.make(Group, name="大连理工大学-管理员")
+        group2 = mommy.make(Group, name="凌水主校区-专任教师")
+        group3 = mommy.make(Group, name="电子信息与电气工程学部-管理员")
+        group4 = mommy.make(Group, name="创新创业学院-管理员")
 
-class TestChoiceConverter(TestCase):
-    '''Unit tests for ChoiceConverter.'''
-    def setUp(self):
-        self.key_to_value_field_name = '_test_key_to_value'
-        self.value_to_key_field_name = '_test_value_to_key'
-        if hasattr(DummyConverter, self.key_to_value_field_name):
-            del DummyConverter._test_key_to_value
-        if hasattr(DummyConverter, self.value_to_key_field_name):
-            del DummyConverter._test_value_to_key
+        queryset = services.GroupService.get_all_groups_by_department_id(
+            depart1.id)
 
-    def test_get_mapping_read_file(self):
-        '''Should read from file if no cache found.'''
-        field_name = self.key_to_value_field_name
-        self.assertIsNone(getattr(DummyConverter, field_name, None))
-
-        # pylint: disable=protected-access
-        DummyConverter._get_mapping_key_to_value()
-
-        mapping = getattr(DummyConverter, field_name, None)
-        self.assertIsNotNone(mapping)
-        self.assertIsInstance(mapping, dict)
-        # pylint: disable=unsubscriptable-object
-        self.assertEqual(mapping['0'], 'A')
-        self.assertEqual(mapping['1'], 'B')
-
-    def test_get_key(self):
-        '''Should return key.'''
-        expected_key = '0'
-        key = DummyConverter.get_key('A')
-
-        self.assertEqual(key, expected_key)
-
-    def test_get_value(self):
-        '''Should return value.'''
-        expected_value = 'C'
-        value = DummyConverter.get_value('2')
-
-        self.assertEqual(value, expected_value)
-
-    def test_get_keys(self):
-        '''Should return all keys.'''
-        expected_keys = {'0', '1', '2'}
-        keys = set(DummyConverter.get_all_keys())
-
-        self.assertEqual(keys, expected_keys)
+        self.assertTrue(queryset.filter(id=group1.id).exists())
+        self.assertTrue(queryset.filter(id=group2.id).exists())
+        self.assertTrue(queryset.filter(id=group3.id).exists())
+        self.assertFalse(queryset.filter(id=group4.id).exists())

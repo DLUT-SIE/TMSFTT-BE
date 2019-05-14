@@ -32,7 +32,5 @@ class TestEnrollmentSerializer(TestCase):
         '''Should invoke EnrollmentService to create instance.'''
         serializer = EnrollmentSerailizer()
         data = {'user': 123}
-
         serializer.create(data)
-
-        mocked_service.create_enrollment.assert_called_with(data)
+        mocked_service.create_enrollment.assert_called_with(data, {})
