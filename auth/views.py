@@ -12,6 +12,7 @@ import auth.models
 import auth.serializers
 import auth.permissions
 import auth.filters
+from infra.exceptions import BadRequest
 
 User = get_user_model()
 
@@ -71,8 +72,10 @@ class GroupViewSet(mixins.ListModelMixin,
                        url_path='top-department-related-groups')
     def top_department_related_groups(self, request):
         '''return top department related groups'''
-        queryset = GroupService.get_all_groups_by_department_id(
-            request.GET.get('department_id'))
+        department_id = request.GET.get('department_id')
+        if department_id and not department_id.isdigit():
+            raise BadRequest
+        queryset = GroupService.get_all_groups_by_department_id(department_id)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

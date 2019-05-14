@@ -102,8 +102,9 @@ class GroupService:
             the id of target Top Department
         Returns
         -------
-        result: dict
-            the dict of all the groups which belongs to a top_level_department
+        result: queryset
+            the queryset of all the groups which belongs to a
+            top_level_department
         '''
         departments = list(auth.models.Department.objects.filter(
             id=department_id))
