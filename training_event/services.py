@@ -55,6 +55,26 @@ class EnrollmentService:
             return enrollment
 
     @staticmethod
+    def change_num_enrolled(campus_event):
+        """Provide services for change num_enrolled..
+        Parameters
+        ----------
+        campus_event: CampusEvent
+            要改变的校园活动
+
+
+        Returns
+        -------
+        event: CampusEvent
+        返回的校园活动num_enrolled已经减一
+        """
+        with transaction.atomic():
+            event = campus_event
+            event.num_enrolled -= 1
+            event.save()
+            return event
+
+    @staticmethod
     def get_user_enrollment_status(events, user):
         """Provide services for get Enrollment Status.
         Parameters

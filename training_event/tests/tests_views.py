@@ -209,7 +209,8 @@ class TestEnrollmentViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_delete_enrollment(self):
+    @patch('training_event.views.EnrollmentService')
+    def test_delete_enrollment(self, mocked_service):
         '''Enrollment should be deleted by DELETE request.'''
         enrollment = mommy.make(training_event.models.Enrollment)
         url = reverse('enrollment-detail', args=(enrollment.pk,))
@@ -226,7 +227,7 @@ class TestEnrollmentViewSet(APITestCase):
         url = reverse('enrollment-detail', args=(enrollment.pk,))
 
         response = self.client.get(url)
-
+         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('id', response.data)
         self.assertEqual(response.data['id'], enrollment.id)
