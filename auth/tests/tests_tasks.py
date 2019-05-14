@@ -68,7 +68,6 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
         self.assertEqual(len(departments), num_departments)
         self.assertEqual(len(dwid_to_department), num_departments)
 
-
         for info, department in zip(infos, departments):
             if info.dwmc == dlut_name:
                 continue
