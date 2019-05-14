@@ -15,10 +15,10 @@ from auth.models import User
 class EnrollmentService:
     '''Provide services for Enrollment.'''
     @staticmethod
-    def create_enrollment(enrollment_data, context):
+    def create_enrollment(enrollment_data, context=None):
         '''Create a enrollment for specific campus event.
 
-        This action is atomic, will fail if there are no more head counts for
+        This action is atomic, will fail if there are no more heads counts for
         the campus event or duplicated enrollments are created.
 
         Parametsers
