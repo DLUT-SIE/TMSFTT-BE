@@ -2,6 +2,7 @@
 from django.utils.timezone import now
 from django.contrib.auth import get_user_model
 
+from auth.utils import assign_perm
 from infra.models import Notification
 
 
@@ -49,8 +50,9 @@ class NotificationService:  # pylint: disable=R0903
             recipient = User.objects.get(id=recipient)
         elif not isinstance(recipient, User):
             raise ValueError('Only User instance or int id is supported')
-        Notification.objects.create(
+        notification = Notification.objects.create(
             sender=NotificationService._get_notification_robot(),
             recipient=recipient,
             content=content
         )
+        assign_perm('view_notification', recipient, notification)
