@@ -14,13 +14,31 @@ from infra.utils import prod_logger
 def _update_from_department_information():
     '''Scan table DepartmentInformation and update related tables.'''
     prod_logger.info('开始扫描并更新部门信息')
-    raw_departments = DepartmentInformation.objects.all()
 
+    dlut_id = 10141
+    dlut_name = '大连理工大学'
+    dlut = Department.objects.get_or_create(raw_department_id=dlut_id)
+    if dlut.name is None or dlut.name != dlut_name:
+        dlut.name = dlut_name
+        dlut.save()
+
+    raw_departments = DepartmentInformation.objects.all()
     dwid_to_department = {}
+
     for raw_department in raw_departments:
         department, _ = Department.objects.get_or_create(
             raw_department_id=raw_department.dwid)
         updated = False
+        # 同步隶属单位
+        if (department.super_department is None or
+                department.super_department.raw_department_id !=
+                raw_department.lsdw):
+            super_department, _ = Department.objects.get_or_create(
+                raw_department_id=raw_department.lsdw)
+            department.super_department = super_department
+            updated = True
+
+        # 同步单位名称
         if department.name != raw_department.dwmc:
             department.name = raw_department.dwmc
             updated = True
