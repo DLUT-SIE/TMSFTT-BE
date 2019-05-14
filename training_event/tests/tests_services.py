@@ -77,7 +77,6 @@ class TestEnrollmentService(TestCase):
         self.assertEqual(self.event.num_enrolled, 1)
 
 
-
 class TestCoefficientCalculationService(TestCase):
     '''Test services provided by EnrollmentService.'''
     NUM_HOURS = 10

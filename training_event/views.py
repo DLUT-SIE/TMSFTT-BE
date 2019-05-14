@@ -62,7 +62,7 @@ class EnrollmentViewSet(mixins.CreateModelMixin,
         '''Return status about delete enrollments.'''
         instance = self.get_object()
         self.perform_destroy(instance)
-        event = EnrollmentService.change_num_enrolled(instance.campus_event)
+        EnrollmentService.change_num_enrolled(instance.campus_event)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
