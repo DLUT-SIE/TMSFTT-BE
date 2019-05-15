@@ -89,7 +89,7 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
     def test_update_from_teacher_information(self, _):
         '''Should update user from teacher information.'''
         num_departments = 10
-        departments = [mommy.make(Department, id=idx)
+        departments = [mommy.make(Department, id=idx, raw_department_id=idx)
                        for idx in range(1, 1 + num_departments)]
         dwid_to_department = {f'{dep.id}': dep for dep in departments}
         department_to_administrative = {dep: dep for dep in departments}
