@@ -117,6 +117,8 @@ class User(AbstractUser):
         verbose_name='专业技术职称', max_length=40, blank=True, null=True)
     teaching_type = models.CharField(
         verbose_name='任教类型', max_length=40, blank=True, null=True)
+    cell_phone_number = models.CharField(
+        verbose_name='手机号', max_length=40, blank=True, null=True)
 
     def __str__(self):
         return self.username
