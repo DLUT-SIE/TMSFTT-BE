@@ -68,17 +68,15 @@ class TestEnrollmentService(TestCase):
             events, self.user.id)
         self.assertEqual(results, expected_result)
 
-    # @patch('training_event.services.Enrollment.objects')
     def test_delete_enrollment(self):
-        '''Should change the number of enrolled people.'''
+        '''Should delete enrollment.'''
         self.event.num_participants = 10
         self.event.num_enrolled = 2
         self.event.save()
         enrollment = mommy.make(Enrollment,
                                 user=self.user, campus_event=self.event)
-
         EnrollmentService.delete_enrollment(enrollment)
-        # mocked_objects.delete.assert_called()
+        self.assertEqual(Enrollment.objects.count(), 0)
 
 
 class TestCoefficientCalculationService(TestCase):

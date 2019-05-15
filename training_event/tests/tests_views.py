@@ -209,8 +209,7 @@ class TestEnrollmentViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    @patch('training_event.views.EnrollmentService')
-    def test_delete_enrollment(self, mocked_service):
+    def test_delete_enrollment(self):
         '''Enrollment should be deleted by DELETE request.'''
         user = mommy.make(User)
         event = mommy.make(training_event.models.CampusEvent,
@@ -225,7 +224,6 @@ class TestEnrollmentViewSet(APITestCase):
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        mocked_service.delete_enrollment.assert_called_with(enrollment)
 
     def test_get_enrollment(self):
         '''Enrollment should be accessed by GET request.'''

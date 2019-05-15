@@ -56,7 +56,7 @@ class EnrollmentService:
 
     @staticmethod
     def delete_enrollment(instance):
-        """Provide services for change num_enrolled..
+        """Provide services for delete enrollments.
         Parameters
         ----------
         instance: enrollment
