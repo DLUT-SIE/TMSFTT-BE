@@ -386,10 +386,13 @@ class TestRecordService(TestCase):
         user = mommy.make(get_user_model())
         off_campus_event0 = mommy.make(OffCampusEvent)
         off_campus_event1 = mommy.make(OffCampusEvent)
+        campus_event = mommy.make(CampusEvent)
         record0 = mommy.make(Record, user=user,
                              off_campus_event=off_campus_event0)
         record1 = mommy.make(Record, user=user,  # noqa
                              off_campus_event=off_campus_event1)
+        record2 = mommy.make(Record, user=user,  # noqa
+                             campus_event=campus_event,)
         CampusEventFeedbackService.create_feedback(record0, '123')
 
         result = RecordService.get_number_of_records_without_feedback(user)
