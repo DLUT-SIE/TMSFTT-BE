@@ -35,6 +35,15 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         'update': RecordCreateSerializer,
     }
     serializer_class = ReadOnlyRecordSerializer
+    perms_map = {
+        'reviewed': ['%(app_label)s.view_%(model_name)s'],
+        'department_admin_review': ['%(app_label)s.review_%(model_name)s'],
+        'school_admin_review': ['%(app_label)s.review_%(model_name)s'],
+        'close_record': ['%(app_label)s.update_%(model_name)s'],
+        'batch_submit': ['%(app_label)s.update_%(model_name)s'],
+        'get_number_of_records_without_feedback':
+            ['%(app_label)s.view_%(model_name)s'],
+    }
 
 # TODO: rename this action
     def _get_reviewed_status_filtered_records(self, request, is_reviewed):
