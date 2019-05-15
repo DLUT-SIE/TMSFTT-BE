@@ -95,14 +95,12 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
         raw_users = [mommy.make(
             TeacherInformation, zgh=f'2{idx:02d}', jsxm=f'name{idx}',
             nl=f'{idx}', xb='1', yxdz='asdf@123.com',
-            xy=f'{idx % num_departments + 1 if idx != 1 else 100}',
+            xy=f'{idx % num_departments + 1 if idx != 1 else num_departments}',
             rxsj='2019-12-01', rzzt='11', xl='14', zyjszc='061', rjlx='12')
                      for idx in range(1, 1 + num_teachers)]
 
         _update_from_teacher_information(dwid_to_department,
                                          department_to_administrative)
-        mocked_prod_logger.warning.assert_called_with(
-            '职工号为201的教师使用了一个系统中不存在的学院100')
 
         users = User.objects.exclude(
             username='AnonymousUser').order_by('username')

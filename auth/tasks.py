@@ -98,7 +98,7 @@ def _update_from_teacher_information(dwid_to_department,
             warn_msg = (
                         f'职工号为{user.username}的教师'
                         f'使用了一个系统中不存在的学院{raw_user.xy}'
-                    )
+            )
             prod_logger.warning(warn_msg)
         else:
             user.department = dwid_to_department.get(raw_user.xy)
