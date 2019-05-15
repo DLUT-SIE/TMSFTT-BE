@@ -12,30 +12,24 @@ INTERNAL_IPS = ['127.0.0.1']
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'TMSFTT',
-#         'USER': 'root',
-#         'PASSWORD': 'root',
-#         'HOST': 'localhost',
-#         'PORT': '3306',
-#         'OPTIONS': {
-#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-#         },
-#         'TEST': {
-#             'NAME': 'TMSFTT_TEST',
-#             'CHARSET': 'UTF8MB4',
-#             'COLLATION': 'utf8mb4_general_ci',
-#
-#         }
-#     }
-# }
 DATABASES = {
-  'default': {
-    'ENGINE': 'django.db.backends.sqlite3',
-    'NAME': ':memory:',
-  }
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'TMSFTT',
+        'USER': 'root',
+        'PASSWORD': 'root',
+        'HOST': 'localhost',
+        'PORT': '3306',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
+        'TEST': {
+            'NAME': 'TMSFTT_TEST',
+            'CHARSET': 'UTF8MB4',
+            'COLLATION': 'utf8mb4_general_ci',
+
+        }
+    }
 }
 
 # Password validation
