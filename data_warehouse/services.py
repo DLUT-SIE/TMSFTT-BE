@@ -535,8 +535,11 @@ class AggregateDataService:
                    '助理研究员', '工程师', '高级工程师', '教授级高工')
     EDUCATION_BACKGROUD_LABEL = ('博士研究生毕业', '研究生毕业', '大学本科毕业')
     AGE_LABEL = ('35岁及以下', '36~45岁', '46~55岁', '56岁及以上')
-    DEPARTMENT_LIST = list(
-        DepartmentService.get_top_level_departments().values('id', 'name'))
+
+    @staticmethod
+    def department_list():
+        return list(
+            DepartmentService.get_top_level_departments().values('id', 'name'))
 
     @classmethod
     def dispatch(cls, method_name, context):
@@ -694,7 +697,7 @@ class AggregateDataService:
             '创新学院': 3,
         } for count_only=True
         '''
-        department_list = [x['name'] for x in cls.DEPARTMENT_LIST]
+        department_list = [x['name'] for x in cls.department_list()]
         if count_only:
             group_users = {x: 0 for x in department_list}
             users = (
@@ -856,7 +859,7 @@ class AggregateDataService:
             '创新学院': 3,
         } for count_only=True
         '''
-        department_list = [x['name'] for x in cls.DEPARTMENT_LIST]
+        department_list = [x['name'] for x in cls.department_list()]
         if count_only:
             group_records = {x: 0 for x in department_list}
             records = (
