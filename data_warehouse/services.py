@@ -504,7 +504,6 @@ class AggregateDataService:
     BY_TECHNICAL_TITLE = 1
     BY_AGE_DISTRIBUTION = 2
     BY_HIGHEST_DEGREE = 3
-
     BY_TOTAL_STAFF_NUM = 0
     BY_TOTAL_TRAINING_HOURS = 1
     BY_PER_CAPITA_TRAINING_HOURS = 2
@@ -538,6 +537,7 @@ class AggregateDataService:
 
     @staticmethod
     def department_list():
+        ''' get department list'''
         return list(
             DepartmentService.get_top_level_departments().values('id', 'name'))
 
@@ -746,7 +746,6 @@ class AggregateDataService:
     @staticmethod
     def get_users_by_department(request_user, department_id):
         '''get users objects by department.
-
         Parameters
         ----------
         request_user: User
@@ -909,7 +908,6 @@ class AggregateDataService:
     @staticmethod
     def get_records_by_time_department(request_user, department_id, time):
         '''get records by time and department
-
         Return
         ------
         records: dict
