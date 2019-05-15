@@ -482,13 +482,13 @@ class TestAggregateDataService(TestCase):
         self.department_dlut = mommy.make(
             Department, name='大连理工大学', id=1,
             create_time=now(), update_time=now())
-        self.top_department = mommy.make(
+        top_department = mommy.make(
             Department, name='凌水主校区',
             super_department=self.department_dlut,
             create_time=now(), update_time=now())
         self.department_art = mommy.make(
             Department, name='建筑与艺术学院', id=50,
-            super_department=self.top_department,
+            super_department=top_department,
             department_type='T3',
             create_time=now(), update_time=now())
 
