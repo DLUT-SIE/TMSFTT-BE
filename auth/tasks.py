@@ -88,8 +88,8 @@ def _update_from_teacher_information(dwid_to_department,
     raw_users = TeacherInformation.objects.all()
 
     raw_department_ids = ['{}'.format(
-        department_to_administrative[key].raw_department_id)
-        for key in department_to_administrative.keys()]
+        department_to_administrative[key]
+        .raw_department_id) for key in department_to_administrative.keys()]
     for raw_user in raw_users:
         user, created = User.objects.get_or_create(username=raw_user.zgh)
         if created:
