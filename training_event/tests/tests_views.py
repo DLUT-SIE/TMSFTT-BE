@@ -212,32 +212,20 @@ class TestEnrollmentViewSet(APITestCase):
     @patch('training_event.views.EnrollmentService')
     def test_delete_enrollment(self, mocked_service):
         '''Enrollment should be deleted by DELETE request.'''
-        enrollment = mommy.make(training_event.models.Enrollment)
-        url = reverse('enrollment-detail', args=(enrollment.pk,))
-        mocked_service.change_num_enrolled.return_value = [
-            {
-                "id": 105,
-                "expired": False,
-                "enrolled": False,
-                "create_time": "2019-05-13T18:24:00.876411+08:00",
-                "update_time": "2019-05-13T18:24:00.876435+08:00",
-                "name": "名师面对面2018-11-7",
-                "time": "2019-05-13T18:24:00.875941+08:00",
-                "location": "大连理工大学",
-                "num_hours": 2.0,
-                "num_participants": 74,
-                "deadline": "2019-06-18T18:24:00.875946+08:00",
-                "num_enrolled": 0,
-                "description": "且系统一些密码.",
-                "program": 7
-            }
-        ]
+        user = mommy.make(User)
+        event = mommy.make(training_event.models.CampusEvent,
+                           num_participants=0)
+        event.num_participants = 10
+        event.num_enrolled = 2
+        event.save()
+        enrollment = mommy.make(training_event.models.Enrollment,
+                                user=user, campus_event=event)
 
+        url = reverse('enrollment-detail', args=(enrollment.pk,))
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(
-            training_event.models.Enrollment.objects.count(), 0)
+        mocked_service.delete_enrollment.assert_called_with(enrollment)
 
     def test_get_enrollment(self):
         '''Enrollment should be accessed by GET request.'''

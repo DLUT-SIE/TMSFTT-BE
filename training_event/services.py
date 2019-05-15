@@ -55,24 +55,21 @@ class EnrollmentService:
             return enrollment
 
     @staticmethod
-    def change_num_enrolled(campus_event):
+    def delete_enrollment(instance):
         """Provide services for change num_enrolled..
         Parameters
         ----------
-        campus_event: CampusEvent
-            要改变的校园活动
-
-
-        Returns
-        -------
-        event: CampusEvent
-        返回的校园活动num_enrolled已经减一
+        instance: enrollment
+            删除的enrollment对象
         """
         with transaction.atomic():
-            event = campus_event
+            # Lock the event until the end of the transaction
+            event = CampusEvent.objects.select_for_update().get(
+                id=instance.campus_event_id
+            )
             event.num_enrolled -= 1
             event.save()
-            return event
+            instance.delete()
 
     @staticmethod
     def get_user_enrollment_status(events, user):
