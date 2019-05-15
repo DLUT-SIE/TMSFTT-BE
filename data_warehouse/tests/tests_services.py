@@ -477,10 +477,18 @@ class TestAggregateDataService(TestCase):
         self.request.user = self.user
         self.method_name = 'abcd'
         self.context = {'request': self.request}
-        self.department_art = mommy.make(
-            Department, name='建筑与艺术学院', id=50)
         self.department_dlut = mommy.make(
-            Department, name='大连理工大学', id=1)
+            Department, name='大连理工大学', id=1,
+            create_time=now(), update_time=now())
+        self.top_department = mommy.make(
+            Department, name='凌水主校区',
+            super_department=self.department_dlut,
+            create_time=now(), update_time=now())
+        self.department_art = mommy.make(
+            Department, name='建筑与艺术学院', id=50,
+            super_department=self.top_department,
+            department_type='T3',
+            create_time=now(), update_time=now())
 
     def test_dispatch_error(self):
         '''Should raise BadRequest if method_name not in map's keys.'''
@@ -596,7 +604,7 @@ class TestAggregateDataService(TestCase):
         self.context['start_year'] = '2016'
         self.context['end_year'] = '2019'
         data = AggregateDataService.records_statistics(self.context)
-        self.assertEqual(len(data['label']), 25)
+        self.assertEqual(len(data['label']), 1)
         self.context['group_by'] = '1'
         data = AggregateDataService.records_statistics(self.context)
         self.assertEqual(len(data['label']), 10)
