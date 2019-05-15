@@ -8,7 +8,6 @@ from django.db.models import functions
 from django.db.models.functions import Coalesce
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
-from guardian.shortcuts import get_objects_for_user
 
 from auth.models import Department
 from infra.exceptions import BadRequest
@@ -589,10 +588,6 @@ class AggregateDataService:
     @classmethod
     def staff_statistics(cls, context):
         '''to get staff statistics data'''
-        User = get_user_model()
-        query_set = User.objects.all()
-        get_objects_for_user(
-            context['request'].user, 'tmsftt_auth.view_user', query_set)
 
     @classmethod
     def trainee_statistics(cls, context):
