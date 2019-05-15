@@ -472,7 +472,9 @@ class TestUserCoreStatisticsService(TestCase):
 class TestAggregateDataService(TestCase):
     '''Test services provided by AggregateDataService.'''
     def setUp(self):
+        self.dlut_group = mommy.make(Group, name="大连理工大学-管理员")
         self.user = mommy.make(User)
+        self.user.groups.add(self.dlut_group)
         self.request = HttpRequest()
         self.request.user = self.user
         self.method_name = 'abcd'
@@ -578,16 +580,16 @@ class TestAggregateDataService(TestCase):
         self.context['start_year'] = '2016'
         self.context['end_year'] = '2019'
         data = AggregateDataService.teachers_statistics(self.context)
-        self.assertEqual(len(data['label']), 0)
+        self.assertEqual(len(data['label']), 1)
         self.context['group_by'] = '1'
         data = AggregateDataService.teachers_statistics(self.context)
-        self.assertEqual(len(data['label']), 0)
+        self.assertEqual(len(data['label']), 10)
         self.context['group_by'] = '2'
         data = AggregateDataService.teachers_statistics(self.context)
-        self.assertEqual(len(data['label']), 0)
+        self.assertEqual(len(data['label']), 4)
         self.context['group_by'] = '3'
         data = AggregateDataService.teachers_statistics(self.context)
-        self.assertEqual(len(data['label']), 0)
+        self.assertEqual(len(data['label']), 3)
 
     def test_records_statistics(self):
         '''Should get a records_statistics data'''
@@ -597,6 +599,11 @@ class TestAggregateDataService(TestCase):
             AggregateDataService.records_statistics(self.context)
         self.context['group_by'] = '0'
         self.context['start_year'] = '2018'
+        self.context['end_year'] = '2016'
+        with self.assertRaisesMessage(BadRequest, '错误的参数'):
+            AggregateDataService.records_statistics(self.context)
+        self.context['group_by'] = '1000'
+        self.context['start_year'] = '2015'
         self.context['end_year'] = '2016'
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
             AggregateDataService.records_statistics(self.context)
@@ -615,16 +622,17 @@ class TestAggregateDataService(TestCase):
     def test_get_users_by_department(self):
         '''Should get users queryset by department_id'''
         user = mommy.make(User)
-        group1 = mommy.make(Group, name="大连理工大学-管理员")
         group2 = mommy.make(Group, name="建筑与艺术学院-管理员")
 
-        user.groups.add(group1)
+        user.groups.add(self.dlut_group)
         users = AggregateDataService.get_users_by_department(user, 1)
         self.assertTrue(users)
+        users = AggregateDataService.get_users_by_department(user, 50)
+        self.assertFalse(users)
         users = AggregateDataService.get_users_by_department(user, 1000)
         self.assertFalse(users)
 
-        user.groups.remove(group1)
+        user.groups.remove(self.dlut_group)
         users = AggregateDataService.get_users_by_department(user, 50)
         self.assertFalse(users)
         user = mommy.make(User, administrative_department=self.department_art)
@@ -713,8 +721,7 @@ class TestAggregateDataService(TestCase):
         record2 = mommy.make(
             Record, off_campus_event=offcampusevent, user=user)
         user1 = mommy.make(User)
-        group = mommy.make(Group, name="大连理工大学-管理员")
-        user1.groups.add(group)
+        user1.groups.add(self.dlut_group)
         time = {'start': 2020, 'end': 2019}
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
             AggregateDataService.get_records_by_time_department(
@@ -723,6 +730,10 @@ class TestAggregateDataService(TestCase):
         records = AggregateDataService.get_records_by_time_department(
             user1, 1, time)
         self.assertEqual(records['campus_records'][0].id, record1.id)
+        records = AggregateDataService.get_records_by_time_department(
+            user1, 50, time)
+        self.assertEqual(records['campus_records'][0].id, record1.id)
+        self.assertEqual(records['off_campus_records'][0].id, record2.id)
         user2 = mommy.make(User)
         group = mommy.make(Group, name="建筑与艺术学院-管理员")
         user2.groups.add(group)
