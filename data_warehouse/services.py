@@ -591,20 +591,7 @@ class AggregateDataService:
 
     @classmethod
     def teachers_statistics(cls, context):
-        ''' get teachers statistics data
-
-        Return
-        ------
-        data: dict
-        {
-            'label': []
-            'group_by_data':[{
-                'seriesNum': 0,
-                'seriesName': 专任教师,
-                'data': []
-                }]
-        }
-        '''
+        ''' get teachers statistics data'''
         group_by = context.get('group_by', '')
         department_id = context.get('department_id', '')
         data = {
@@ -620,7 +607,7 @@ class AggregateDataService:
             raise BadRequest("错误的参数")
         group_by_handler = {
             cls.BY_TECHNICAL_TITLE: cls.group_users_by_technical_title,
-            cls.BY_HIGHEST_DEGREE: cls.group_users_by_education_backgroud,
+            cls.BY_HIGHEST_DEGREE: cls.group_users_by_education_background,
             cls.BY_AGE_DISTRIBUTION: cls.group_users_by_age,
             cls.BY_DEPARTMENT: cls.group_users_by_department
         }
@@ -643,56 +630,54 @@ class AggregateDataService:
         group_users: dict
         {
             '教授': [USER_A, USER_B],
-            '副教授': [USER_C, USER_B],
         } for count_only=False
         or
         {
             '教授': 3,
-            '副教授': 5,
         } for count_only=True
         '''
         title_list = cls.TITLE_LABEL
         if count_only:
-            group_users = {x : 0 for x in title_list}
+            group_users = {x: 0 for x in title_list}
             users = users.filter(
                 technical_title__in=title_list).values(
                     'technical_title').annotate(num=Count('technical_title'))
             for user in users:
                 group_users[user['technical_title']] = user['num']
         else:
-            group_users = {x : [] for x in title_list}
+            group_users = {x: [] for x in title_list}
             for _, title in enumerate(title_list):
-                group_users[title] = users.filter(techncial_title=title)
+                group_users[title] = users.filter(technical_title=title)
         return group_users
 
     @classmethod
-    def group_users_by_education_backgroud(cls, users, count_only=False):
+    def group_users_by_education_background(cls, users, count_only=False):
         '''
         Return
         ------
         group_users: dict
         {
             '本科毕业': [USER_A, USER_B],
-            '研究生毕业': [USER_C, USER_B],
         } for count_only=False
         or
         {
             '本科毕业': 3,
-            '研究生毕业': 5,
         } for count_only=True
         '''
-        education_backgroud_list = cls.EDUCATION_BACKGROUD_LABEL
+        education_background_list = cls.EDUCATION_BACKGROUD_LABEL
         if count_only:
-            group_users = {x : 0 for x in education_backgroud_list}
+            group_users = {x: 0 for x in education_background_list}
             users = users.filter(
-                education_background__in=education_backgroud_list).values(
-                    'education_background').annotate(num=Count('education_background'))
+                education_background__in=education_background_list).values(
+                    'education_background').annotate(
+                        num=Count('education_background'))
             for user in users:
                 group_users[user['education_background']] = user['num']
         else:
-            group_users = {x : [] for x in education_backgroud_list}
-            for _, degree in enumerate(education_backgroud_list):
-                group_users[title] = users.filter(education_background=degree)
+            group_users = {x: [] for x in education_background_list}
+            for _, degree in enumerate(education_background_list):
+                group_users[degree] = users.filter(
+                    education_background=degree)
         return group_users
 
     @classmethod
@@ -703,26 +688,29 @@ class AggregateDataService:
         group_users: dict
         {
             '创新学院': [USER_A, USER_B],
-            '建艺学院': [USER_C, USER_B],
         } for count_only=False
         or
         {
             '创新学院': 3,
-            '建艺学院': 5,
         } for count_only=True
         '''
         department_list = [x['name'] for x in cls.DEPARTMENT_LIST]
         if count_only:
-            group_users = {x : 0 for x in department_list}
-            users = users.filter(
-                administrative_department__name__in=department_list).values(
-                    'administrative_department__name').annotate(num=Count('id'))
+            group_users = {x: 0 for x in department_list}
+            users = (
+                users.filter(
+                    administrative_department__name__in=department_list)
+                .values('administrative_department__name')
+                .annotate(num=Count('id'))
+            )
             for user in users:
-                group_users[user['administrative_department__name']] = user['num']
+                group_users[user['administrative_department__name']] = (
+                    user['num']
+                )
         else:
-            group_users = {x : [] for x in department_list}
+            group_users = {x: [] for x in department_list}
             for _, degree in enumerate(department_list):
-                group_users[title] = users.filter(
+                group_users[degree] = users.filter(
                     administrative_department__name=degree)
         return group_users
 
@@ -734,13 +722,11 @@ class AggregateDataService:
         group_users: dict
         {
             '35岁及以下': [USER_A, USER_B],
-            '36-45岁': [USER_C, USER_B],
         } for count_only=False
         or
         {
             '35岁及以下': 3,
-            '36-45岁': 5,
-        } for count_only=True
+        } for count_only=Truerecords
         '''
         age_list = ((0, 35), (36, 45), (46, 55), (56, 1000))
         label_list = cls.AGE_LABEL
@@ -762,10 +748,6 @@ class AggregateDataService:
         ----------
         request_user: User
         department_id: int
-
-        Return
-        ------
-        users: User Objects
         '''
         departments = Department.objects.filter(id=department_id)
         if departments:
@@ -775,31 +757,14 @@ class AggregateDataService:
                     return get_user_model().objects.all()
                 return get_user_model().objects.filter(
                     administrative_department=department)
-            elif request_user.check_department_admin(department):
+            if request_user.check_department_admin(department):
                 return get_user_model().objects.filter(
                     administrative_department=department)
-        else:
-            return []
+        return get_user_model().objects.none()
 
     @classmethod
     def records_statistics(cls, context):
-        ''' get records statistics data
-
-        Return
-        ------
-        data: dict
-        {
-            'label': []
-            'group_by_data':[{
-                'seriesNum': 0,
-                'seriesName': '校内培训',
-                'data': []
-                },{
-                'seriesNum': 1,
-                'seriesName': '校外培训',
-                'data': []}]
-        }
-        '''
+        ''' get records statistics data'''
         group_by = context.get('group_by', '')
         start_year = context.get('start_year', 2016)
         end_year = context.get('end_year', 2016)
@@ -813,8 +778,8 @@ class AggregateDataService:
                                'seriesName': '校外培训',
                                'data': []}]
         }
-        if (group_by.isdigit() and start_year.isdigit()
-            and end_year.isdigit() and department_id.isdigit()):
+        if group_by.isdigit() and start_year.isdigit() and\
+                end_year.isdigit() and department_id.isdigit():
             group_by = int(group_by)
             start_year = int(start_year)
             end_year = int(end_year)
@@ -828,12 +793,13 @@ class AggregateDataService:
         }
         if group_by not in group_by_handler:
             raise BadRequest("错误的参数")
+        time = {'start': start_year, 'end': end_year}
         records = cls.get_records_by_time_department(
-            context['request'].user, department_id, start_year, end_year)
+            context['request'].user, department_id, time)
         group_campus_records = group_by_handler[group_by](
             records['campus_records'], count_only=True)
         sorted_campus_records = sorted(
-            group_campus_records.items(), key=lambda x:x[0])
+            group_campus_records.items(), key=lambda x: x[0])
         data['label'] = [x[0] for x in sorted_campus_records]
         data['group_by_data'][0]['data'] = (
             [x[1] for x in sorted_campus_records]
@@ -841,12 +807,12 @@ class AggregateDataService:
         group_off_campus_records = group_by_handler[group_by](
             records['off_campus_records'], count_only=True)
         sorted_off_campus_records = sorted(
-            group_off_campus_records.items(), key=lambda x:x[0])
+            group_off_campus_records.items(), key=lambda x: x[0])
         data['group_by_data'][1]['data'] = (
             [x[1] for x in sorted_off_campus_records]
         )
         return data
-    
+
     @classmethod
     def group_records_by_technical_title(cls, records, count_only=False):
         '''
@@ -855,27 +821,25 @@ class AggregateDataService:
         group_records: dict
         {
             '教授': [RECORD_A, RECORD_B],
-            '副教授': [RECORD_C, RECORD_B],
         } for count_only=False
         or
         {
             '教授': 3,
-            '副教授': 5,
         } for count_only=True
         '''
         title_list = cls.TITLE_LABEL
         if count_only:
-            group_records = {x : 0 for x in title_list}
+            group_records = {x: 0 for x in title_list}
             records = records.filter(
                 user__technical_title__in=title_list).values(
                     'user__technical_title').annotate(num=Count('user'))
             for record in records:
                 group_records[record['user__technical_title']] = record['num']
         else:
-            group_records = {x : [] for x in title_list}
+            group_records = {x: [] for x in title_list}
             for _, title in enumerate(title_list):
                 group_records[title] = records.filter(
-                    user__techncial_title=title)
+                    user__technical_title=title)
         return group_records
 
     @classmethod
@@ -886,17 +850,15 @@ class AggregateDataService:
         group_records: dict
         {
             '创新学院': [RECORD_A, RECORD_B],
-            '建艺学院': [RECORD_C, RECORD_B],
         } for count_only=False
         or
         {
             '创新学院': 3,
-            '建艺学院': 5,
         } for count_only=True
         '''
         department_list = [x['name'] for x in cls.DEPARTMENT_LIST]
         if count_only:
-            group_records = {x : 0 for x in department_list}
+            group_records = {x: 0 for x in department_list}
             records = (
                 records.filter(
                     user__administrative_department__name__in=department_list)
@@ -908,12 +870,12 @@ class AggregateDataService:
                     record['user__administrative_department__name']] =\
                     record['num']
         else:
-            group_records = {x : [] for x in department_list}
+            group_records = {x: [] for x in department_list}
             for _, degree in enumerate(department_list):
-                group_records[title] = users.filter(
+                group_records[degree] = records.filter(
                     user__administrative_department__name=degree)
         return group_records
-    
+
     @classmethod
     def group_records_by_age(cls, records, count_only=False):
         '''
@@ -921,13 +883,11 @@ class AggregateDataService:
         ------
         group_records: dict
             {
-                '35岁及以下': [RECORD_A, RECORD_B],
-                '36-45岁': [RECORD_C, RECORD_B],
+                '35岁及以下': [RECORD_A, RECORD_B]
             } for count_only=False
             or
             {
-                '35岁及以下': 3,
-                '36-45岁': 5,
+                '35岁及以下': 3
             } for count_only=True
         '''
         age_list = ((0, 35), (36, 45), (46, 55), (56, 1000))
@@ -944,7 +904,7 @@ class AggregateDataService:
         return group_records
 
     @staticmethod
-    def get_records_by_time_department(request_user, department_id, start_year=now(), end_year=now()):
+    def get_records_by_time_department(request_user, department_id, time):
         '''get records by time and department
 
         Return
@@ -955,10 +915,16 @@ class AggregateDataService:
             'off_campus_records':QuerySet([])
         }
         '''
+        current_year = datetime.now().year
         records = {
             'campus_records': Record.objects.none(),
             'off_campus_records': Record.objects.none()
         }
+        start_year = current_year
+        end_year = current_year
+        if time is not None:
+            start_year = time['start']
+            end_year = time['end']
         if start_year > end_year:
             raise BadRequest("错误的参数")
         campus_records = Record.objects.filter(
@@ -985,34 +951,10 @@ class AggregateDataService:
                         user__administrative_department=department)
             elif request_user.check_department_admin(department):
                 records['campus_records'] = campus_records.filter(
-                        user__administrative_department=department)
+                    user__administrative_department=department)
                 records['off_campus_records'] = off_campus_records.filter(
-                        user__administrative_department=department)
+                    user__administrative_department=department)
         return records
-
-    @staticmethod
-    def aggregate_data(data, objects, num, kwargs, is_age):
-        '''aggregate data'''
-        if is_age:
-            (kwargs_key, kwargs_value), = kwargs[0].items()
-            data_aggregate = list(objects.filter(**(kwargs[0])).values(
-                kwargs_key[:-4]).annotate(**(kwargs[1])))
-            data_aggregate.sort(
-                key=lambda x: kwargs_value.index(x[kwargs_key[:-4]]))
-            data_aggregate = {
-                k_v[kwargs_key[:-4]]: k_v[list(
-                    (kwargs[1]).keys())[0]] for k_v in
-                data_aggregate}
-            data['group_by_data'][num]['data'] =\
-                [data_aggregate[x] if x in data_aggregate.keys() else
-                 0 for x in kwargs_value]
-        else:
-            key = list(kwargs[0].keys())[0]
-            query_label = ((0, 35), (36, 45), (46, 55), (56, 1000))
-            for _, value in enumerate(query_label):
-                kwargs = {key: value}
-                data['group_by_data'][num]['data'].append(
-                    objects.filter(**kwargs).count())
 
     @classmethod
     def coverage_statistics(cls, context):
@@ -1025,11 +967,8 @@ class AggregateDataService:
     @staticmethod
     def tuple_to_dict_list(data):
         '''return a data dict list'''
-        return [{
-            'type': type_num,
-            'name': name,
-            'key': key_name
-            } for type_num, name, key_name in data]
+        return [{'type': type_num, 'name': name, 'key': key_name} for
+                type_num, name, key_name in data]
 
     @classmethod
     def get_canvas_options(cls):
