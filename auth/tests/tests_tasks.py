@@ -94,7 +94,7 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
         num_teachers = 20
         raw_users = [mommy.make(
             TeacherInformation, zgh=f'2{idx:02d}', jsxm=f'name{idx}',
-            nl=f'{idx}', xb='1',
+            nl=f'{idx}', xb='1', yxdz = 'asdf@123.com',
             xy=f'{idx % num_departments + 1 if idx != 1 else num_departments}',
             rxsj='2019-12-01', rzzt='11', xl='14', zyjszc='061', rjlx='12')
                      for idx in range(1, 1 + num_teachers)]
