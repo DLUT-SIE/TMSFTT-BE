@@ -2,8 +2,6 @@
 from celery import shared_task
 
 from django.db import transaction
-from django.utils.dateparse import parse_datetime
-from django.utils.timezone import make_aware
 
 from auth.models import (
     User, Department, DepartmentInformation, TeacherInformation)
