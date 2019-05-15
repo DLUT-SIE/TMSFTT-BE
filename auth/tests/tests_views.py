@@ -16,11 +16,7 @@ class TestDepartmentViewSet(APITestCase):
     '''Unit tests for Department view.'''
     @classmethod
     def setUpTestData(cls):
-        cls.user = mommy.make(User)
-        assign_perm('tmsftt_auth.add_department', cls.user)
-        assign_perm('tmsftt_auth.delete_department', cls.user)
-        assign_perm('tmsftt_auth.change_department', cls.user)
-        assign_perm('tmsftt_auth.view_department', cls.user)
+        cls.user = mommy.make(User, is_staff=True)
 
     def test_list_department(self):
         '''Departments list should be accessed by GET request.'''
@@ -38,7 +34,6 @@ class TestDepartmentViewSet(APITestCase):
         expected_keys = {'id', 'name', 'users', 'admins'}
 
         self.client.force_authenticate(self.user)
-        assign_perm('view_department', self.user, department)
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)

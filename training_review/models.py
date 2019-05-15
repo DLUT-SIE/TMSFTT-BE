@@ -21,8 +21,6 @@ class ReviewNote(models.Model):
         permissions = (
             ('add_reviewnote', '允许添加培训记录审核提示'),
             ('view_reviewnote', '允许查看培训记录审核提示'),
-            ('change_reviewnote', '允许修改培训记录审核提示'),
-            ('delete_reviewnote', '允许删除培训记录审核提示'),
         )
 
     create_time = models.DateTimeField(verbose_name='创建时间',

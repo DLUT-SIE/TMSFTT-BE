@@ -22,12 +22,8 @@ class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = auth.models.Department.objects.all()
     serializer_class = auth.serializers.DepartmentSerializer
     permission_classes = (
-        auth.permissions.DjangoModelPermissions,
-        auth.permissions.DjangoObjectPermissions,
+        auth.permissions.SchoolAdminOnlyPermission,
     )
-    perms_map = {
-        'top_level_departments': ['%(app_label)s.view_%(model_name)s'],
-    }
 
     @decorators.action(detail=False, methods=['GET'],
                        url_path='top-level-departments')
@@ -48,8 +44,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
                 .all())
     serializer_class = auth.serializers.UserSerializer
     permission_classes = (
-        auth.permissions.DjangoModelPermissions,
-        auth.permissions.DjangoObjectPermissions,
+        auth.permissions.SchoolAdminOnlyPermission,
     )
     filter_fields = ('username',)
 
@@ -64,9 +59,6 @@ class GroupViewSet(mixins.ListModelMixin,
         auth.permissions.SchoolAdminOnlyPermission,
     )
     filter_class = auth.filters.GroupFilter
-    perms_map = {
-        'top_department_related_groups': ['%(app_label)s.view_%(model_name)s'],
-    }
 
     @decorators.action(detail=False, methods=['GET'],
                        url_path='top-department-related-groups')
