@@ -60,13 +60,17 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
                             lsdw=1,
                             _fill_optional=True)
                  for idx in range(num_departments)]
-        dwid_to_department = _update_from_department_information()
+        dwid_to_department, department_to_administrative = (
+            _update_from_department_information()
+        )
 
         departments = Department.objects.exclude(
             raw_department_id=dlut_id).order_by('raw_department_id')
 
         self.assertEqual(len(departments), num_departments)
         self.assertEqual(len(dwid_to_department), num_departments)
+        # 不包括大连理工字段
+        self.assertEqual(len(department_to_administrative), num_departments - 1)
 
         for info, department in zip(infos, departments):
             if info.dwmc == dlut_name:
@@ -83,7 +87,7 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
         departments = [mommy.make(Department, id=idx)
                        for idx in range(1, 1 + num_departments)]
         dwid_to_department = {f'{dep.id}': dep for dep in departments}
-
+        department_to_administrative = {dep: dep for dep in departments}
         num_teachers = 20
         raw_users = [mommy.make(
             TeacherInformation, zgh=f'2{idx:02d}', jsxm=f'name{idx}',
@@ -92,7 +96,8 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
             rxsj='2019-12-01', rzzt='11', xl='14', zyjszc='061', rjlx='12')
                      for idx in range(1, 1 + num_teachers)]
 
-        _update_from_teacher_information(dwid_to_department)
+        _update_from_teacher_information(dwid_to_department,
+                                         department_to_administrative)
 
         mocked_prod_logger.warning.assert_called_with(
             '职工号为201的教师使用了一个系统中不存在的学院100')
