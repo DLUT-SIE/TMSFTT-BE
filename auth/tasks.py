@@ -31,18 +31,17 @@ def _update_from_department_information():
 
         updated = False
         # 同步隶属单位
-
         if (department.super_department is None or
                 department.super_department.raw_department_id !=
                 raw_department.lsdw):
+            super_department_name = DepartmentInformation.objects.get(
+                dwid=raw_department.lsdw).dwmc
             super_department, _ = Department.objects.get_or_create(
                 raw_department_id=raw_department.lsdw,
-                defaults={'name': DepartmentInformation.objects.get(
-                    dwid=raw_department.lsdw).dwmc}
+                defaults={'name': super_department_name}
             )
 
             department.super_department = super_department
-            super_department.save()
             updated = True
 
         # 同步单位名称
