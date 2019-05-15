@@ -88,13 +88,16 @@ def _update_from_teacher_information(dwid_to_department,
     prod_logger.info('开始扫描并更新用户信息')
     raw_users = TeacherInformation.objects.all()
 
+    raw_department_ids = ['{}'.format(
+        department_to_administrative[key].raw_department_id)
+        for key in department_to_administrative.keys()]
     for raw_user in raw_users:
         user, created = User.objects.get_or_create(username=raw_user.zgh)
         if created:
             user.set_unusable_password()
         user.first_name = raw_user.jsxm
 
-        if raw_user.xy not in department_to_administrative.keys():
+        if raw_user.xy not in raw_department_ids:
             warn_msg = (
                 f'职工号为{user.username}的教师'
                 f'使用了一个系统中不存在的学院{raw_user.xy}'
@@ -106,19 +109,19 @@ def _update_from_teacher_information(dwid_to_department,
                 department_to_administrative[user.department]
             )
 
-        user.gender = User.GENDER_CHOICES_MAP[raw_user.get_xb_display()]
-        raw_age = int(raw_user.nl) if raw_user.nl else 0
-        user.age = raw_age
-        if raw_user.rxsj and user.onboard_time != raw_user.rxsj:
-            user.onboard_time = make_aware(
-                parse_datetime(f'{raw_user.rxsj}T12:00:00'))
-
-        user.tenure_status = raw_user.get_rzzt_display()
-        user.education_background = raw_user.get_xl_display()
-        user.technical_title = raw_user.get_zyjszc_display()
-        user.teaching_type = raw_user.get_rjlx_display()
-        user.cell_phone_number = raw_user.sjh
-        user.email = raw_user.yxdz
+        # user.gender = User.GENDER_CHOICES_MAP[raw_user.get_xb_display()]
+        # raw_age = int(raw_user.nl) if raw_user.nl else 0
+        # user.age = raw_age
+        # if raw_user.rxsj and user.onboard_time != raw_user.rxsj:
+        #     user.onboard_time = make_aware(
+        #         parse_datetime(f'{raw_user.rxsj}T12:00:00'))
+        #
+        # user.tenure_status = raw_user.get_rzzt_display()
+        # user.education_background = raw_user.get_xl_display()
+        # user.technical_title = raw_user.get_zyjszc_display()
+        # user.teaching_type = raw_user.get_rjlx_display()
+        # user.cell_phone_number = raw_user.sjh
+        # user.email = raw_user.yxdz
 
         user.save()
     prod_logger.info('用户信息更新完毕')
