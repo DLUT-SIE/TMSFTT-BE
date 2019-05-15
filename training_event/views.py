@@ -2,8 +2,7 @@
 import os
 
 from rest_framework.views import APIView
-from rest_framework import mixins, viewsets, decorators, status
-from rest_framework.response import Response
+from rest_framework import mixins, viewsets
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 from secure_file.models import SecureFile
@@ -44,19 +43,6 @@ class EnrollmentViewSet(mixins.CreateModelMixin,
     '''
     queryset = training_event.models.Enrollment.objects.all()
     serializer_class = training_event.serializers.EnrollmentSerailizer
-
-    @decorators.action(detail=False, methods=['GET'],
-                       url_path='user-enrollment-status')
-    def get_enrollment_status(self, request):
-        '''Return status about enrollments.'''
-        user_id = request.user.id
-        events_dict = request.query_params.dict()['event'].split(',')
-        events_list = list(map(int, events_dict))
-
-        result = EnrollmentService.get_user_enrollment_status(events_list,
-                                                              user_id)
-
-        return Response(result, status=status.HTTP_200_OK)
 
     def perform_destroy(self, instance):
         '''Use service to change num_enrolled and delete enrollment.'''
