@@ -12,6 +12,7 @@ from django.db.models import Count
 from django.utils.timezone import datetime, make_aware
 
 from auth.models import Department
+from auth.services import DepartmentService
 from infra.exceptions import BadRequest
 from training_event.models import Enrollment, EventCoefficient
 from training_record.models import Record
@@ -494,13 +495,13 @@ class UserCoreStatisticsService:
 class AggregateDataService:
     '''provide services for getting data'''
 
-    STAFF_STATISTICS = 0
+    TEACHERS_STATISTICS = 0
     RECORDS_STATISTICS = 1
     FULL_TIME_TEACHER_TRAINED_COVERAGE = 2
     TRAINING_HOURS_WORKLOAD_STATISTICS = 3
 
     BY_DEPARTMENT = 0
-    BY_STAFF_TITLE = 1
+    BY_TECHNICAL_TITLE = 1
     BY_AGE_DISTRIBUTION = 2
     BY_HIGHEST_DEGREE = 3
 
@@ -510,15 +511,15 @@ class AggregateDataService:
     BY_TOTAL_WORKLOAD = 3
     BY_PER_CAPITA_WORKLOAD = 4
 
-    STAFF_GROUPING_CHOICES = (
+    TEACHERS_GROUPING_CHOICES = (
         (BY_DEPARTMENT, '按学院', 'BY_DEPARTMENT'),
-        (BY_STAFF_TITLE, '按职称', 'BY_STAFF_TITLE'),
+        (BY_TECHNICAL_TITLE, '按职称', 'BY_TECHNICAL_TITLE'),
         (BY_AGE_DISTRIBUTION, '按年龄分布', 'BY_AGE_DISTRIBUTION'),
         (BY_HIGHEST_DEGREE, '按最高学位', 'BY_HIGHEST_DEGREE')
     )
     TRAINEE_GROUPING_CHOICES = (
         (BY_DEPARTMENT, '按学院', 'BY_DEPARTMENT'),
-        (BY_STAFF_TITLE, '按职称', 'BY_STAFF_TITLE'),
+        (BY_TECHNICAL_TITLE, '按职称', 'BY_TECHNICAL_TITLE'),
         (BY_AGE_DISTRIBUTION, '按年龄分布', 'BY_AGE_DISTRIBUTION')
     )
     TRAINING_HOURS_GROUPING_CHOICES = (
@@ -532,18 +533,16 @@ class AggregateDataService:
 
     TITLE_LABEL = ('教授', '副教授', '讲师（高校）', '助教（高校）', '研究员', '副研究员',
                    '助理研究员', '工程师', '高级工程师', '教授级高工')
-    DEGREE_LABEL = ('博士研究生毕业', '研究生毕业', '大学本科毕业')
+    EDUCATION_BACKGROUD_LABEL = ('博士研究生毕业', '研究生毕业', '大学本科毕业')
     AGE_LABEL = ('35岁及以下', '36~45岁', '46~55岁', '56岁及以上')
-    TOP_DEPARTMENT_LIST = ('凌水主校区', '开发区校区', '盘锦校区')
-    DEPARTMENT_LIST = Department.objects.filter(
-        super_department__name__in=TOP_DEPARTMENT_LIST,
-        department_type='T3').values_list('id', 'name')
+    DEPARTMENT_LIST = list(
+        DepartmentService.get_top_level_departments().values('id', 'name'))
 
     @classmethod
     def dispatch(cls, method_name, context):
         '''to call a specific service for getting data'''
         available_method_list = (
-            'staff_statistics',
+            'teachers_statistics',
             'records_statistics',
             'coverage_statistics',
             'training_hours_statistics',
@@ -591,66 +590,220 @@ class AggregateDataService:
         return res
 
     @classmethod
-    def staff_statistics(cls, context):
-        '''to get staff statistics data'''
+    def teachers_statistics(cls, context):
+        ''' get teachers statistics data
+
+        Return
+        ------
+        data: dict
+        {
+            'label': []
+            'group_by_data':[{
+                'seriesNum': 0,
+                'seriesName': 专任教师,
+                'data': []
+                }]
+        }
+        '''
         group_by = context.get('group_by', '')
-        region = context.get('region', '')
+        department_id = context.get('department_id', '')
         data = {
             'label': [],
             'group_by_data': [{'seriesNum': 0,
                                'seriesName': '专任教师',
                                'data': []}]
         }
-        try:
+        if group_by.isdigit() and department_id.isdigit():
             group_by = int(group_by)
-            region = int(region)
-        except ValueError:
+            department_id = int(department_id)
+        else:
             raise BadRequest("错误的参数")
-        label_department = list(
-            zip(*cls.DEPARTMENT_LIST))[-1] if cls.DEPARTMENT_LIST else []
-        labels = {
-            cls.BY_STAFF_TITLE: {'technical_title__in': cls.TITLE_LABEL},
-            cls.BY_HIGHEST_DEGREE: {
-                'education_background__in': cls.DEGREE_LABEL},
-            cls.BY_AGE_DISTRIBUTION: {'age__range': cls.AGE_LABEL},
-            cls.BY_DEPARTMENT: {'department__name__in': label_department}
+        group_by_handler = {
+            cls.BY_TECHNICAL_TITLE: cls.group_users_by_technical_title,
+            cls.BY_HIGHEST_DEGREE: cls.group_users_by_education_backgroud,
+            cls.BY_AGE_DISTRIBUTION: cls.group_users_by_age,
+            cls.BY_DEPARTMENT: cls.group_users_by_department
         }
-        if group_by not in labels.keys() or region and region\
-           not in list(zip(*cls.DEPARTMENT_LIST))[0]:
+        if group_by not in group_by_handler:
             raise BadRequest("错误的参数")
-        User = get_user_model()
-        request_user = context['request'].user
-        if region != 0:
-            region_name = cls.DEPARTMENT_LIST.filter(id=region)[0][-1]
-            if (request_user.is_department_admin and
-                    request_user.usergroup_set.all().filter(
-                        name=region_name + '-管理员')) or\
-                    request_user.is_school_admin:
-                users = User.objects.filter(department__name=region_name)
-            else:
-                return data
-        elif request_user.is_school_admin:
-            users = User.objects.all()
-        else:
+        users = cls.get_users_by_department(
+            context['request'].user, department_id)
+        if not bool(users):
             return data
-        data['label'] = list(labels[group_by].values())[0]
-        if group_by != cls.BY_AGE_DISTRIBUTION:
-            kwargs = [labels.get(group_by), {'id_count': Count('id')}]
-            cls.aggregate_data(
-                data, users, 0, kwargs, True)
-        else:
-            kwargs = [{'age__range': ''}]
-            cls.aggregate_data(data, users, 0, kwargs, False)
+        group_users = group_by_handler[group_by](users, count_only=True)
+        data['label'] = group_users.keys()
+        data['group_by_data'][0]['data'] = group_users.values()
         return data
 
     @classmethod
+    def group_users_by_technical_title(cls, users, count_only=False):
+        '''
+        Return
+        ------
+        group_users: dict
+        {
+            '教授': [USER_A, USER_B],
+            '副教授': [USER_C, USER_B],
+        } for count_only=False
+        or
+        {
+            '教授': 3,
+            '副教授': 5,
+        } for count_only=True
+        '''
+        title_list = cls.TITLE_LABEL
+        if count_only:
+            group_users = {x : 0 for x in title_list}
+            users = users.filter(
+                technical_title__in=title_list).values(
+                    'technical_title').annotate(num=Count('technical_title'))
+            for user in users:
+                group_users[user['technical_title']] = user['num']
+        else:
+            group_users = {x : [] for x in title_list}
+            for _, title in enumerate(title_list):
+                group_users[title] = users.filter(techncial_title=title)
+        return group_users
+
+    @classmethod
+    def group_users_by_education_backgroud(cls, users, count_only=False):
+        '''
+        Return
+        ------
+        group_users: dict
+        {
+            '本科毕业': [USER_A, USER_B],
+            '研究生毕业': [USER_C, USER_B],
+        } for count_only=False
+        or
+        {
+            '本科毕业': 3,
+            '研究生毕业': 5,
+        } for count_only=True
+        '''
+        education_backgroud_list = cls.EDUCATION_BACKGROUD_LABEL
+        if count_only:
+            group_users = {x : 0 for x in education_backgroud_list}
+            users = users.filter(
+                education_background__in=education_backgroud_list).values(
+                    'education_background').annotate(num=Count('education_background'))
+            for user in users:
+                group_users[user['education_background']] = user['num']
+        else:
+            group_users = {x : [] for x in education_backgroud_list}
+            for _, degree in enumerate(education_backgroud_list):
+                group_users[title] = users.filter(education_background=degree)
+        return group_users
+
+    @classmethod
+    def group_users_by_department(cls, users, count_only=False):
+        '''
+        Return
+        ------
+        group_users: dict
+        {
+            '创新学院': [USER_A, USER_B],
+            '建艺学院': [USER_C, USER_B],
+        } for count_only=False
+        or
+        {
+            '创新学院': 3,
+            '建艺学院': 5,
+        } for count_only=True
+        '''
+        department_list = [x['name'] for x in cls.DEPARTMENT_LIST]
+        if count_only:
+            group_users = {x : 0 for x in department_list}
+            users = users.filter(
+                administrative_department__name__in=department_list).values(
+                    'administrative_department__name').annotate(num=Count('id'))
+            for user in users:
+                group_users[user['administrative_department__name']] = user['num']
+        else:
+            group_users = {x : [] for x in department_list}
+            for _, degree in enumerate(department_list):
+                group_users[title] = users.filter(
+                    administrative_department__name=degree)
+        return group_users
+
+    @classmethod
+    def group_users_by_age(cls, users, count_only=False):
+        '''
+        Return
+        ------
+        group_users: dict
+        {
+            '35岁及以下': [USER_A, USER_B],
+            '36-45岁': [USER_C, USER_B],
+        } for count_only=False
+        or
+        {
+            '35岁及以下': 3,
+            '36-45岁': 5,
+        } for count_only=True
+        '''
+        age_list = ((0, 35), (36, 45), (46, 55), (56, 1000))
+        label_list = cls.AGE_LABEL
+        group_users = {}
+        if count_only:
+            for index, value in enumerate(age_list):
+                group_users[label_list[index]] = users.filter(
+                    age__range=value).count()
+        else:
+            for index, value in enumerate(age_list):
+                group_users[label_list[index]] = users.filter(age__range=value)
+        return group_users
+
+    @staticmethod
+    def get_users_by_department(request_user, department_id):
+        '''get users objects by department.
+
+        Parameters
+        ----------
+        request_user: User
+        department_id: int
+
+        Return
+        ------
+        users: User Objects
+        '''
+        departments = Department.objects.filter(id=department_id)
+        if departments:
+            department = departments[0]
+            if request_user.is_school_admin:
+                if department.name == '大连理工大学':
+                    return get_user_model().objects.all()
+                return get_user_model().objects.filter(
+                    administrative_department=department)
+            elif request_user.check_department_admin(department):
+                return get_user_model().objects.filter(
+                    administrative_department=department)
+        else:
+            return []
+
+    @classmethod
     def records_statistics(cls, context):
-        '''to get trainee statistics data'''
+        ''' get records statistics data
+
+        Return
+        ------
+        data: dict
+        {
+            'label': []
+            'group_by_data':[{
+                'seriesNum': 0,
+                'seriesName': '校内培训',
+                'data': []
+                },{
+                'seriesNum': 1,
+                'seriesName': '校外培训',
+                'data': []}]
+        }
+        '''
         group_by = context.get('group_by', '')
-        query_time = {}
-        query_time['start_year'] = context.get('start_year', 2016)
-        query_time['end_year'] = context.get('end_year', 2016)
-        region = context.get('region', 0)
+        start_year = context.get('start_year', 2016)
+        end_year = context.get('end_year', 2016)
+        department_id = context.get('department_id', '')
         data = {
             'label': [],
             'group_by_data': [{'seriesNum': 0,
@@ -660,66 +813,182 @@ class AggregateDataService:
                                'seriesName': '校外培训',
                                'data': []}]
         }
-        try:
+        if (group_by.isdigit() and start_year.isdigit()
+            and end_year.isdigit() and department_id.isdigit()):
             group_by = int(group_by)
-            query_time['start_year'] = int(query_time['start_year'])
-            query_time['end_year'] = int(query_time['end_year'])
-            region = int(region)
-        except ValueError:
-            raise BadRequest("错误的参数")
-        label_department = list(
-            zip(*cls.DEPARTMENT_LIST))[-1] if cls.DEPARTMENT_LIST else []
-        labels = {
-            cls.BY_STAFF_TITLE: {'user__technical_title__in': cls.TITLE_LABEL},
-            cls.BY_AGE_DISTRIBUTION: {'user__age__range': cls.AGE_LABEL},
-            cls.BY_DEPARTMENT: {'user__department__name__in': label_department}
-        }
-        if (group_by not in labels.keys()) or (
-                query_time['start_year'] > query_time['end_year']) or (
-                    region and region not in list(
-                        zip(*cls.DEPARTMENT_LIST))[0]):
-            raise BadRequest("错误的参数")
-
-        request_user = context['request'].user
-        if region != 0:
-            region_name = cls.DEPARTMENT_LIST.filter(id=region)[0][-1]
-            if (request_user.is_department_admin and
-                    request_user.usergroup_set.all().filter(
-                        name=region_name + '-管理员')) or request_user\
-                    .is_school_admin:
-                records = Record.objects.filter(
-                    user__department__name=region_name)
-            else:
-                return data
-        elif request_user.is_school_admin:
-            records = Record.objects.all()
+            start_year = int(start_year)
+            end_year = int(end_year)
+            department_id = int(department_id)
         else:
-            return data
-        campus_records = records.filter(
+            raise BadRequest("错误的参数")
+        group_by_handler = {
+            cls.BY_TECHNICAL_TITLE: cls.group_records_by_technical_title,
+            cls.BY_AGE_DISTRIBUTION: cls.group_records_by_age,
+            cls.BY_DEPARTMENT: cls.group_records_by_department
+        }
+        if group_by not in group_by_handler:
+            raise BadRequest("错误的参数")
+        records = cls.get_records_by_time_department(
+            context['request'].user, department_id, start_year, end_year)
+        group_campus_records = group_by_handler[group_by](
+            records['campus_records'], count_only=True)
+        sorted_campus_records = sorted(
+            group_campus_records.items(), key=lambda x:x[0])
+        data['label'] = [x[0] for x in sorted_campus_records]
+        data['group_by_data'][0]['data'] = (
+            [x[1] for x in sorted_campus_records]
+        )
+        group_off_campus_records = group_by_handler[group_by](
+            records['off_campus_records'], count_only=True)
+        sorted_off_campus_records = sorted(
+            group_off_campus_records.items(), key=lambda x:x[0])
+        data['group_by_data'][1]['data'] = (
+            [x[1] for x in sorted_off_campus_records]
+        )
+        return data
+    
+    @classmethod
+    def group_records_by_technical_title(cls, records, count_only=False):
+        '''
+        Return
+        ------
+        group_records: dict
+        {
+            '教授': [RECORD_A, RECORD_B],
+            '副教授': [RECORD_C, RECORD_B],
+        } for count_only=False
+        or
+        {
+            '教授': 3,
+            '副教授': 5,
+        } for count_only=True
+        '''
+        title_list = cls.TITLE_LABEL
+        if count_only:
+            group_records = {x : 0 for x in title_list}
+            records = records.filter(
+                user__technical_title__in=title_list).values(
+                    'user__technical_title').annotate(num=Count('user'))
+            for record in records:
+                group_records[record['user__technical_title']] = record['num']
+        else:
+            group_records = {x : [] for x in title_list}
+            for _, title in enumerate(title_list):
+                group_records[title] = records.filter(
+                    user__techncial_title=title)
+        return group_records
+
+    @classmethod
+    def group_records_by_department(cls, records, count_only=False):
+        '''
+        Return
+        ------
+        group_records: dict
+        {
+            '创新学院': [RECORD_A, RECORD_B],
+            '建艺学院': [RECORD_C, RECORD_B],
+        } for count_only=False
+        or
+        {
+            '创新学院': 3,
+            '建艺学院': 5,
+        } for count_only=True
+        '''
+        department_list = [x['name'] for x in cls.DEPARTMENT_LIST]
+        if count_only:
+            group_records = {x : 0 for x in department_list}
+            records = (
+                records.filter(
+                    user__administrative_department__name__in=department_list)
+                .values('user__administrative_department__name')
+                .annotate(num=Count('id'))
+            )
+            for record in records:
+                group_records[
+                    record['user__administrative_department__name']] =\
+                    record['num']
+        else:
+            group_records = {x : [] for x in department_list}
+            for _, degree in enumerate(department_list):
+                group_records[title] = users.filter(
+                    user__administrative_department__name=degree)
+        return group_records
+    
+    @classmethod
+    def group_records_by_age(cls, records, count_only=False):
+        '''
+        Return
+        ------
+        group_records: dict
+            {
+                '35岁及以下': [RECORD_A, RECORD_B],
+                '36-45岁': [RECORD_C, RECORD_B],
+            } for count_only=False
+            or
+            {
+                '35岁及以下': 3,
+                '36-45岁': 5,
+            } for count_only=True
+        '''
+        age_list = ((0, 35), (36, 45), (46, 55), (56, 1000))
+        label_list = cls.AGE_LABEL
+        group_records = {}
+        if count_only:
+            for index, value in enumerate(age_list):
+                group_records[label_list[index]] = records.filter(
+                    user__age__range=value).count()
+        else:
+            for index, value in enumerate(age_list):
+                group_records[label_list[index]] = records.filter(
+                    user__age__range=value)
+        return group_records
+
+    @staticmethod
+    def get_records_by_time_department(request_user, department_id, start_year=now(), end_year=now()):
+        '''get records by time and department
+
+        Return
+        ------
+        records: dict
+        {
+            'campus_records': QuerySet([])
+            'off_campus_records':QuerySet([])
+        }
+        '''
+        records = {
+            'campus_records': Record.objects.none(),
+            'off_campus_records': Record.objects.none()
+        }
+        if start_year > end_year:
+            raise BadRequest("错误的参数")
+        campus_records = Record.objects.filter(
             campus_event__isnull=False,
             campus_event__time__range=(
-                make_aware(datetime(query_time['start_year'], 1, 1)),
-                make_aware(datetime(query_time['end_year'] + 1, 1, 1))))
-        off_campus_records = records.filter(
+                make_aware(datetime(start_year, 1, 1)),
+                make_aware(datetime(end_year + 1, 1, 1))))
+        off_campus_records = Record.objects.filter(
             off_campus_event__isnull=False,
             off_campus_event__time__range=(
-                make_aware(datetime(query_time['start_year'], 1, 1)),
-                make_aware(datetime(query_time['end_year'] + 1, 1, 1))))
-        data['label'] = list(labels[group_by].values())[0]
-        if group_by != cls.BY_AGE_DISTRIBUTION:
-            kwargs = [labels.get(group_by),
-                      {'campus_count': Count('campus_event')}]
-            cls.aggregate_data(
-                data, campus_records, 0, kwargs, True)
-            kwargs[1] = {'off_campus_event': Count('off_campus_event')}
-            cls.aggregate_data(
-                data, off_campus_records, 1, kwargs, True)
-        else:
-            kwargs = [{'user__age__range': ''}]
-            cls.aggregate_data(data, campus_records, 0, kwargs, False)
-            cls.aggregate_data(
-                data, off_campus_records, 1, kwargs, False)
-        return data
+                make_aware(datetime(start_year, 1, 1)),
+                make_aware(datetime(end_year + 1, 1, 1))))
+        departments = Department.objects.filter(id=department_id)
+        if departments:
+            department = departments[0]
+            if request_user.is_school_admin:
+                if department.name == '大连理工大学':
+                    records['campus_records'] = campus_records
+                    records['off_campus_records'] = off_campus_records
+                else:
+                    records['campus_records'] = campus_records.filter(
+                        user__administrative_department=department)
+                    records['off_campus_records'] = off_campus_records.filter(
+                        user__administrative_department=department)
+            elif request_user.check_department_admin(department):
+                records['campus_records'] = campus_records.filter(
+                        user__administrative_department=department)
+                records['off_campus_records'] = off_campus_records.filter(
+                        user__administrative_department=department)
+        return records
 
     @staticmethod
     def aggregate_data(data, objects, num, kwargs, is_age):
@@ -766,10 +1035,11 @@ class AggregateDataService:
     def get_canvas_options(cls):
         '''return a data graph select dictionary'''
         statistics_type = [
-            {'type': cls.STAFF_STATISTICS,
+            {'type': cls.TEACHERS_STATISTICS,
              'name': '教职工人数统计',
-             'key': 'STAFF_STATISTICS',
-             'subOption': cls.tuple_to_dict_list(cls.STAFF_GROUPING_CHOICES)},
+             'key': 'TEACHERS_STATISTICS',
+             'subOption': cls.tuple_to_dict_list(
+                 cls.TEACHERS_GROUPING_CHOICES)},
             {'type': cls.RECORDS_STATISTICS,
              'name': '培训人数统计',
              'key': 'RECORDS_STATISTICS',
