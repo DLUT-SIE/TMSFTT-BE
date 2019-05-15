@@ -69,10 +69,12 @@ def _update_from_department_information():
             )
     # 并查集思想找administrative_department
     for department in department_to_administrative:
+        origin_department = department
         administrative = department_to_administrative[department]
         while administrative != department:
-            administrative = department_to_administrative[administrative]
-        department_to_administrative[department] = administrative
+            department = administrative
+            administrative = department_to_administrative[department]
+        department_to_administrative[origin_department] = administrative
     # TODO(youchen): Create related groups
 
     prod_logger.info('部门信息更新完毕')
