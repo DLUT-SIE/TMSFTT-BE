@@ -93,13 +93,19 @@ def _update_from_teacher_information(dwid_to_department,
         if created:
             user.set_unusable_password()
         user.first_name = raw_user.jsxm
-        user.department = dwid_to_department.get(raw_user.xy)
-        if user.department is None:
+
+        if raw_user.xy not in department_to_administrative.keys():
             warn_msg = (
-                f'职工号为{user.username}的教师'
-                f'使用了一个系统中不存在的学院{raw_user.xy}'
-            )
+                        f'职工号为{user.username}的教师'
+                        f'使用了一个系统中不存在的学院{raw_user.xy}'
+                    )
             prod_logger.warning(warn_msg)
+        else:
+            user.department = dwid_to_department.get(raw_user.xy)
+            user.administrative_department = (
+                department_to_administrative[user.department]
+            )
+
         user.gender = User.GENDER_CHOICES_MAP[raw_user.get_xb_display()]
         raw_age = int(raw_user.nl) if raw_user.nl else 0
         user.age = raw_age
@@ -113,9 +119,9 @@ def _update_from_teacher_information(dwid_to_department,
         user.teaching_type = raw_user.get_rjlx_display()
         user.cell_phone_number = raw_user.sjh
         user.email = raw_user.yxdz
-        user.administrative_department = (
-            department_to_administrative[user.department]
-        )
+        # print(user.department)
+        # print(raw_user.xy)
+
         user.save()
     prod_logger.info('用户信息更新完毕')
 
