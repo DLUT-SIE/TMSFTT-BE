@@ -61,7 +61,9 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
                             dwid=f'{idx}',
                             dwmc=f'Department{idx}',
                             lsdw=1,
-                            _fill_optional=True)
+                            _fill_optional=True,
+                            dwlx=Department.DEPARTMENT_TYPE_T1
+                            )
                  for idx in range(num_departments)]
         dwid_to_department, department_to_administrative = (
             _update_from_department_information()
@@ -84,7 +86,7 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
     @patch('auth.models.TeacherInformation.save',
            models.Model.save)
     @patch('auth.tasks.prod_logger')
-    def test_update_from_teacher_information(self, mocked_prod_logger):
+    def test_update_from_teacher_information(self, _):
         '''Should update user from teacher information.'''
         num_departments = 10
         departments = [mommy.make(Department, id=idx)
@@ -95,7 +97,7 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
         raw_users = [mommy.make(
             TeacherInformation, zgh=f'2{idx:02d}', jsxm=f'name{idx}',
             nl=f'{idx}', xb='1', yxdz='asdf@123.com',
-            xy=f'{departments[0]}',
+            xy=f'{departments[0].raw_department_id}',
             rxsj='2019-12-01', rzzt='11', xl='14', zyjszc='061', rjlx='12')
                      for idx in range(1, 1 + num_teachers)]
 
