@@ -7,7 +7,6 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 import auth.models
-from auth.utils import assign_perm
 
 User = get_user_model()
 
@@ -53,10 +52,6 @@ class TestUserViewSet(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = mommy.make(User, is_staff=True)
-        assign_perm('tmsftt_auth.add_user', cls.user)
-        assign_perm('tmsftt_auth.delete_user', cls.user)
-        assign_perm('tmsftt_auth.change_user', cls.user)
-        assign_perm('tmsftt_auth.view_user', cls.user)
 
     def test_list_user(self):
         '''Should return all users if user is admin.'''
