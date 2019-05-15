@@ -96,8 +96,8 @@ def _update_from_teacher_information(dwid_to_department,
 
         if raw_user.xy not in department_to_administrative.keys():
             warn_msg = (
-                        f'职工号为{user.username}的教师'
-                        f'使用了一个系统中不存在的学院{raw_user.xy}'
+                f'职工号为{user.username}的教师'
+                f'使用了一个系统中不存在的学院{raw_user.xy}'
             )
             prod_logger.warning(warn_msg)
         else:
@@ -119,8 +119,6 @@ def _update_from_teacher_information(dwid_to_department,
         user.teaching_type = raw_user.get_rjlx_display()
         user.cell_phone_number = raw_user.sjh
         user.email = raw_user.yxdz
-        # print(user.department)
-        # print(raw_user.xy)
 
         user.save()
     prod_logger.info('用户信息更新完毕')
