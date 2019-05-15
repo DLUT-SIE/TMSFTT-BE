@@ -70,12 +70,15 @@ class UserSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize User instance.'''
     department_str = serializers.CharField(
         source='department.name', read_only=True)
+    administrative_department_str = serializers.CharField(
+        source='administrative_department.name', read_only=True)
 
     class Meta:
         model = User
         fields = ('id', 'username', 'last_login', 'first_name', 'last_name',
                   'email', 'is_active', 'date_joined', 'user_permissions',
                   'department', 'department_str',
+                  'administrative_department', 'administrative_department_str',
                   'is_teacher', 'is_department_admin', 'is_school_admin',
                   'groups')
 
