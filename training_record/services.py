@@ -89,6 +89,7 @@ class RecordService:
     # pylint: disable=invalid-name
     # pylint: disable=redefined-builtin
     # pylint: disable=unused-argument
+    # pylint: disable=too-many-arguments
     @staticmethod
     def update_off_campus_record_from_raw_data(
             record, off_campus_event=None, user=None,
