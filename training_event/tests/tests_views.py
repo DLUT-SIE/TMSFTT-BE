@@ -183,12 +183,10 @@ class TestEnrollmentViewSet(APITestCase):
 
     def test_create_enrollment(self):
         '''Enrollment should be created by POST request.'''
-        user = mommy.make(User)
         campus_event = mommy.make(training_event.models.CampusEvent)
         url = reverse('enrollment-list')
         data = {
             'campus_event': campus_event.pk,
-            'user': user.pk,
         }
 
         response = self.client.post(url, data, format='json')
@@ -198,7 +196,6 @@ class TestEnrollmentViewSet(APITestCase):
             training_event.models.Enrollment.objects.count(), 1)
         obj = training_event.models.Enrollment.objects.get()
         self.assertEqual(obj.campus_event.pk, campus_event.pk)
-        self.assertEqual(obj.user.pk, user.pk)
 
     def test_list_enrollment(self):
         '''Enrollments list should be accessed by GET request.'''

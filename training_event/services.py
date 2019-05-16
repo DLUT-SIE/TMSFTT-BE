@@ -40,7 +40,6 @@ class EnrollmentService:
             # Lock the event until the end of the transaction
             event = CampusEvent.objects.select_for_update().get(
                 id=enrollment_data['campus_event'].id)
-
             if event.num_enrolled >= event.num_participants:
                 raise BadRequest('报名人数已满')
 

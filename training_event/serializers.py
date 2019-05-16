@@ -49,7 +49,7 @@ class EnrollmentSerailizer(serializers.ModelSerializer):
     class Meta:
         model = training_event.models.Enrollment
         fields = '__all__'
-        read_only_fields = ('is_participated',)
+        read_only_fields = ('is_participated', 'user')
 
     def create(self, validated_data):
         return EnrollmentService.create_enrollment(validated_data,
