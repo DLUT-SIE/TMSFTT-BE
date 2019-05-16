@@ -9,6 +9,9 @@ from auth.models import (
 
 from infra.utils import prod_logger
 
+DLUT_ID = '10141'
+DLUT_NAME = '大连理工大学'
+
 
 def _update_from_department_information():
     '''Scan table DepartmentInformation and update related tables.'''
@@ -16,9 +19,9 @@ def _update_from_department_information():
 
     dlut_id = '10141'
     dlut_name = '大连理工大学'
-    dlut, _ = Department.objects.get_or_create(raw_department_id=dlut_id)
-    if dlut.name is None or dlut.name != dlut_name:
-        dlut.name = dlut_name
+    dlut, _ = Department.objects.get_or_create(raw_department_id=DLUT_ID)
+    if dlut.name is None or dlut.name != DLUT_NAME:
+        dlut.name = DLUT_NAME
         dlut.save()
 
     raw_departments = DepartmentInformation.objects.all()
