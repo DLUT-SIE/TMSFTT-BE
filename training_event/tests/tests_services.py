@@ -37,7 +37,6 @@ class TestEnrollmentService(TestCase):
         '''Should create enrollment.'''
         self.event.num_participants = 10
         self.event.save()
-
         EnrollmentService.create_enrollment(self.data, )
 
         count = Enrollment.objects.filter(user=self.user).count()
@@ -68,6 +67,16 @@ class TestEnrollmentService(TestCase):
         results = EnrollmentService.get_user_enrollment_status(
             events, self.user.id)
         self.assertEqual(results, expected_result)
+
+    def test_delete_enrollment(self):
+        '''Should delete enrollment.'''
+        self.event.num_participants = 10
+        self.event.num_enrolled = 2
+        self.event.save()
+        enrollment = mommy.make(Enrollment,
+                                user=self.user, campus_event=self.event)
+        EnrollmentService.delete_enrollment(enrollment)
+        self.assertEqual(Enrollment.objects.count(), 0)
 
 
 class TestCoefficientCalculationService(TestCase):

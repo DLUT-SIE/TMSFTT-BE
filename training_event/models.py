@@ -53,12 +53,6 @@ class OffCampusEvent(AbstractEvent):
         verbose_name = '校外培训活动'
         verbose_name_plural = '校外培训活动'
         default_permissions = ()
-        permissions = (
-            ('add_offcampusevent', '允许添加校外培训活动'),
-            ('view_offcampusevent', '允许查看校外培训活动'),
-            ('change_offcampusevent', '允许修改校外培训活动'),
-            ('delete_offcampusevent', '允许删除校外培训活动'),
-        )
 
 
 class Enrollment(models.Model):
@@ -129,12 +123,6 @@ class EventCoefficient(models.Model):
         verbose_name = '培训活动系数'
         verbose_name_plural = '培训活动系数'
         default_permissions = ()
-        permissions = (
-            ('add_coefficient', '允许添加活动系数'),
-            ('view_coefficient', '允许查看活动系数'),
-            ('change_coefficient', '允许修改培活动系数'),
-            ('delete_coefficient', '允许删除培活动系数'),
-        )
 
     campus_event = models.ForeignKey(CampusEvent, verbose_name='校内培训活动',
                                      blank=True, null=True,

@@ -1,5 +1,4 @@
 '''Unit tests for training_event views.'''
-from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils.timezone import now
@@ -184,12 +183,10 @@ class TestEnrollmentViewSet(APITestCase):
 
     def test_create_enrollment(self):
         '''Enrollment should be created by POST request.'''
-        user = mommy.make(User)
         campus_event = mommy.make(training_event.models.CampusEvent)
         url = reverse('enrollment-list')
         data = {
             'campus_event': campus_event.pk,
-            'user': user.pk,
         }
 
         response = self.client.post(url, data, format='json')
@@ -199,7 +196,6 @@ class TestEnrollmentViewSet(APITestCase):
             training_event.models.Enrollment.objects.count(), 1)
         obj = training_event.models.Enrollment.objects.get()
         self.assertEqual(obj.campus_event.pk, campus_event.pk)
-        self.assertEqual(obj.user.pk, user.pk)
 
     def test_list_enrollment(self):
         '''Enrollments list should be accessed by GET request.'''
@@ -211,14 +207,19 @@ class TestEnrollmentViewSet(APITestCase):
 
     def test_delete_enrollment(self):
         '''Enrollment should be deleted by DELETE request.'''
-        enrollment = mommy.make(training_event.models.Enrollment)
-        url = reverse('enrollment-detail', args=(enrollment.pk,))
+        user = mommy.make(User)
+        event = mommy.make(training_event.models.CampusEvent,
+                           num_participants=0)
+        event.num_participants = 10
+        event.num_enrolled = 2
+        event.save()
+        enrollment = mommy.make(training_event.models.Enrollment,
+                                user=user, campus_event=event)
 
+        url = reverse('enrollment-detail', args=(enrollment.pk,))
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(
-            training_event.models.Enrollment.objects.count(), 0)
 
     def test_get_enrollment(self):
         '''Enrollment should be accessed by GET request.'''
@@ -226,7 +227,6 @@ class TestEnrollmentViewSet(APITestCase):
         url = reverse('enrollment-detail', args=(enrollment.pk,))
 
         response = self.client.get(url)
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('id', response.data)
         self.assertEqual(response.data['id'], enrollment.id)
@@ -257,31 +257,3 @@ class TestWorkloadFileView(APITestCase):
         data = {}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-    @patch('training_event.views.EnrollmentService')
-    def test_get_enrollment_status(self, mocked_service):
-        '''Should get enrollemnts status according to request.'''
-        user = mommy.make(get_user_model())
-        url = reverse('enrollments-actions-get-enrollment-status')
-        mocked_service.get_user_enrollment_status.return_value = [
-            {
-                "id": 1,
-                "enrolled": False
-            },
-            {
-                "id": 2,
-                "enrolled": False
-            },
-            {
-                "id": 3,
-                "enrolled": True
-            },
-            {
-                "id": 4,
-                "enrolled": True
-            },
-        ]
-        self.client.force_authenticate(user)
-        event_list = [1, 2, 3, 4, 5]
-        response = self.client.get(url, {'event': event_list})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
