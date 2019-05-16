@@ -3,12 +3,15 @@ import os
 
 from rest_framework.views import APIView
 from rest_framework import mixins, viewsets
+from rest_framework_guardian import filters
+
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
+
+import auth.permissions
 from secure_file.models import SecureFile
 from training_event.services import CoefficientCalculationService
 from training_event.services import EnrollmentService
-
 import training_event.models
 import training_event.serializers
 import training_event.filters
@@ -22,6 +25,10 @@ class CampusEventViewSet(viewsets.ModelViewSet):
         '-time')
     serializer_class = training_event.serializers.CampusEventSerializer
     filter_class = training_event.filters.CampusEventFilter
+    filter_backends = (filters.DjangoObjectPermissionsFilter,)
+    permission_classes = (
+        auth.permissions.DjangoObjectPermissions,
+    )
 
 
 class OffCampusEventViewSet(viewsets.ModelViewSet):

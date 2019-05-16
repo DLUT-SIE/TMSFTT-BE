@@ -1,6 +1,7 @@
 '''Unit tests for training_event services.'''
 import xlrd
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.utils.timezone import now
 from django.http import HttpRequest
@@ -9,11 +10,46 @@ from infra.exceptions import BadRequest
 from training_event.models import (
     CampusEvent, Enrollment, EventCoefficient, OffCampusEvent)
 from training_event.services import (
-    EnrollmentService, CoefficientCalculationService)
+    EnrollmentService, CoefficientCalculationService, CampusEventService)
+from training_program.models import Program
 from training_record.models import Record
 from auth.models import Department
+from auth.utils import assign_perm
 
 User = get_user_model()
+
+
+class TestCampusEventService(TestCase):
+    '''Test services provided by CampusEventService.'''
+    def setUp(self):
+        self.user = mommy.make(User)
+        self.group = mommy.make(Group, name="创新创业学院-管理员")
+        self.depart = mommy.make(Department, name="创新创业学院")
+        self.user.groups.add(self.group)
+        program = mommy.make(Program)
+        self.data = {
+            "name": "1",
+            "time": "2018-05-07T11:11:00+08:00",
+            "location": "1",
+            "num_hours": 1.0,
+            "num_participants": 1,
+            "deadline": "2019-05-09T01:11:00+08:00",
+            "description": "1",
+            "program": program,
+        }
+        self.request = HttpRequest()
+        self.request.user = self.user
+        self.context = {'request': self.request, 'data': ''}
+        mommy.make(Group, name="大连理工大学-专任教师")
+        assign_perm('training_program.add_program', self.group)
+        assign_perm('training_program.view_program', self.group)
+
+    def test_create_campus_event_admin(self):
+        '''Should create campus_event.'''
+        CampusEventService.create_campus_event(self.data, self.context)
+
+        count = Program.objects.all().count()
+        self.assertEqual(count, 1)
 
 
 class TestEnrollmentService(TestCase):

@@ -10,6 +10,33 @@ from infra.exceptions import BadRequest
 from training_event.models import CampusEvent, Enrollment
 from training_record.models import Record
 from auth.models import User
+from auth.services import PermissonsService
+
+
+class CampusEventService:
+    '''Provide services for CampusEvent.'''
+    @staticmethod
+    def create_campus_event(campus_event_data, context=None):
+        '''Create a CampusEvent with ObjectPermission.
+
+        Parametsers
+        ----------
+        program_data: dict
+            This dict should have full information needed to
+            create an Program.
+        context: dict
+            An optional dict to provide contextual information. Default: None
+
+        Returns
+        -------
+        campus_event: CampusEvent
+        '''
+
+        with transaction.atomic():
+            campus_event = CampusEvent.objects.create(**campus_event_data)
+            PermissonsService.assigin_object_permissions(
+                context['request'].user, campus_event)
+            return campus_event
 
 
 class EnrollmentService:
