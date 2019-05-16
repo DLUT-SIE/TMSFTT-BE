@@ -1,5 +1,6 @@
 '''Unit tests for training_event views.'''
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.urls import reverse
 from django.utils.timezone import now
 from model_mommy import mommy
@@ -8,7 +9,9 @@ from rest_framework.test import APITestCase
 
 import training_program.models
 import training_event.models
-
+import auth.models
+from auth.utils import assign_perm
+from auth.services import PermissonsService
 
 User = get_user_model()
 
@@ -17,7 +20,15 @@ class TestCampusEventViewSet(APITestCase):
     '''Unit tests for CampusEvent view.'''
     @classmethod
     def setUpTestData(cls):
-        cls.user = mommy.make(User)
+        cls.depart = mommy.make(auth.models.Department, name="创新创业学院")
+        cls.user = mommy.make(User, department=cls.depart)
+        cls.group = mommy.make(Group, name="创新创业学院-管理员")
+        cls.user.groups.add(cls.group)
+        mommy.make(Group, name="大连理工大学-专任教师")
+        assign_perm('training_event.add_campusevent', cls.group)
+        assign_perm('training_event.view_campusevent', cls.group)
+        assign_perm('training_event.change_campusevent', cls.group)
+        assign_perm('training_event.delete_campusevent', cls.group)
 
     def setUp(self):
         self.client.force_authenticate(self.user)
@@ -59,6 +70,7 @@ class TestCampusEventViewSet(APITestCase):
     def test_delete_campus_event(self):
         '''CampusEvent should be deleted by DELETE request.'''
         campus_event = mommy.make(training_event.models.CampusEvent)
+        PermissonsService.assigin_object_permissions(self.user, campus_event)
         url = reverse('campusevent-detail', args=(campus_event.pk,))
 
         response = self.client.delete(url)
@@ -69,6 +81,7 @@ class TestCampusEventViewSet(APITestCase):
     def test_get_campus_event(self):
         '''CampusEvent should be accessed by GET request.'''
         campus_event = mommy.make(training_event.models.CampusEvent)
+        PermissonsService.assigin_object_permissions(self.user, campus_event)
         url = reverse('campusevent-detail', args=(campus_event.pk,))
 
         response = self.client.get(url)
@@ -83,6 +96,7 @@ class TestCampusEventViewSet(APITestCase):
         name1 = 'campus_event1'
         campus_event = mommy.make(training_event.models.CampusEvent,
                                   name=name0)
+        PermissonsService.assigin_object_permissions(self.user, campus_event)
         url = reverse('campusevent-detail', args=(campus_event.pk,))
         data = {'name': name1}
 

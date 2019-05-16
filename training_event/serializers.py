@@ -2,8 +2,10 @@
 from rest_framework import serializers
 from django.utils.timezone import now
 import training_event.models
-from training_event.services import EnrollmentService
+
 from training_program.serializers import ReadOnlyProgramSerializer
+from training_event.services import EnrollmentService, CampusEventService
+
 
 
 class CampusEventSerializer(serializers.ModelSerializer):
@@ -56,6 +58,10 @@ class CampusEventSerializer(serializers.ModelSerializer):
         else:
             res = self.context[key]
         return res[obj.id]
+
+    def create(self, validated_data):
+        return CampusEventService.create_campus_event(
+            validated_data, self.context)
 
 
 class OffCampusEventSerializer(serializers.ModelSerializer):
