@@ -91,7 +91,7 @@ def get_dlut_department():
 def get_dlut_admin():
     department = get_dlut_department()
     user, created = User.objects.get_or_create(
-        username='admin', 
+        username='admin',
         first_name='管理员',
         department=department
     )
@@ -327,18 +327,6 @@ def read_teachers_information(
 
 def assign_model_perms(departments):
     model_perms = {
-        # Auth
-        Department: {
-            '管理员': ['view'],
-            '专任教师': [],
-            '大连理工大学-专任教师': ['view'],
-        },
-        User: {
-            '管理员': ['view'],
-            '专任教师': [],
-            '大连理工大学-专任教师': ['view'],
-        },
-        # Infra
         Notification: {
             '管理员': ['view'],
             '专任教师': [],
@@ -373,11 +361,6 @@ def assign_model_perms(departments):
             '大连理工大学-专任教师': ['view'],
         },
         RecordAttachment: {
-            '管理员': ['view'],
-            '专任教师': [],
-            '大连理工大学-专任教师': ['view'],
-        },
-        StatusChangeLog: {
             '管理员': ['view'],
             '专任教师': [],
             '大连理工大学-专任教师': ['view'],
