@@ -87,15 +87,41 @@ class EnrollmentService:
         key 为活动的编号
         value 活动是否报名，True表示该活动已经报名，False表示活动没有报名
         """
-        if events is not None:
-            if isinstance(events[0], CampusEvent):
-                events = [event.id for event in events]
+        if events and isinstance(events[0], CampusEvent):
+            events = [event.id for event in events]
 
         enrolled_events = set(Enrollment.objects.filter(
             user=user, campus_event__id__in=events
         ).values_list('campus_event_id', flat=True))
 
         return {event: event in enrolled_events
+                for event in events}
+
+    @staticmethod
+    def get_user_enrollment_id(events, user):
+        """Provide services for get Enrollment id.
+        Parameters
+        ----------
+        events: list
+            要查询的校内活动的对象列表或者数字列表
+        user: number or object
+            当然的用户的id或者对象
+
+
+        Returns
+        -------
+        result: dict
+        key 为活动的编号
+        value 如果活动报名，value是报名的id，如果活动没有报名，value就是None
+        """
+        if events and isinstance(events[0], CampusEvent):
+            events = [event.id for event in events]
+
+        enrolled_data = dict(Enrollment.objects.filter(
+            user=user, campus_event__id__in=events
+        ).values_list('campus_event_id', 'id'))
+
+        return {event: enrolled_data[event] if event in enrolled_data else None
                 for event in events}
 
 

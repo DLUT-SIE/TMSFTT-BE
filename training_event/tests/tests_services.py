@@ -68,6 +68,22 @@ class TestEnrollmentService(TestCase):
             events, self.user.id)
         self.assertEqual(results, expected_result)
 
+    def test_get_user_enrollment_id(self):
+        '''Should get user enrollment id.'''
+        events = [mommy.make(CampusEvent) for _ in range(10)]
+        expected_result = {}
+        for idx, event in enumerate(events):
+            if idx >= 3:
+                obj = mommy.make(Enrollment, user=self.user,
+                                 campus_event=event)
+                expected_result[event.id] = obj.id
+            else:
+                expected_result[event.id] = None
+
+        results = EnrollmentService.get_user_enrollment_id(
+            events, self.user.id)
+        self.assertEqual(results, expected_result)
+
     def test_delete_enrollment(self):
         '''Should delete enrollment.'''
         self.event.num_participants = 10
