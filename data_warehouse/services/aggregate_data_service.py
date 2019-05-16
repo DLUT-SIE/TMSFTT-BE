@@ -73,19 +73,24 @@ class AggregateDataService:
     @classmethod
     def teachers_statistics(cls, context):
         ''' get teachers statistics data'''
+        group_users = cls.get_group_users(context)
+        data = CanvasDataFormater.format_teachers_statistics_data(group_users)
+        return data
+
+    @classmethod
+    def get_group_users(cls, context):
+        '''get group users data'''
         group_by = context.get('group_by', '')
         department_id = context.get('department_id', '')
-        if group_by.isdigit() and department_id.isdigit():
-            group_by = int(group_by)
-            department_id = int(department_id)
-        else:
+        if not (group_by.isdigit() and department_id.isdigit()):
             raise BadRequest("错误的参数")
+        group_by = int(group_by)
+        department_id = int(department_id)
         users = cls.get_users_by_department(
             context['request'].user, department_id)
         group_users = TeachersGroupService.teachers_statistics_group_dispatch(
             users, group_by, True)
-        data = CanvasDataFormat.teachers_statistics_data_format(group_users)
-        return data
+        return group_users
 
     @staticmethod
     def get_users_by_department(request_user, department_id):
@@ -96,33 +101,40 @@ class AggregateDataService:
         department_id: int
         '''
         departments = Department.objects.filter(id=department_id)
-        if departments:
-            department = departments[0]
-            if request_user.is_school_admin:
-                if department.name == '大连理工大学':
-                    return get_user_model().objects.all()
-                return get_user_model().objects.filter(
-                    administrative_department=department)
-            if request_user.check_department_admin(department):
-                return get_user_model().objects.filter(
-                    administrative_department=department)
+        if not departments:
+            return get_user_model().objects.none()
+        department = departments[0]
+        if request_user.is_school_admin:
+            if department.name == '大连理工大学':
+                return get_user_model().objects.all()
+            return get_user_model().objects.filter(
+                administrative_department=department)
+        if request_user.check_department_admin(department):
+            return get_user_model().objects.filter(
+                administrative_department=department)
         return get_user_model().objects.none()
 
     @classmethod
     def records_statistics(cls, context):
         ''' get records statistics data'''
+        group_records = cls.get_group_records(context)
+        data = CanvasDataFormater.format_records_statistics_data(group_records)
+        return data
+
+    @classmethod
+    def get_group_records(cls, context):
+        '''get group records data'''
         group_by = context.get('group_by', '')
         start_year = context.get('start_year', 2016)
         end_year = context.get('end_year', 2016)
         department_id = context.get('department_id', '')
-        if group_by.isdigit() and start_year.isdigit() and\
-                end_year.isdigit() and department_id.isdigit():
-            group_by = int(group_by)
-            start_year = int(start_year)
-            end_year = int(end_year)
-            department_id = int(department_id)
-        else:
+        if not (group_by.isdigit() and start_year.isdigit() and
+                end_year.isdigit() and department_id.isdigit()):
             raise BadRequest("错误的参数")
+        group_by = int(group_by)
+        start_year = int(start_year)
+        end_year = int(end_year)
+        department_id = int(department_id)
         time = {'start': start_year, 'end': end_year}
         records = cls.get_records_by_time_department(
             context['request'].user, department_id, time)
@@ -135,8 +147,7 @@ class AggregateDataService:
             RecordsGroupService.records_statistics_group_dispatch(
                 records['off_campus_records'], group_by, True)
         )
-        data = CanvasDataFormat.records_statistics_data_format(group_records)
-        return data
+        return group_records
 
     @staticmethod
     def get_records_by_time_department(request_user, department_id, time):
@@ -172,22 +183,23 @@ class AggregateDataService:
                 make_aware(datetime(start_year, 1, 1)),
                 make_aware(datetime(end_year + 1, 1, 1))))
         departments = Department.objects.filter(id=department_id)
-        if departments:
-            department = departments[0]
-            if request_user.is_school_admin:
-                if department.name == '大连理工大学':
-                    records['campus_records'] = campus_records
-                    records['off_campus_records'] = off_campus_records
-                else:
-                    records['campus_records'] = campus_records.filter(
-                        user__administrative_department=department)
-                    records['off_campus_records'] = off_campus_records.filter(
-                        user__administrative_department=department)
-            elif request_user.check_department_admin(department):
+        if not departments:
+            return records
+        department = departments[0]
+        if request_user.is_school_admin:
+            if department.name == '大连理工大学':
+                records['campus_records'] = campus_records
+                records['off_campus_records'] = off_campus_records
+            else:
                 records['campus_records'] = campus_records.filter(
                     user__administrative_department=department)
                 records['off_campus_records'] = off_campus_records.filter(
                     user__administrative_department=department)
+        elif request_user.check_department_admin(department):
+            records['campus_records'] = campus_records.filter(
+                user__administrative_department=department)
+            records['off_campus_records'] = off_campus_records.filter(
+                user__administrative_department=department)
         return records
 
     @classmethod
@@ -465,11 +477,11 @@ class RecordsGroupService:
         return group_records
 
 
-class CanvasDataFormat:
+class CanvasDataFormater:
     '''format data for canvas'''
 
     @staticmethod
-    def records_statistics_data_format(group_records):
+    def format_records_statistics_data(group_records):
         ''' format records statistics data
 
         Parameters:
@@ -511,7 +523,7 @@ class CanvasDataFormat:
         return data
 
     @staticmethod
-    def teachers_statistics_data_format(group_users):
+    def format_teachers_statistics_data(group_users):
         '''format statistics data
 
         Parameters:
