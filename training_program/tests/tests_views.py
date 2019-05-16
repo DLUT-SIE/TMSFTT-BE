@@ -1,12 +1,15 @@
 '''Unit tests for training_program views.'''
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from model_mommy import mommy
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-import training_program.models
 import auth.models
+from auth.utils import assign_perm
+from auth.services import PermissonsService
+import training_program.models
 
 
 User = get_user_model()
@@ -16,7 +19,15 @@ class TestProgram(APITestCase):
     '''Unit tests for Program view.'''
     @classmethod
     def setUpTestData(cls):
-        cls.user = mommy.make(User)
+        cls.depart = mommy.make(auth.models.Department, name="创新创业学院")
+        cls.user = mommy.make(User, department=cls.depart)
+        cls.group = mommy.make(Group, name="创新创业学院-管理员")
+        cls.user.groups.add(cls.group)
+        mommy.make(Group, name="大连理工大学-专任教师")
+        assign_perm('training_program.add_program', cls.group)
+        assign_perm('training_program.view_program', cls.group)
+        assign_perm('training_program.change_program', cls.group)
+        assign_perm('training_program.delete_program', cls.group)
 
     def setUp(self):
         self.client.force_authenticate(self.user)
@@ -49,6 +60,7 @@ class TestProgram(APITestCase):
     def test_delete_program(self):
         '''Program list should be deleted by DELETE request.'''
         program = mommy.make(training_program.models.Program)
+        PermissonsService.assigin_object_permissions(self.user, program)
         url = reverse('program-detail', args=(program.pk,))
 
         response = self.client.delete(url)
@@ -59,6 +71,7 @@ class TestProgram(APITestCase):
     def test_get_program(self):
         '''Program list should be GET by GET request.'''
         program = mommy.make(training_program.models.Program)
+        PermissonsService.assigin_object_permissions(self.user, program)
         url = reverse('program-detail', args=(program.pk,))
         expected_keys = {'id', 'name', 'department', 'category',
                          'category_str'}
@@ -73,8 +86,10 @@ class TestProgram(APITestCase):
         name0 = 'program0'
         name1 = 'program1'
         program = mommy.make(training_program.models.Program, name=name0)
+        PermissonsService.assigin_object_permissions(self.user, program)
         url = reverse('program-detail', args=(program.pk, ))
         data = {'name': name1}
+        print()
 
         response = self.client.patch(url, data, format='json')
 
