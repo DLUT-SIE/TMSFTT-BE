@@ -40,7 +40,6 @@ class EnrollmentService:
             # Lock the event until the end of the transaction
             event = CampusEvent.objects.select_for_update().get(
                 id=enrollment_data['campus_event'].id)
-
             if event.num_enrolled >= event.num_participants:
                 raise BadRequest('报名人数已满')
 
@@ -53,6 +52,23 @@ class EnrollmentService:
             event.save()
 
             return enrollment
+
+    @staticmethod
+    def delete_enrollment(instance):
+        """Provide services for delete enrollments.
+        Parameters
+        ----------
+        instance: enrollment
+            删除的enrollment对象
+        """
+        with transaction.atomic():
+            # Lock the event until the end of the transaction
+            event = CampusEvent.objects.select_for_update().get(
+                id=instance.campus_event_id
+            )
+            event.num_enrolled -= 1
+            event.save()
+            instance.delete()
 
     @staticmethod
     def get_user_enrollment_status(events, user):

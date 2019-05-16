@@ -41,12 +41,6 @@ class Department(models.Model):
         verbose_name = '院系'
         verbose_name_plural = '院系'
         default_permissions = ()
-        permissions = (
-            ('add_department', '允许添加院系'),
-            ('view_department', '允许查看院系'),
-            ('change_department', '允许修改院系'),
-            ('delete_department', '允许删除院系'),
-        )
 
     raw_department_id = models.CharField(
         verbose_name='单位原始ID', max_length=20, unique=True)
@@ -88,12 +82,6 @@ class User(AbstractUser):
         verbose_name = '用户'
         verbose_name_plural = '用户'
         default_permissions = ()
-        permissions = (
-            ('add_user', '允许添加用户'),
-            ('view_user', '允许查看用户'),
-            ('change_user', '允许修改用户'),
-            ('delete_user', '允许删除用户'),
-        )
 
     department = models.ForeignKey(
         Department, verbose_name='所属院系', on_delete=models.PROTECT,

@@ -37,6 +37,7 @@ class Record(models.Model):
             ('view_record', '允许查看培训记录'),
             ('change_record', '允许修改培训记录'),
             ('delete_record', '允许删除培训记录'),
+            ('review_record', '允许审核培训记录'),
         )
 
     create_time = models.DateTimeField(verbose_name='创建时间',
@@ -92,10 +93,7 @@ class RecordContent(models.Model):
         verbose_name_plural = '培训记录内容'
         default_permissions = ()
         permissions = (
-            ('add_recordcontent', '允许添加培训记录内容'),
             ('view_recordcontent', '允许查看培训记录内容'),
-            ('change_recordcontent', '允许修改培训记录内容'),
-            ('delete_recordcontent', '允许删除培训记录内容'),
         )
 
     create_time = models.DateTimeField(verbose_name='创建时间',
@@ -133,10 +131,7 @@ class RecordAttachment(models.Model):
         verbose_name_plural = '培训记录附件'
         default_permissions = ()
         permissions = (
-            ('add_recordattachment', '允许添加培训记录附件'),
             ('view_recordattachment', '允许查看培训记录附件'),
-            ('change_recordattachment', '允许修改培训记录附件'),
-            ('delete_recordattachment', '允许删除培训记录附件'),
         )
 
     create_time = models.DateTimeField(verbose_name='创建时间',
@@ -177,12 +172,6 @@ class StatusChangeLog(models.Model):
         verbose_name = '培训记录状态更改日志'
         verbose_name_plural = '培训记录状态更改日志'
         default_permissions = ()
-        permissions = (
-            ('add_statuschangelog', '允许添加培训记录状态更改日志'),
-            ('view_statuschangelog', '允许查看培训记录状态更改日志'),
-            ('change_statuschangelog', '允许修改培训记录状态更改日志'),
-            ('delete_statuschangelog', '允许删除培训记录状态更改日志'),
-        )
 
     record = models.ForeignKey(Record, verbose_name='培训记录',
                                on_delete=models.CASCADE)
@@ -207,6 +196,11 @@ class CampusEventFeedback(models.Model):
     class Meta:
         verbose_name = '培训活动反馈'
         verbose_name_plural = '培训活动反馈'
+        default_permissions = ()
+        permissions = (
+            ('view_campuseventfeedback', '允许查看培训活动反馈'),
+            ('add_campuseventfeedback', '允许增加培训活动反馈'),
+        )
 
     create_time = models.DateTimeField(verbose_name='创建时间',
                                        auto_now_add=True)
