@@ -89,7 +89,6 @@ class TestProgram(APITestCase):
         PermissonsService.assigin_object_permissions(self.user, program)
         url = reverse('program-detail', args=(program.pk, ))
         data = {'name': name1}
-        print()
 
         response = self.client.patch(url, data, format='json')
 
