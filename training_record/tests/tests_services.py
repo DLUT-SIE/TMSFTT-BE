@@ -76,6 +76,7 @@ class TestRecordService(TestCase):
             user=user,
             contents=None,
             attachments=None,
+            role=EventCoefficient.ROLE_EXPERT,
         )
 
         self.assertEqual(
@@ -84,6 +85,27 @@ class TestRecordService(TestCase):
         self.assertEqual(
             RecordAttachment.objects.all().count(), 0,
         )
+
+    def test_create_off_campus_records_no_role(self):
+        '''Should raise ValueError if no role.'''
+        user = mommy.make(User)
+
+        with self.assertRaisesMessage(
+                BadRequest, '参与方式无效'):
+            RecordService.create_off_campus_record_from_raw_data(
+                off_campus_event=self.off_campus_event,
+                user=user,)
+
+    def test_create_off_campus_records_bad_role(self):
+        '''Should raise ValueError if no role.'''
+        user = mommy.make(User)
+
+        with self.assertRaisesMessage(
+                BadRequest, '参与方式无效'):
+            RecordService.create_off_campus_record_from_raw_data(
+                off_campus_event=self.off_campus_event,
+                user=user,
+                role=1433223)
 
     def test_create_off_campus_record(self):
         '''Should complete full creation.'''
@@ -94,6 +116,7 @@ class TestRecordService(TestCase):
             user=user,
             contents=self.contents,
             attachments=self.attachments,
+            role=EventCoefficient.ROLE_EXPERT,
         )
 
         self.assertEqual(
@@ -118,7 +141,8 @@ class TestRecordService(TestCase):
             off_campus_event=self.off_campus_event_data,
             user=user,
             contents=None,
-            attachments=None
+            attachments=None,
+            role=EventCoefficient.ROLE_EXPERT,
         )
 
         self.assertEqual(
@@ -143,6 +167,7 @@ class TestRecordService(TestCase):
                 user=user,
                 contents=None,
                 attachments=attachments,
+                role=EventCoefficient.ROLE_EXPERT,
             )
 
     def test_update_off_campus_record_bad_record(self):
@@ -156,6 +181,7 @@ class TestRecordService(TestCase):
                 user=user,
                 contents=None,
                 attachments=None,
+                role=EventCoefficient.ROLE_EXPERT,
             )
 
     def test_update_off_campus_record_bad_event_data(self):
@@ -169,7 +195,31 @@ class TestRecordService(TestCase):
                 user=user,
                 contents=None,
                 attachments=None,
+                role=EventCoefficient.ROLE_EXPERT,
             )
+
+    def test_update_off_campus_records_no_role(self):
+        '''Should raise ValueError if no role.'''
+        user = mommy.make(User)
+
+        with self.assertRaisesMessage(
+                BadRequest, '参与方式无效'):
+            RecordService.update_off_campus_record_from_raw_data(
+                record=self.record,
+                off_campus_event=self.off_campus_event,
+                user=user,)
+
+    def test_update_off_campus_records_bad_role(self):
+        '''Should raise ValueError if no role.'''
+        user = mommy.make(User)
+
+        with self.assertRaisesMessage(
+                BadRequest, '参与方式无效'):
+            RecordService.update_off_campus_record_from_raw_data(
+                record=self.record,
+                off_campus_event=self.off_campus_event,
+                user=user,
+                role=1433223)
 
     def test_update_off_campus_record(self):
         '''Should complete full creation.'''
@@ -181,6 +231,7 @@ class TestRecordService(TestCase):
             user=user,
             contents=self.contents,
             attachments=self.attachments,
+            role=EventCoefficient.ROLE_EXPERT,
         )
 
         self.assertEqual(
