@@ -23,7 +23,7 @@ def _update_from_department_information():
 
     raw_departments = DepartmentInformation.objects.all()
     dwid_to_department = {}
-    department_to_administrative = {}
+    department_id_to_administrative = {}
     for raw_department in raw_departments:
         department, _ = Department.objects.get_or_create(
             raw_department_id=raw_department.dwid,
@@ -60,36 +60,37 @@ def _update_from_department_information():
 
         if department.super_department == dlut:
             # 二级部门的administrative为本身
-            department_to_administrative[department] = department
+            department_id_to_administrative[department.id] = department
         else:
             # 非二级部门的administrative暂为superdepartment
-            department_to_administrative[department] = (
+            department_id_to_administrative[department.id] = (
                 department.super_department
             )
-    # 并查集思想找administrative_department
-    for department in department_to_administrative:
-        origin_department = department
-        administrative = department_to_administrative[department]
-        while administrative != department:
-            department = administrative
-            administrative = department_to_administrative[department]
-        department_to_administrative[origin_department] = administrative
+
+    for department_id in department_id_to_administrative:
+        same_administrative = []
+        administrative = department_id_to_administrative[department_id]
+        while administrative.id != department_id:
+            same_administrative.append(department_id)
+            department_id = administrative.id
+            administrative = department_id_to_administrative[department_id]
+        for item_id in same_administrative:
+            department_id_to_administrative[item_id] = administrative
     # TODO(youchen): Create related groups
 
     prod_logger.info('部门信息更新完毕')
 
-    return dwid_to_department, department_to_administrative
+    return dwid_to_department, department_id_to_administrative
 
 
 def _update_from_teacher_information(dwid_to_department,
-                                     department_to_administrative):
+                                     department_id_to_administrative):
     '''Scan table TeacherInformation and update related tables.'''
     prod_logger.info('开始扫描并更新用户信息')
     raw_users = TeacherInformation.objects.all()
-
-    raw_department_ids = ['{}'.format(
-        department_to_administrative[key]
-        .raw_department_id) for key in department_to_administrative.keys()]
+    raw_department_ids = [
+        f'{dep.raw_department_id}'
+        for dep in department_id_to_administrative.values()]
     for raw_user in raw_users:
         user, created = User.objects.get_or_create(username=raw_user.zgh)
         if created:
@@ -105,7 +106,7 @@ def _update_from_teacher_information(dwid_to_department,
         else:
             user.department = dwid_to_department.get(raw_user.xy)
             user.administrative_department = (
-                department_to_administrative[user.department]
+                department_id_to_administrative[user.department.id]
             )
 
         user.gender = User.GENDER_CHOICES_MAP[raw_user.get_xb_display()]
@@ -131,11 +132,11 @@ def _update_from_teacher_information(dwid_to_department,
 def update_teachers_and_departments_information():
     '''Scan table TBL_DW_INFO and TBL_JB_INFO, update related tables.'''
     try:
-        dwid_to_department, department_to_administrative = (
+        dwid_to_department, department_id_to_administrative = (
             _update_from_department_information()
         )
 
         _update_from_teacher_information(dwid_to_department,
-                                         department_to_administrative)
+                                         department_id_to_administrative)
     except Exception:
         prod_logger.exception('教师信息或部门信息更新失败')

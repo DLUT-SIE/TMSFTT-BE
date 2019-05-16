@@ -24,15 +24,15 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
             mocked_prod_logger):
         '''Should call update functions.'''
         dwid_to_department = Mock()
-        department_to_administrative = Mock()
+        department_id_to_administrative = Mock()
         mocked_department_update_func.return_value = (
-            dwid_to_department, department_to_administrative)
+            dwid_to_department, department_id_to_administrative)
 
         update_teachers_and_departments_information()
 
         mocked_department_update_func.assert_called()
         mocked_teacher_update_func.assert_called_with(
-            dwid_to_department, department_to_administrative)
+            dwid_to_department, department_id_to_administrative)
         mocked_prod_logger.exception.assert_not_called()
 
     @patch('auth.tasks.prod_logger')
@@ -65,7 +65,7 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
                             dwlx=Department.DEPARTMENT_TYPE_T1
                             )
                  for idx in range(num_departments)]
-        dwid_to_department, department_to_administrative = (
+        dwid_to_department, department_id_to_administrative = (
             _update_from_department_information()
         )
 
@@ -75,7 +75,7 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
         self.assertEqual(len(departments), num_departments)
         self.assertEqual(len(dwid_to_department), num_departments)
 
-        self.assertEqual(len(department_to_administrative), num_departments)
+        self.assertEqual(len(department_id_to_administrative), num_departments)
 
         for info, department in zip(infos, departments):
             if info.dwmc == dlut_name:
@@ -92,7 +92,7 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
         departments = [mommy.make(Department, id=idx, raw_department_id=idx)
                        for idx in range(1, 1 + num_departments)]
         dwid_to_department = {f'{dep.id}': dep for dep in departments}
-        department_to_administrative = {dep: dep for dep in departments}
+        department_id_to_administrative = {dep.id: dep for dep in departments}
         num_teachers = 20
         raw_users = [mommy.make(
             TeacherInformation, zgh=f'2{idx:02d}', jsxm=f'name{idx}',
@@ -102,7 +102,7 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
                      for idx in range(1, 1 + num_teachers)]
 
         _update_from_teacher_information(dwid_to_department,
-                                         department_to_administrative)
+                                         department_id_to_administrative)
 
         users = User.objects.exclude(
             username='AnonymousUser').order_by('username')
