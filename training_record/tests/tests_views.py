@@ -42,7 +42,6 @@ class TestRecordViewSet(APITestCase):
             'num_hours': 5,
             'num_participants': 30,
         }
-        event_coefficient = mommy.make(EventCoefficient)
         attachments = [io.BytesIO(b'some content') for _ in range(3)]
         contents = [
             json.dumps({'content_type': x[0], 'content': 'abc'})
@@ -52,7 +51,7 @@ class TestRecordViewSet(APITestCase):
             'user': user.id,
             'contents': contents,
             'attachments': attachments,
-            'event_coefficient': event_coefficient.id,
+            'role': EventCoefficient.ROLE_PARTICIPATOR,
         }
 
         response = self.client.post(url, data, format='multipart')
@@ -119,7 +118,7 @@ class TestRecordViewSet(APITestCase):
         url = reverse('record-detail', args=(record.pk,))
         expected_keys = {'id', 'create_time', 'update_time', 'campus_event',
                          'off_campus_event', 'user', 'status', 'contents',
-                         'attachments', 'status_str',
+                         'attachments', 'status_str', 'role', 'role_str',
                          'feedback'}
 
         response = self.client.get(url)
@@ -143,7 +142,8 @@ class TestRecordViewSet(APITestCase):
                             off_campus_event=off_campus_event)
 
         url = reverse('record-detail', args=(record.pk,))
-        data = {'off_campus_event': json.dumps(off_campus_event_data)}
+        data = {'off_campus_event': json.dumps(off_campus_event_data),
+                'role': EventCoefficient.ROLE_PARTICIPATOR}
 
         response = self.client.patch(url, data, format='json')
 
@@ -485,3 +485,16 @@ class TestStatusChangeLogViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('pre_status', response.data)
         self.assertEqual(response.data['pre_status'], pre_status1)
+
+
+class TestEventCoefficientRoleChoicesViewSet(APITestCase):
+    '''Unit tests for StatusChangeLog view.'''
+    def test_list_role_choices(self):
+        '''Should return the whole role choices'''
+        user = mommy.make(User)
+        url = reverse('role-choices-list')
+
+        self.client.force_authenticate(user)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

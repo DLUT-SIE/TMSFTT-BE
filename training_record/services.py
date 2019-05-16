@@ -22,7 +22,7 @@ class RecordService:
     @staticmethod
     def create_off_campus_record_from_raw_data(
             off_campus_event=None, user=None,
-            contents=None, attachments=None, event_coefficient=None):
+            contents=None, attachments=None, role=None):
         '''Create a training record of off-campus training event.
 
         Parameters
@@ -37,6 +37,9 @@ class RecordService:
             create a RecordContent.
         attachments(optional): list of InMemoryFile
 
+        role: number
+            The role of the user.
+
         Returns
         -------
         record: Record
@@ -49,18 +52,20 @@ class RecordService:
             contents = []
         if attachments is None:
             attachments = []
+        if role is None or role not in [
+                role for (role, _) in EventCoefficient.ROUND_CHOICES]:
+            raise BadRequest('参与方式无效')
 
         with transaction.atomic():
             off_campus_event = OffCampusEvent.objects.create(
                 **off_campus_event,
             )
 
-            if event_coefficient is None:
-                event_coefficient = EventCoefficient.objects.create(
-                    role=EventCoefficient.ROLE_PARTICIPATOR, coefficient=0,
-                    hours_option=EventCoefficient.ROUND_METHOD_NONE,
-                    workload_option=EventCoefficient.ROUND_METHOD_NONE,
-                    off_campus_event=off_campus_event)
+            event_coefficient = EventCoefficient.objects.create(
+                role=role, coefficient=0,
+                hours_option=EventCoefficient.ROUND_METHOD_NONE,
+                workload_option=EventCoefficient.ROUND_METHOD_NONE,
+                off_campus_event=off_campus_event)
 
             record = Record.objects.create(
                 off_campus_event=off_campus_event,
@@ -87,7 +92,7 @@ class RecordService:
     @staticmethod
     def update_off_campus_record_from_raw_data(
             record, off_campus_event=None, user=None,
-            contents=None, attachments=None):
+            contents=None, attachments=None, role=None):
         '''Update the off-campus record
 
         Parameters
@@ -113,6 +118,9 @@ class RecordService:
             contents = []
         if attachments is None:
             attachments = []
+        if role is None or role not in [
+                role for (role, _) in EventCoefficient.ROUND_CHOICES]:
+            raise BadRequest('参与方式无效')
 
         with transaction.atomic():
             # get the record to be updated
@@ -133,6 +141,10 @@ class RecordService:
             for key, val in off_campus_event_data.items():
                 setattr(off_campus_event_instance, key, val)
             off_campus_event_instance.save()
+
+            event_coefficient = EventCoefficient.objects.get(records=record.id)
+            event_coefficient.role = role
+            event_coefficient.save()
 
             # add attachments
             for attachment in attachments:
