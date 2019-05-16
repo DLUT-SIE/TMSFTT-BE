@@ -17,8 +17,6 @@ def _update_from_department_information():
     '''Scan table DepartmentInformation and update related tables.'''
     prod_logger.info('开始扫描并更新部门信息')
 
-    dlut_id = '10141'
-    dlut_name = '大连理工大学'
     dlut, _ = Department.objects.get_or_create(raw_department_id=DLUT_ID)
     if dlut.name is None or dlut.name != DLUT_NAME:
         dlut.name = DLUT_NAME
