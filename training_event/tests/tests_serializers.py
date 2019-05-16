@@ -23,6 +23,16 @@ class TestCampusEventSerializer(TestCase):
         data = serializer.data
         self.assertIn('expired', data[0])
 
+    def test_get_enrollment_id(self):
+        '''should get enrollments id when serialier events.'''
+        event = mommy.make(CampusEvent)
+        events = [event, event]
+        serializer = CampusEventSerializer(events, many=True)
+        serializer.context['request'] = Mock()
+        serializer.context['request'].user = 23
+        data = serializer.data
+        self.assertIn('enrollment_id', data[0])
+
 
 class TestEnrollmentSerializer(TestCase):
     '''Unit tests for serializer of Enrollment.'''

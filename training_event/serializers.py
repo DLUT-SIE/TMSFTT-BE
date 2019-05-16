@@ -3,12 +3,16 @@ from rest_framework import serializers
 from django.utils.timezone import now
 import training_event.models
 from training_event.services import EnrollmentService
+from training_program.serializers import ReadOnlyProgramSerializer
 
 
 class CampusEventSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize CampusEvent instance.'''
     expired = serializers.SerializerMethodField(read_only=True)
     enrolled = serializers.SerializerMethodField(read_only=True)
+    program_detail = ReadOnlyProgramSerializer(source='program',
+                                               read_only=True)
+    enrollment_id = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = training_event.models.CampusEvent
@@ -29,6 +33,23 @@ class CampusEventSerializer(serializers.ModelSerializer):
             else:
                 instances = self.instance
             res = EnrollmentService.get_user_enrollment_status(
+                instances, user
+            )
+            self.context[key] = res
+        else:
+            res = self.context[key]
+        return res[obj.id]
+
+    def get_enrollment_id(self, obj):
+        '''Get event enrollments id.'''
+        key = 'enrollment_cache'
+        user = self.context['request'].user
+        if key not in self.context:
+            if not isinstance(self.instance, list):
+                instances = [self.instance]
+            else:
+                instances = self.instance
+            res = EnrollmentService.get_user_enrollment_id(
                 instances, user
             )
             self.context[key] = res
