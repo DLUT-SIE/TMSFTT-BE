@@ -23,8 +23,6 @@ class ProgramService:
         -------
         program: Program
         '''
-        if context is None:
-            context = {}
 
         with transaction.atomic():
             program = Program.objects.create(**program_data)
