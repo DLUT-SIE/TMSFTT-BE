@@ -24,11 +24,6 @@ class ProgramViewSet(MultiSerializerActionClassMixin, viewsets.ModelViewSet):
         auth.permissions.DjangoObjectPermissions,
     )
     filter_fields = ('department',)
-    perms_map = {
-        'create': ['%(app_label)s.add_%(model_name)s'],
-        'partial_update': ['%(app_label)s.change_%(model_name)s'],
-        'update': ['%(app_label)s.change_%(model_name)s'],
-    }
 
 
 class ProgramCategoryViewSet(viewsets.ViewSet):

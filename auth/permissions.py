@@ -7,7 +7,7 @@ from infra.utils import prod_logger
 
 SAFE_METHODS = ('GET', 'HEAD', 'OPTIONS')
 STANDARD_ACTIONS = ('create', 'retrieve', 'list', 'update',
-                    'partial', 'destroy')
+                    'partial_update', 'destroy')
 
 
 class SchoolAdminOnlyPermission(permissions.BasePermission):
