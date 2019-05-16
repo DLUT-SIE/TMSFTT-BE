@@ -6,7 +6,7 @@ from auth.services import PermissonsService
 
 
 class ProgramService:
-    '''Provide services for Enrollment.'''
+    '''Provide services for Program.'''
     @staticmethod
     def create_program(program_data, context=None):
         '''Create a Program with ObjectPermission.
