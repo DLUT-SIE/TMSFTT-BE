@@ -327,11 +327,6 @@ def read_teachers_information(
 
 def assign_model_perms(departments):
     model_perms = {
-        Notification: {
-            '管理员': ['view'],
-            '专任教师': [],
-            '大连理工大学-专任教师': ['view'],
-        },
         # Program
         Program: {
             '管理员': ['add', 'view', 'change', 'delete'],
