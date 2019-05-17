@@ -191,6 +191,10 @@ class TestEnrollmentViewSet(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = mommy.make(User)
+        cls.group = mommy.make(Group, name="大连理工大学-专任教师")
+        cls.user.groups.add(cls.group)
+        assign_perm('training_event.add_enrollment', cls.group)
+        assign_perm('training_event.delete_enrollment', cls.group)
 
     def setUp(self):
         self.client.force_authenticate(self.user)
@@ -216,8 +220,7 @@ class TestEnrollmentViewSet(APITestCase):
         url = reverse('enrollment-list')
 
         response = self.client.get(url)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_delete_enrollment(self):
         '''Enrollment should be deleted by DELETE request.'''
@@ -229,7 +232,7 @@ class TestEnrollmentViewSet(APITestCase):
         event.save()
         enrollment = mommy.make(training_event.models.Enrollment,
                                 user=user, campus_event=event)
-
+        PermissonsService.assigin_object_permissions(self.user, enrollment)
         url = reverse('enrollment-detail', args=(enrollment.pk,))
         response = self.client.delete(url)
 
@@ -239,11 +242,10 @@ class TestEnrollmentViewSet(APITestCase):
         '''Enrollment should be accessed by GET request.'''
         enrollment = mommy.make(training_event.models.Enrollment)
         url = reverse('enrollment-detail', args=(enrollment.pk,))
+        PermissonsService.assigin_object_permissions(self.user, enrollment)
 
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('id', response.data)
-        self.assertEqual(response.data['id'], enrollment.id)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_update_enrollment(self):
         '''Enrollment should NOT be updated by PATCH request.'''
@@ -254,7 +256,7 @@ class TestEnrollmentViewSet(APITestCase):
         response = self.client.patch(url, data, format='json')
 
         self.assertEqual(response.status_code,
-                         status.HTTP_405_METHOD_NOT_ALLOWED)
+                         status.HTTP_403_FORBIDDEN)
 
 
 class TestWorkloadFileView(APITestCase):

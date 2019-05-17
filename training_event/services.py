@@ -77,6 +77,8 @@ class EnrollmentService:
             # Update the number of enrolled participants
             event.num_enrolled += 1
             event.save()
+            PermissonsService.assigin_object_permissions(
+                enrollment_data['user'], enrollment)
 
             return enrollment
 
