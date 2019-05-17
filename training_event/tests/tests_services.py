@@ -60,10 +60,6 @@ class TestEnrollmentService(TestCase):
         self.group = mommy.make(Group, name="大连理工大学-专任教师")
         self.user.groups.add(self.group)
         self.data = {'campus_event': self.event, 'user': self.user}
-        self.data_no_user = {'campus_event': self.event}
-        self.request = HttpRequest()
-        self.request.user = self.user
-        self.context = {'request': self.request, 'data': ''}
         assign_perm('training_event.add_enrollment', self.group)
         assign_perm('training_event.delete_enrollment', self.group)
 
@@ -71,24 +67,13 @@ class TestEnrollmentService(TestCase):
         '''Should raise BadRequest if no more head counts for CampusEvent.'''
         with self.assertRaisesMessage(
                 BadRequest, '报名人数已满'):
-            EnrollmentService.create_enrollment(self.data, self.context)
+            EnrollmentService.create_enrollment(self.data)
 
     def test_create_enrollment_user_in_data(self):
         '''Should create enrollment.'''
         self.event.num_participants = 10
         self.event.save()
-        EnrollmentService.create_enrollment(self.data, self.context)
-
-        count = Enrollment.objects.filter(user=self.user).count()
-
-        self.assertEqual(count, 1)
-
-    def test_create_enrollment_data_without_user(self):
-        '''Should create enrollment by data without user.'''
-        self.event.num_participants = 10
-        self.event.save()
-
-        EnrollmentService.create_enrollment(self.data_no_user, self.context)
+        EnrollmentService.create_enrollment(self.data)
 
         count = Enrollment.objects.filter(user=self.user).count()
 

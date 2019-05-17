@@ -42,7 +42,7 @@ class CampusEventService:
 class EnrollmentService:
     '''Provide services for Enrollment.'''
     @staticmethod
-    def create_enrollment(enrollment_data, context=None):
+    def create_enrollment(enrollment_data):
         '''Create a enrollment for specific campus event.
 
         This action is atomic, will fail if there are no more heads counts for
@@ -53,25 +53,17 @@ class EnrollmentService:
         enrollment_data: dict
             This dict should have full information needed to
             create an Enrollment.
-        context: dict
-            An optional dict to provide contextual information. Default: None
 
         Returns
         -------
         enrollment: Enrollment
         '''
-        if context is None:
-            context = {}
-
         with transaction.atomic():
             # Lock the event until the end of the transaction
             event = CampusEvent.objects.select_for_update().get(
                 id=enrollment_data['campus_event'].id)
             if event.num_enrolled >= event.num_participants:
                 raise BadRequest('报名人数已满')
-
-            if 'user' not in enrollment_data and 'request' in context:
-                enrollment_data['user'] = context['request'].user
 
             enrollment = Enrollment.objects.create(**enrollment_data)
             # Update the number of enrolled participants
