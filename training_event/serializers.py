@@ -7,7 +7,6 @@ from training_program.serializers import ReadOnlyProgramSerializer
 from training_event.services import EnrollmentService, CampusEventService
 
 
-
 class CampusEventSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize CampusEvent instance.'''
     expired = serializers.SerializerMethodField(read_only=True)
