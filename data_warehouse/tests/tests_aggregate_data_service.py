@@ -214,7 +214,7 @@ class TestAggregateDataService(TestCase):
             user1, 1, time)
         self.assertEqual(records['campus_records'][0].id, record1.id)
         records = AggregateDataService.get_records_by_time_department(
-            user1, 50, time)
+            user1, 5000, time)
         self.assertEqual(records['campus_records'][0].id, record1.id)
         self.assertEqual(records['off_campus_records'][0].id, record2.id)
         user2 = mommy.make(User)
