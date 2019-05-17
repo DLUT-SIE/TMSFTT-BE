@@ -5,6 +5,7 @@ import json
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.test import override_settings
 from django.urls import reverse
 from django.utils.timezone import now
@@ -12,12 +13,13 @@ from model_mommy import mommy
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from auth.utils import assign_perm
 import training_record.models
 from training_record.models import (
-    Record, RecordContent, RecordAttachment, StatusChangeLog)
+    Record, RecordContent, RecordAttachment, StatusChangeLog,
+    CampusEventFeedback)
 import training_event.models
 from training_event.models import EventCoefficient
-
 
 User = get_user_model()
 
@@ -495,3 +497,32 @@ class TestStatusChangeLogViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('pre_status', response.data)
         self.assertEqual(response.data['pre_status'], pre_status1)
+
+
+class TestCampusEventFeedbackViewSet(APITestCase):
+    '''Unit tests for CampusEventFeedback view.'''
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = mommy.make(User)
+        cls.group = mommy.make(Group, name="大连理工大学-专任教师")
+        cls.user.groups.add(cls.group)
+        assign_perm('training_record.add_campuseventfeedback', cls.group)
+
+    def setUp(self):
+        self.client.force_authenticate(self.user)
+
+    def test_create_campus_event_feedback(self):
+        '''CampusEventFeedback should be created by POST request.'''
+        url = reverse('campuseventfeedback-list')
+        off_campus_event = mommy.make(training_event.models.OffCampusEvent)
+        record = mommy.make(
+            Record,
+            off_campus_event=off_campus_event,
+            status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
+        data = {
+            'record': record.id,
+            'content': '1',
+        }
+        response = self.client.post(url, data, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(CampusEventFeedback.objects.count(), 1)

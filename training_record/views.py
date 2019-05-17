@@ -6,6 +6,7 @@ from rest_framework_bulk.mixins import (
     BulkCreateModelMixin,
 )
 
+import auth.permissions
 import training_record.models
 import training_record.filters
 from training_record.models import Record
@@ -149,3 +150,6 @@ class CampusEventFeedbackViewSet(viewsets.ModelViewSet):
     '''Create API views for CampusEventFeedback.'''
     queryset = training_record.models.CampusEventFeedback.objects.all()
     serializer_class = CampusEventFeedbackSerializer
+    permission_classes = (
+        auth.permissions.DjangoModelPermissions,
+    )

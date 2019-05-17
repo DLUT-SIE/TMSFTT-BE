@@ -198,7 +198,6 @@ class CampusEventFeedback(models.Model):
         verbose_name_plural = '培训活动反馈'
         default_permissions = ()
         permissions = (
-            ('view_campuseventfeedback', '允许查看培训活动反馈'),
             ('add_campuseventfeedback', '允许增加培训活动反馈'),
         )
 
