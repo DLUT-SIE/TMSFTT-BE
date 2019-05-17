@@ -361,7 +361,7 @@ def assign_model_perms(departments):
             '大连理工大学-专任教师': ['view'],
         },
         CampusEventFeedback: {
-            '管理员': ['view'],
+            '管理员': [],
             '专任教师': [],
             '大连理工大学-专任教师': ['add'],
         },

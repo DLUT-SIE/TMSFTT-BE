@@ -27,12 +27,6 @@ class OperationLog(models.Model):
         verbose_name = '操作日志'
         verbose_name_plural = '操作日志'
         default_permissions = ()
-        permissions = (
-            ('add_operationlog', '允许添加操作日志'),
-            ('view_operationlog', '允许查看操作日志'),
-            ('change_operationlog', '允许修改操作日志'),
-            ('delete_operationlog', '允许删除操作日志'),
-        )
 
     time = models.DateTimeField(verbose_name='操作时间', auto_now_add=True)
     remote_ip = models.GenericIPAddressField(verbose_name='操作来源IP')
@@ -75,10 +69,7 @@ class Notification(models.Model):
         verbose_name_plural = '通知'
         default_permissions = ()
         permissions = (
-            ('add_notification', '允许添加通知'),
             ('view_notification', '允许查看通知'),
-            ('change_notification', '允许修改通知'),
-            ('delete_notification', '允许删除通知'),
         )
 
     time = models.DateTimeField(verbose_name='发送时间', auto_now_add=True)
