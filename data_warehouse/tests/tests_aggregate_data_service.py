@@ -124,7 +124,7 @@ class TestAggregateDataService(TestCase):
     def test_teachers_statistics(self):
         '''Should get a teachers_statistics data'''
         self.context = {'request': self.request}
-        self.context['department_id'] = '1'
+        self.context['department_id'] = '0'
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
             AggregateDataService.teachers_statistics(self.context)
         self.context['group_by'] = '100'
@@ -148,7 +148,7 @@ class TestAggregateDataService(TestCase):
     def test_records_statistics(self):
         '''Should get a records_statistics data'''
         self.context = {'request': self.request}
-        self.context['department_id'] = '1'
+        self.context['department_id'] = '0'
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
             AggregateDataService.records_statistics(self.context)
         self.context['group_by'] = '0'
