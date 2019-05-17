@@ -86,6 +86,8 @@ class AggregateDataService:
             raise BadRequest("错误的参数")
         group_by = int(group_by)
         department_id = int(department_id)
+        if department_id == 0:
+            department_id = Department.objects.get(name='大连理工大学').id
         users = cls.get_users_by_department(
             context['request'].user, department_id)
         group_users = TeachersGroupService.teachers_statistics_group_dispatch(
@@ -135,6 +137,8 @@ class AggregateDataService:
         start_year = int(start_year)
         end_year = int(end_year)
         department_id = int(department_id)
+        if department_id == 0:
+            department_id = Department.objects.get(name='大连理工大学').id
         time = {'start': start_year, 'end': end_year}
         records = cls.get_records_by_time_department(
             context['request'].user, department_id, time)
