@@ -38,7 +38,7 @@ class CampusEventSerializer(serializers.ModelSerializer):
             self.context[key] = res
         else:
             res = self.context[key]
-        return res[obj.id]
+        return res.get(obj.id, None)
 
     def get_enrollment_id(self, obj):
         '''Get event enrollments id.'''
@@ -55,7 +55,7 @@ class CampusEventSerializer(serializers.ModelSerializer):
             self.context[key] = res
         else:
             res = self.context[key]
-        return res[obj.id]
+        return res.get(obj.id, None)
 
     def create(self, validated_data):
         return CampusEventService.create_campus_event(
