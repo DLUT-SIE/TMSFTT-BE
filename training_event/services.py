@@ -78,7 +78,7 @@ class EnrollmentService:
             event.num_enrolled += 1
             event.save()
             PermissonsService.assigin_object_permissions(
-                context['request'].user, enrollment)
+                enrollment_data['user'], enrollment)
 
             return enrollment
 
