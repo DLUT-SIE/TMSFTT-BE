@@ -88,7 +88,7 @@ class RecordCreateSerializer(serializers.ModelSerializer):
     role = serializers.ChoiceField(
         choices=EventCoefficient.ROLE_CHOICES,
         write_only=True,
-        required=True,
+        default=EventCoefficient.ROLE_PARTICIPATOR,
     )
 
     class Meta:

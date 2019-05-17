@@ -220,6 +220,16 @@ class TestRecordViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('count', response.data)
 
+    def test_get_role_choices(self):
+        '''Should return the whole role choices'''
+        user = mommy.make(User)
+        url = reverse('record-get-role-choices')
+
+        self.client.force_authenticate(user)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 class TestRecordContentViewSet(APITestCase):
     '''Unit tests for RecordContent view.'''
@@ -485,16 +495,3 @@ class TestStatusChangeLogViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('pre_status', response.data)
         self.assertEqual(response.data['pre_status'], pre_status1)
-
-
-class TestEventCoefficientRoleChoicesViewSet(APITestCase):
-    '''Unit tests for StatusChangeLog view.'''
-    def test_list_role_choices(self):
-        '''Should return the whole role choices'''
-        user = mommy.make(User)
-        url = reverse('role-choices-list')
-
-        self.client.force_authenticate(user)
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)

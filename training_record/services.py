@@ -52,8 +52,8 @@ class RecordService:
             contents = []
         if attachments is None:
             attachments = []
-        if role is None or role not in [
-                role for (role, _) in EventCoefficient.ROUND_CHOICES]:
+        if role not in [
+                role for (role, _) in EventCoefficient.ROLE_CHOICES]:
             raise BadRequest('参与方式无效')
 
         with transaction.atomic():
@@ -63,8 +63,6 @@ class RecordService:
 
             event_coefficient = EventCoefficient.objects.create(
                 role=role, coefficient=0,
-                hours_option=EventCoefficient.ROUND_METHOD_NONE,
-                workload_option=EventCoefficient.ROUND_METHOD_NONE,
                 off_campus_event=off_campus_event)
 
             record = Record.objects.create(
@@ -119,8 +117,8 @@ class RecordService:
             contents = []
         if attachments is None:
             attachments = []
-        if role is None or role not in [
-                role for (role, _) in EventCoefficient.ROUND_CHOICES]:
+        if role not in [
+                role for (role, _) in EventCoefficient.ROLE_CHOICES]:
             raise BadRequest('参与方式无效')
 
         with transaction.atomic():
@@ -143,9 +141,8 @@ class RecordService:
                 setattr(off_campus_event_instance, key, val)
             off_campus_event_instance.save()
 
-            event_coefficient = EventCoefficient.objects.get(records=record.id)
-            event_coefficient.role = role
-            event_coefficient.save()
+            record.event_coefficient.role = role
+            record.event_coefficient.save()
 
             # add attachments
             for attachment in attachments:
