@@ -56,19 +56,6 @@ class EnrollmentViewSet(mixins.CreateModelMixin,
         EnrollmentService.delete_enrollment(instance)
 
 
-class EventCoefficientRoleChoicesViewSet(viewsets.ViewSet):
-    '''Get role choices in event_coefficient'''
-    def list(self, request):
-        '''Define how to get role choices'''
-        role_choices = [
-            {
-                'role': item[0],
-                'role_str': item[1],
-            } for item in training_event.models.EventCoefficient.ROLE_CHOICES
-        ]
-        return Response(role_choices, status=status.HTTP_200_OK)
-
-
 class WorkloadFileDownloadView(APIView):
     '''Create API views for downloading workload file'''
 
