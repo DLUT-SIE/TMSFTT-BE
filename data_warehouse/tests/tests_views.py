@@ -21,8 +21,9 @@ class AggregateDataViewSet(APITestCase):
         '''should return 200 when successed'''
         self.client.force_authenticate(self.user)
 
-        url = reverse('aggregate-data-data') + '?method_name=staff_'\
-            'statistics&a=2&b=2019&c=2019&d=1'
+        url = reverse('aggregate-data-data') + '?method_name=teachers_'\
+            'statistics&group_by=0&start_year=2019&end_year=2019&'\
+            'department_id=1'
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         url = reverse('aggregate-data-data') + '?graph=1&a=2&'\

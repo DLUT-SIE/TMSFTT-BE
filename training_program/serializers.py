@@ -2,6 +2,7 @@
 from rest_framework import serializers
 
 from training_program.models import Program
+from training_program.services import ProgramService
 
 
 class ProgramSerializer(serializers.ModelSerializer):
@@ -10,6 +11,9 @@ class ProgramSerializer(serializers.ModelSerializer):
     class Meta:
         model = Program
         fields = '__all__'
+
+    def create(self, validated_data):
+        return ProgramService.create_program(validated_data, self.context)
 
 
 class ReadOnlyProgramSerializer(serializers.ModelSerializer):

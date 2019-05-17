@@ -24,12 +24,15 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
             mocked_prod_logger):
         '''Should call update functions.'''
         dwid_to_department = Mock()
-        mocked_department_update_func.return_value = dwid_to_department
+        department_id_to_administrative = Mock()
+        mocked_department_update_func.return_value = (
+            dwid_to_department, department_id_to_administrative)
 
         update_teachers_and_departments_information()
 
         mocked_department_update_func.assert_called()
-        mocked_teacher_update_func.assert_called_with(dwid_to_department)
+        mocked_teacher_update_func.assert_called_with(
+            dwid_to_department, department_id_to_administrative)
         mocked_prod_logger.exception.assert_not_called()
 
     @patch('auth.tasks.prod_logger')
@@ -58,15 +61,21 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
                             dwid=f'{idx}',
                             dwmc=f'Department{idx}',
                             lsdw=1,
-                            _fill_optional=True)
+                            _fill_optional=True,
+                            dwlx=Department.DEPARTMENT_TYPE_T1
+                            )
                  for idx in range(num_departments)]
-        dwid_to_department = _update_from_department_information()
+        dwid_to_department, department_id_to_administrative = (
+            _update_from_department_information()
+        )
 
         departments = Department.objects.exclude(
             raw_department_id=dlut_id).order_by('raw_department_id')
 
         self.assertEqual(len(departments), num_departments)
         self.assertEqual(len(dwid_to_department), num_departments)
+
+        self.assertEqual(len(department_id_to_administrative), num_departments)
 
         for info, department in zip(infos, departments):
             if info.dwmc == dlut_name:
@@ -77,25 +86,23 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
     @patch('auth.models.TeacherInformation.save',
            models.Model.save)
     @patch('auth.tasks.prod_logger')
-    def test_update_from_teacher_information(self, mocked_prod_logger):
+    def test_update_from_teacher_information(self, _):
         '''Should update user from teacher information.'''
         num_departments = 10
-        departments = [mommy.make(Department, id=idx)
+        departments = [mommy.make(Department, id=idx, raw_department_id=idx)
                        for idx in range(1, 1 + num_departments)]
         dwid_to_department = {f'{dep.id}': dep for dep in departments}
-
+        department_id_to_administrative = {dep.id: dep for dep in departments}
         num_teachers = 20
         raw_users = [mommy.make(
             TeacherInformation, zgh=f'2{idx:02d}', jsxm=f'name{idx}',
-            nl=f'{idx}', xb='1',
-            xy=f'{idx % num_departments + 1 if idx != 1 else 100}',
+            nl=f'{idx}', xb='1', yxdz='asdf@123.com',
+            xy=f'{departments[0].raw_department_id}',
             rxsj='2019-12-01', rzzt='11', xl='14', zyjszc='061', rjlx='12')
                      for idx in range(1, 1 + num_teachers)]
 
-        _update_from_teacher_information(dwid_to_department)
-
-        mocked_prod_logger.warning.assert_called_with(
-            '职工号为201的教师使用了一个系统中不存在的学院100')
+        _update_from_teacher_information(dwid_to_department,
+                                         department_id_to_administrative)
 
         users = User.objects.exclude(
             username='AnonymousUser').order_by('username')

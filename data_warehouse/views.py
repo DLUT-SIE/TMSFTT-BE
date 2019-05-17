@@ -3,7 +3,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import status, viewsets
 
-from data_warehouse.services import AggregateDataService
+from data_warehouse.services.aggregate_data_service import (
+    AggregateDataService, CanvasOptionsService
+)
 from infra.exceptions import BadRequest
 
 
@@ -24,5 +26,5 @@ class AggregateDataViewSet(viewsets.ViewSet):
     @action(detail=False, url_path='canvas-options', url_name='options')
     def get_canvas_options(self, request):
         '''getting canvas-options'''
-        data = AggregateDataService.get_canvas_options()
+        data = CanvasOptionsService.get_canvas_options()
         return Response(data)

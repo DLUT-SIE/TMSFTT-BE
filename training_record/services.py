@@ -353,8 +353,8 @@ class RecordService:
     @staticmethod
     def get_number_of_records_without_feedback(user):
         '''Get the number of records which requiring feedback'''
-        count = Record.objects.filter(user=user).filter(
-            feedback=None).count()
+        count = Record.objects.filter(
+            user=user, off_campus_event__isnull=True, feedback=None).count()
         return count
 
 

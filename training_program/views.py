@@ -1,6 +1,9 @@
 '''Provide API views for training_program module.'''
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework_guardian import filters
+
+import auth.permissions
 import training_program.models
 import training_program.serializers
 from infra.mixins import MultiSerializerActionClassMixin
@@ -16,6 +19,10 @@ class ProgramViewSet(MultiSerializerActionClassMixin, viewsets.ModelViewSet):
         'update': training_program.serializers.ProgramSerializer,
     }
     serializer_class = training_program.serializers.ReadOnlyProgramSerializer
+    filter_backends = (filters.DjangoObjectPermissionsFilter,)
+    permission_classes = (
+        auth.permissions.DjangoObjectPermissions,
+    )
     filter_fields = ('department',)
 
 
