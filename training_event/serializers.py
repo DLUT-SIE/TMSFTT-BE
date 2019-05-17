@@ -71,11 +71,14 @@ class OffCampusEventSerializer(serializers.ModelSerializer):
 
 class EnrollmentSerailizer(serializers.ModelSerializer):
     '''Indicate how to serialize Enrollment instance.'''
+    user = serializers.PrimaryKeyRelatedField(allow_null=True,
+                                              read_only=True)
+
     class Meta:
         model = training_event.models.Enrollment
         fields = '__all__'
-        read_only_fields = ('is_participated', 'user')
 
     def create(self, validated_data):
-        return EnrollmentService.create_enrollment(validated_data,
-                                                   self.context)
+        if 'user' not in validated_data and 'request' in self.context:
+            validated_data['user'] = self.context['request'].user
+        return EnrollmentService.create_enrollment(validated_data)
