@@ -2,9 +2,9 @@
 from rest_framework import serializers
 from django.utils.timezone import now
 import training_event.models
-
-from training_program.serializers import ReadOnlyProgramSerializer
 from training_event.services import EnrollmentService, CampusEventService
+from training_program.serializers import ReadOnlyProgramSerializer
+
 
 
 class CampusEventSerializer(serializers.ModelSerializer):
