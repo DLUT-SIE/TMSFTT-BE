@@ -12,6 +12,7 @@ from auth.models import Department, User, UserGroup
 from infra.exceptions import BadRequest
 
 
+# pylint: disable=R0902
 class TestCoverageStatisticsService(TestCase):
     '''测试培训覆盖率统计服务'''
     def setUp(self):

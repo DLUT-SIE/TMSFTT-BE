@@ -21,6 +21,7 @@ class CoverageStatisticsService:
     def teacher_coverage():
         '''专任教师培训覆盖率统计'''
 
+    # pylint: disable=R0914
     @staticmethod
     def groupby_training_records(records):
         '''对培训记录按照字段进行分组统计
@@ -105,6 +106,7 @@ class CoverageStatisticsService:
         data['total'] = total_users_covered
         return data
 
+    # pylint: disable=R0912
     @staticmethod
     def get_traning_records(user, program_id, department_id=None,
                             start_time=None, end_time=None):

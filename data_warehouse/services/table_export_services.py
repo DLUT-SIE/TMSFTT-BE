@@ -156,6 +156,7 @@ class TableExportService:
         workbook.save(file_path)
         return file_path
 
+    # pylint: disable=R0914
     @classmethod
     def export_traning_coverage_summary(cls, data):
         '''导出专任教师培训覆盖率表
