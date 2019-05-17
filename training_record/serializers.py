@@ -15,6 +15,10 @@ from training_record.models import (
 )
 from training_record.services import RecordService, CampusEventFeedbackService
 from secure_file.fields import SecureFileField
+from training_event.models import EventCoefficient
+from training_event.serializers import (
+    CampusEventSerializer, OffCampusEventSerializer
+)
 
 
 class RecordContentSerializer(BulkSerializerMixin,
@@ -52,12 +56,20 @@ class ReadOnlyRecordSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize Record instance for reading.'''
     status_str = serializers.CharField(source='get_status_display',
                                        read_only=True)
+    role_str = serializers.CharField(
+        source='event_coefficient.get_role_display',
+        read_only=True)
+    role = serializers.IntegerField(
+        source='event_coefficient.role',
+        read_only=True)
+    off_campus_event = OffCampusEventSerializer(read_only=True)
+    campus_event = CampusEventSerializer(read_only=True)
 
     class Meta:
         model = Record
         fields = ('id', 'create_time', 'update_time', 'campus_event',
                   'off_campus_event', 'user', 'status', 'contents',
-                  'attachments', 'status_str', 'feedback')
+                  'attachments', 'status_str', 'feedback', 'role', 'role_str')
 
 
 class RecordCreateSerializer(serializers.ModelSerializer):
@@ -78,12 +90,17 @@ class RecordCreateSerializer(serializers.ModelSerializer):
         required=False,
     )
     feedback = serializers.PrimaryKeyRelatedField(read_only=True)
+    role = serializers.ChoiceField(
+        choices=EventCoefficient.ROLE_CHOICES,
+        write_only=True,
+        default=EventCoefficient.ROLE_PARTICIPATOR,
+    )
 
     class Meta:
         model = Record
         fields = ('id', 'create_time', 'update_time', 'campus_event',
                   'off_campus_event', 'user', 'status', 'contents',
-                  'attachments', 'feedback')
+                  'attachments', 'feedback', 'role')
 
     def create(self, validated_data):
         return RecordService.create_off_campus_record_from_raw_data(
