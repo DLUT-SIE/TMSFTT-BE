@@ -77,8 +77,6 @@ class Enrollment(models.Model):
         default_permissions = ()
         permissions = (
             ('add_enrollment', '允许添加活动报名记录'),
-            ('view_enrollment', '允许查看活动报名记录'),
-            ('change_enrollment', '允许修改活动报名记录'),
             ('delete_enrollment', '允许删除活动报名记录'),
         )
 

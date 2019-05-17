@@ -50,6 +50,9 @@ class EnrollmentViewSet(mixins.CreateModelMixin,
     '''
     queryset = training_event.models.Enrollment.objects.all()
     serializer_class = training_event.serializers.EnrollmentSerailizer
+    permission_classes = (
+        auth.permissions.DjangoObjectPermissions,
+    )
 
     def perform_destroy(self, instance):
         '''Use service to change num_enrolled and delete enrollment.'''

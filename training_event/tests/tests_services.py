@@ -57,11 +57,15 @@ class TestEnrollmentService(TestCase):
     def setUp(self):
         self.event = mommy.make(CampusEvent, num_participants=0)
         self.user = mommy.make(User)
+        self.group = mommy.make(Group, name="大连理工大学-专任教师")
+        self.user.groups.add(self.group)
         self.data = {'campus_event': self.event, 'user': self.user}
         self.data_no_user = {'campus_event': self.event}
         self.request = HttpRequest()
         self.request.user = self.user
         self.context = {'request': self.request, 'data': ''}
+        assign_perm('training_event.add_enrollment', self.group)
+        assign_perm('training_event.delete_enrollment', self.group)
 
     def test_create_enrollment_no_more_head_counts(self):
         '''Should raise BadRequest if no more head counts for CampusEvent.'''
@@ -73,7 +77,7 @@ class TestEnrollmentService(TestCase):
         '''Should create enrollment.'''
         self.event.num_participants = 10
         self.event.save()
-        EnrollmentService.create_enrollment(self.data, )
+        EnrollmentService.create_enrollment(self.data, self.context)
 
         count = Enrollment.objects.filter(user=self.user).count()
 
