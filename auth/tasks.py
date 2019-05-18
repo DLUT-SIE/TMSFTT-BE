@@ -26,17 +26,6 @@ def _update_from_department_information():
     raw_departments = DepartmentInformation.objects.all()
     dwid_to_department = {}
     department_id_to_administrative = {}
-    cached_groups = {}
-
-    def update_groups(department, cached_groups):
-        # 同步group
-        group_names = [f'{department.name}-管理员',
-                       f'{department.name}-专任教师']
-        for group_name in group_names:
-            if group_name not in cached_groups:
-                group, _ = Group.objects.get_or_create(name=group_name)
-                cached_groups[group_name] = group
-        return cached_groups
 
     def update_administrative(department_id_to_administrative):
         # 更新administrative
@@ -56,7 +45,11 @@ def _update_from_department_information():
             raw_department_id=raw_department.dwid,
             defaults={'name': raw_department.dwmc})
 
-        cached_groups = update_groups(department, cached_groups)
+        # 同步group
+        group_names = [f'{department.name}-管理员',
+                       f'{department.name}-专任教师']
+        for group_name in group_names:
+            Group.objects.get_or_create(name=group_name)
 
         updated = False
         # 同步隶属单位
