@@ -1,6 +1,5 @@
 '''Unit tests for training_program services.'''
 from rest_framework.test import APITestCase
-from django.http import HttpRequest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from model_mommy import mommy
@@ -27,7 +26,9 @@ class TestReviewNoteService(APITestCase):
         self.user1.groups.add(group1)
         self.user2.groups.add(group2)
         self.record = mommy.make(
-            Record, off_campus_event=off_campus_event_instance, user=self.user1)
+            Record,
+            off_campus_event=off_campus_event_instance,
+            user=self.user1)
         assign_perm('training_review.add_reviewnote', group1)
         assign_perm('training_review.view_reviewnote', group1)
         assign_perm('training_review.add_reviewnote', group2)
@@ -44,7 +45,6 @@ class TestReviewNoteService(APITestCase):
         self.assertTrue(self.user1.has_perm('view_reviewnote', review_note))
         self.assertTrue(self.user2.has_perm('add_reviewnote', review_note))
         self.assertTrue(self.user2.has_perm('view_reviewnote', review_note))
-
 
     def test_create_review_note_admin(self):
         '''Should create ReviewNote.'''
