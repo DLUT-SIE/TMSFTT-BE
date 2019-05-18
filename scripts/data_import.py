@@ -346,7 +346,7 @@ def assign_model_perms(departments):
         },
         # Record
         Record: {
-            '管理员': ['add', 'view'],
+            '管理员': ['add', 'view', 'review'],
             '专任教师': [],
             '大连理工大学-专任教师': ['add', 'view', 'change'],
         },

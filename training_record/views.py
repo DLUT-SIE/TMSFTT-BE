@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework_bulk.mixins import (
     BulkCreateModelMixin,
 )
+from rest_framework_guardian import filters
 
 import auth.permissions
 import training_record.models
@@ -41,11 +42,16 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         'reviewed': ['%(app_label)s.view_%(model_name)s'],
         'department_admin_review': ['%(app_label)s.review_%(model_name)s'],
         'school_admin_review': ['%(app_label)s.review_%(model_name)s'],
-        'close_record': ['%(app_label)s.update_%(model_name)s'],
-        'batch_submit': ['%(app_label)s.update_%(model_name)s'],
+        'close_record': ['%(app_label)s.change_%(model_name)s'],
+        'batch_submit': ['%(app_label)s.change_%(model_name)s'],
         'get_number_of_records_without_feedback':
             ['%(app_label)s.view_%(model_name)s'],
+        'get_role_choices': ['%(app_label)s.add_%(model_name)s'],
     }
+    filter_backends = (filters.DjangoObjectPermissionsFilter,)
+    permission_classes = (
+        auth.permissions.DjangoObjectPermissions,
+    )
 
 # TODO: rename this action
     def _get_reviewed_status_filtered_records(self, request, is_reviewed):
@@ -131,6 +137,10 @@ class RecordContentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
     queryset = training_record.models.RecordContent.objects.all()
     serializer_class = training_record.serializers.RecordContentSerializer
     filter_class = training_record.filters.RecordContentFilter
+    filter_backends = (filters.DjangoObjectPermissionsFilter,)
+    permission_classes = (
+        auth.permissions.DjangoObjectPermissions,
+    )
 
 
 class RecordAttachmentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
@@ -138,6 +148,10 @@ class RecordAttachmentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
     queryset = training_record.models.RecordAttachment.objects.all()
     serializer_class = training_record.serializers.RecordAttachmentSerializer
     filter_class = training_record.filters.RecordAttachmentFilter
+    filter_backends = (filters.DjangoObjectPermissionsFilter,)
+    permission_classes = (
+        auth.permissions.DjangoObjectPermissions,
+    )
 
 
 class StatusChangeLogViewSet(viewsets.ModelViewSet):
