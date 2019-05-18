@@ -1,10 +1,13 @@
 '''Unit tests for training_review views.'''
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.urls import reverse
 from model_mommy import mommy
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from auth.utils import assign_perm
+from auth.services import PermissonsService
 import training_review.models as treview
 import training_record.models as trecord
 import training_event.models as tevent
@@ -18,6 +21,10 @@ class TestReviewNoteViewSet(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = mommy.make(User)
+        cls.group = mommy.make(Group, name="大连理工大学-专任教师")
+        cls.user.groups.add(cls.group)
+        assign_perm('training_review.add_reviewnote', cls.group)
+        assign_perm('training_review.view_reviewnote', cls.group)
 
     def setUp(self):
         self.client.force_authenticate(self.user)
@@ -56,14 +63,14 @@ class TestReviewNoteViewSet(APITestCase):
 
         response = self.client.delete(url)
 
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(treview.ReviewNote.objects.count(), 0)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_get_review_note(self):
         '''ReviewNote should be accessed by GET request.'''
         off_campus_event = mommy.make(tevent.OffCampusEvent)
         record = mommy.make(trecord.Record, off_campus_event=off_campus_event)
         review_note = mommy.make(treview.ReviewNote, record=record)
+        PermissonsService.assigin_object_permissions(self.user, review_note)
         url = reverse('reviewnote-detail', args=(review_note.pk,))
 
         response = self.client.get(url)
