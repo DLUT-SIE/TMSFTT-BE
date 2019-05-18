@@ -3,7 +3,7 @@ from django.db import transaction
 
 from auth.services import PermissonsService
 from training_review.models import ReviewNote
-from training_record.models import Record
+
 
 class ReviewNoteService:
     '''Provide services for TrainingReview.'''

@@ -4,6 +4,7 @@ from rest_framework import serializers
 import training_review.models
 from training_review.services import ReviewNoteService
 
+
 class ReviewNoteSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize ReviewNote instance.'''
     class Meta:
