@@ -4,6 +4,7 @@ from celery import shared_task
 from django.db import transaction
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import make_aware
+from django.contrib.auth.models import Group
 from auth.models import (
     User, Department, DepartmentInformation, TeacherInformation)
 
@@ -25,10 +26,37 @@ def _update_from_department_information():
     raw_departments = DepartmentInformation.objects.all()
     dwid_to_department = {}
     department_id_to_administrative = {}
+    cached_groups = {}
+
+    def update_groups(department, cached_groups):
+        # 同步group
+        group_names = [f'{department.name}-管理员',
+                       f'{department.name}-专任教师']
+        for group_name in group_names:
+            if group_name not in cached_groups:
+                group, _ = Group.objects.get_or_create(name=group_name)
+                cached_groups[group_name] = group
+        return cached_groups
+
+    def update_administrative(department_id_to_administrative):
+        # 更新administrative
+        for department_id in department_id_to_administrative:
+            same_administrative = []
+            administrative = department_id_to_administrative[department_id]
+            while administrative.id != department_id:
+                same_administrative.append(department_id)
+                department_id = administrative.id
+                administrative = department_id_to_administrative[department_id]
+            for item_id in same_administrative:
+                department_id_to_administrative[item_id] = administrative
+        return department_id_to_administrative
+
     for raw_department in raw_departments:
         department, _ = Department.objects.get_or_create(
             raw_department_id=raw_department.dwid,
             defaults={'name': raw_department.dwmc})
+
+        cached_groups = update_groups(department, cached_groups)
 
         updated = False
         # 同步隶属单位
@@ -67,16 +95,9 @@ def _update_from_department_information():
             department_id_to_administrative[department.id] = (
                 department.super_department
             )
+    department_id_to_administrative = update_administrative(
+        department_id_to_administrative)
 
-    for department_id in department_id_to_administrative:
-        same_administrative = []
-        administrative = department_id_to_administrative[department_id]
-        while administrative.id != department_id:
-            same_administrative.append(department_id)
-            department_id = administrative.id
-            administrative = department_id_to_administrative[department_id]
-        for item_id in same_administrative:
-            department_id_to_administrative[item_id] = administrative
     # TODO(youchen): Create related groups
 
     prod_logger.info('部门信息更新完毕')
