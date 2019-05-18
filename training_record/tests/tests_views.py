@@ -214,7 +214,7 @@ class TestRecordViewSet(APITestCase):
         user = mommy.make(get_user_model())
         group = mommy.make(Group, name="创新创业学院-管理员")
         user.groups.add(group)
-        assign_perm('training_record.change_record', group)
+        assign_perm('training_record.batchadd_record', group)
         url = reverse('record-batch-submit')
         file_data = io.BytesIO(b'some numbers')
         mocked_service.create_campus_records_from_excel.return_value = 3

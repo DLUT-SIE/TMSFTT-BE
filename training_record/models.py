@@ -38,6 +38,7 @@ class Record(models.Model):
             ('change_record', '允许修改培训记录'),
             ('delete_record', '允许删除培训记录'),
             ('review_record', '允许审核培训记录'),
+            ('batchadd_record', '允许批量增加培训记录'),
         )
 
     create_time = models.DateTimeField(verbose_name='创建时间',

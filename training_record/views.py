@@ -43,7 +43,7 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         'department_admin_review': ['%(app_label)s.review_%(model_name)s'],
         'school_admin_review': ['%(app_label)s.review_%(model_name)s'],
         'close_record': ['%(app_label)s.change_%(model_name)s'],
-        'batch_submit': ['%(app_label)s.change_%(model_name)s'],
+        'batch_submit': ['%(app_label)s.batchadd_%(model_name)s'],
         'get_number_of_records_without_feedback':
             ['%(app_label)s.view_%(model_name)s'],
         'get_role_choices': ['%(app_label)s.add_%(model_name)s'],
