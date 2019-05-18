@@ -14,9 +14,11 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from auth.utils import assign_perm
+from auth.services import PermissonsService
+from auth.models import Department
 import training_record.models
 from training_record.models import (
-    Record, RecordContent, RecordAttachment, StatusChangeLog,
+    Record, RecordContent, StatusChangeLog,
     CampusEventFeedback)
 import training_event.models
 from training_event.models import EventCoefficient
@@ -28,7 +30,13 @@ class TestRecordViewSet(APITestCase):
     '''Unit tests for Record view.'''
     @classmethod
     def setUpTestData(cls):
-        cls.user = mommy.make(User)
+        depart = mommy.make(Department, name="创新创业学院")
+        cls.user = mommy.make(User, department=depart)
+        cls.group = mommy.make(Group, name="大连理工大学-专任教师")
+        cls.user.groups.add(cls.group)
+        assign_perm('training_record.add_record', cls.group)
+        assign_perm('training_record.view_record', cls.group)
+        assign_perm('training_record.change_record', cls.group)
 
     def setUp(self):
         self.client.force_authenticate(self.user)
@@ -80,10 +88,12 @@ class TestRecordViewSet(APITestCase):
         url = reverse('record-reviewed')
         for index in range(10):
             off_campus_event = mommy.make(training_event.models.OffCampusEvent)
-            mommy.make(Record,
-                       off_campus_event=off_campus_event,
-                       status=Record.STATUS_SCHOOL_ADMIN_APPROVED
-                       if index % 4 == 0 else Record.STATUS_SUBMITTED)
+            record = mommy.make(
+                Record,
+                off_campus_event=off_campus_event,
+                status=Record.STATUS_SCHOOL_ADMIN_APPROVED
+                if index % 4 == 0 else Record.STATUS_SUBMITTED)
+            PermissonsService.assigin_object_permissions(self.user, record)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -100,18 +110,6 @@ class TestRecordViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_delete_record(self):
-        '''Record should be deleted by DELETE request.'''
-        campus_event = mommy.make(training_event.models.CampusEvent)
-        record = mommy.make(training_record.models.Record,
-                            campus_event=campus_event)
-        url = reverse('record-detail', args=(record.pk,))
-
-        response = self.client.delete(url)
-
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(training_record.models.Record.objects.count(), 0)
-
     def test_get_record(self):
         '''Record should be accessed by GET request.'''
         campus_event = mommy.make(training_event.models.CampusEvent)
@@ -122,7 +120,7 @@ class TestRecordViewSet(APITestCase):
                          'off_campus_event', 'user', 'status', 'contents',
                          'attachments', 'status_str', 'role', 'role_str',
                          'feedback'}
-
+        PermissonsService.assigin_object_permissions(self.user, record)
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -142,7 +140,7 @@ class TestRecordViewSet(APITestCase):
         }
         record = mommy.make(training_record.models.Record,
                             off_campus_event=off_campus_event)
-
+        PermissonsService.assigin_object_permissions(self.user, record)
         url = reverse('record-detail', args=(record.pk,))
         data = {'off_campus_event': json.dumps(off_campus_event_data),
                 'role': EventCoefficient.ROLE_PARTICIPATOR}
@@ -158,6 +156,11 @@ class TestRecordViewSet(APITestCase):
                             off_campus_event=off_campus_event,
                             status=Record.STATUS_SUBMITTED)
         user = mommy.make(User)
+        group = mommy.make(Group, name="创新创业学院-管理员")
+        user.groups.add(group)
+        assign_perm('training_record.review_record', group)
+        PermissonsService.assigin_object_permissions(self.user, record)
+
         url = reverse('record-department-admin-review', args=(record.pk,))
 
         self.client.force_authenticate(user)
@@ -173,6 +176,11 @@ class TestRecordViewSet(APITestCase):
                             off_campus_event=off_campus_event,
                             status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
         user = mommy.make(User)
+        group = mommy.make(Group, name="创新创业学院-管理员")
+        user.groups.add(group)
+        assign_perm('training_record.review_record', group)
+        PermissonsService.assigin_object_permissions(self.user, record)
+
         url = reverse('record-school-admin-review', args=(record.pk,))
 
         self.client.force_authenticate(user)
@@ -188,6 +196,11 @@ class TestRecordViewSet(APITestCase):
                             off_campus_event=off_campus_event,
                             status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
         user = mommy.make(User)
+        group = mommy.make(Group, name="创新创业学院-管理员")
+        user.groups.add(group)
+        assign_perm('training_record.change_record', group)
+        PermissonsService.assigin_object_permissions(self.user, record)
+
         url = reverse('record-close-record', args=(record.pk,))
 
         self.client.force_authenticate(user)
@@ -199,6 +212,9 @@ class TestRecordViewSet(APITestCase):
     def test_batch_submit(self, mocked_service):
         '''Should batch create records according to request.'''
         user = mommy.make(get_user_model())
+        group = mommy.make(Group, name="创新创业学院-管理员")
+        user.groups.add(group)
+        assign_perm('training_record.change_record', group)
         url = reverse('record-batch-submit')
         file_data = io.BytesIO(b'some numbers')
         mocked_service.create_campus_records_from_excel.return_value = 3
@@ -213,6 +229,9 @@ class TestRecordViewSet(APITestCase):
     def test_get_number_of_records_without_feedback(self, mocked_service):
         '''Should return the count of records which requiring feedback'''
         user = mommy.make(get_user_model())
+        group = mommy.make(Group, name="创新创业学院-管理员")
+        user.groups.add(group)
+        assign_perm('training_record.view_record', group)
         url = reverse('record-get-number-of-records-without-feedback')
         mocked_service.get_number_of_records_without_feedback.return_value = 2
 
@@ -225,6 +244,9 @@ class TestRecordViewSet(APITestCase):
     def test_get_role_choices(self):
         '''Should return the whole role choices'''
         user = mommy.make(User)
+        group = mommy.make(Group, name="创新创业学院-管理员")
+        user.groups.add(group)
+        assign_perm('training_record.add_record', group)
         url = reverse('record-get-role-choices')
 
         self.client.force_authenticate(user)
@@ -238,36 +260,12 @@ class TestRecordContentViewSet(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = mommy.make(User)
+        cls.group = mommy.make(Group, name="大连理工大学-专任教师")
+        cls.user.groups.add(cls.group)
+        assign_perm('training_record.view_recordcontent', cls.group)
 
     def setUp(self):
         self.client.force_authenticate(self.user)
-
-    def test_create_record_content(self):
-        '''RecordContent should be created by POST request.'''
-        url = reverse('recordcontent-list')
-
-        campus_event = mommy.make(training_event.models.CampusEvent)
-        record = mommy.make(training_record.models.Record,
-                            campus_event=campus_event)
-        content_type = RecordContent.CONTENT_TYPE_CONTENT
-        content = "ABC"
-        data = {'record': record.id, 'content_type': content_type,
-                'content': content}
-
-        response = self.client.post(url, data, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(
-            training_record.models.RecordContent.objects.count(), 1)
-        self.assertEqual(
-            training_record.models.RecordContent.objects.get().record.id,
-            record.id)
-        self.assertEqual(
-            training_record.models.RecordContent.objects.get().content_type,
-            content_type)
-        self.assertEqual(
-            training_record.models.RecordContent.objects.get().content,
-            content)
 
     def test_list_record_content(self):
         '''RecordContent list should be accessed by GET request.'''
@@ -277,21 +275,6 @@ class TestRecordContentViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_delete_record_content(self):
-        '''RecordContent should be deleted by DELETE request.'''
-        campus_event = mommy.make(training_event.models.CampusEvent)
-        record = mommy.make(training_record.models.Record,
-                            campus_event=campus_event)
-        record_content = mommy.make(training_record.models.RecordContent,
-                                    record=record)
-        url = reverse('recordcontent-detail', args=(record_content.pk,))
-
-        response = self.client.delete(url)
-
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(
-            training_record.models.RecordContent.objects.count(), 0)
-
     def test_get_record_content(self):
         '''RecordContent should be accessed by GET request.'''
         campus_event = mommy.make(training_event.models.CampusEvent)
@@ -299,6 +282,7 @@ class TestRecordContentViewSet(APITestCase):
                             campus_event=campus_event)
         record_content = mommy.make(training_record.models.RecordContent,
                                     record=record)
+        PermissonsService.assigin_object_permissions(self.user, record_content)
         url = reverse('recordcontent-detail', args=(record_content.pk,))
         expected_keys = {'id', 'create_time', 'update_time', 'record',
                          'content_type', 'content'}
@@ -308,24 +292,6 @@ class TestRecordContentViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(set(response.data.keys()), expected_keys)
 
-    def test_update_record_content(self):
-        '''RecordContent should be updated by PATCH request.'''
-        content_type0 = RecordContent.CONTENT_TYPE_CONTENT
-        content_type1 = RecordContent.CONTENT_TYPE_SUMMARY
-        campus_event = mommy.make(training_event.models.CampusEvent)
-        record = mommy.make(training_record.models.Record,
-                            campus_event=campus_event)
-        record_content = mommy.make(training_record.models.RecordContent,
-                                    record=record, content_type=content_type0)
-        url = reverse('recordcontent-detail', args=(record_content.pk,))
-        data = {'content_type': content_type1}
-
-        response = self.client.patch(url, data, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('content_type', response.data)
-        self.assertEqual(response.data['content_type'], content_type1)
-
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 class TestRecordAttachmentViewSet(APITestCase):
@@ -333,28 +299,12 @@ class TestRecordAttachmentViewSet(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = mommy.make(User)
+        cls.group = mommy.make(Group, name="大连理工大学-专任教师")
+        cls.user.groups.add(cls.group)
+        assign_perm('training_record.view_recordattachment', cls.group)
 
     def setUp(self):
         self.client.force_authenticate(self.user)
-
-    def test_create_record_attachment(self):
-        '''RecordAttachment should be created by POST request.'''
-        url = reverse('recordattachment-list')
-        campus_event = mommy.make(training_event.models.CampusEvent)
-        record = mommy.make(training_record.models.Record,
-                            campus_event=campus_event)
-        attachment_type = RecordAttachment.ATTACHMENT_TYPE_CONTENT
-        path = io.BytesIO(b'some content')
-        data = {'record': record.id, 'attachment_type': attachment_type,
-                'path': path}
-
-        response = self.client.post(url, data, format='multipart')
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(RecordAttachment.objects.count(), 1)
-        self.assertEqual(RecordAttachment.objects.get().record.id, record.id)
-        self.assertEqual(RecordAttachment.objects.get().attachment_type,
-                         attachment_type)
 
     def test_list_record_attachment(self):
         '''RecordAttachment list should be accessed by GET request.'''
@@ -364,20 +314,6 @@ class TestRecordAttachmentViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_delete_record_attachment(self):
-        '''RecordAttachment should be deleted by DELETE request.'''
-        campus_event = mommy.make(training_event.models.CampusEvent)
-        record = mommy.make(training_record.models.Record,
-                            campus_event=campus_event)
-        record_attachment = mommy.make(training_record.models.RecordAttachment,
-                                       record=record)
-        url = reverse('recordattachment-detail', args=(record_attachment.pk,))
-
-        response = self.client.delete(url)
-
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(RecordAttachment.objects.count(), 0)
-
     def test_get_record_attachment(self):
         '''RecordAttachment should be accessed by GET request.'''
         campus_event = mommy.make(training_event.models.CampusEvent)
@@ -385,6 +321,8 @@ class TestRecordAttachmentViewSet(APITestCase):
                             campus_event=campus_event)
         record_attachment = mommy.make(training_record.models.RecordAttachment,
                                        record=record)
+        PermissonsService.assigin_object_permissions(
+            self.user, record_attachment)
         url = reverse('recordattachment-detail', args=(record_attachment.pk,))
         expected_keys = {'id', 'create_time', 'update_time', 'record',
                          'attachment_type', 'path'}
@@ -393,25 +331,6 @@ class TestRecordAttachmentViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(set(response.data.keys()), expected_keys)
-
-    def test_update_record_attachment(self):
-        '''RecordAttachment should be updated by PATCH request.'''
-        attachment_type0 = RecordAttachment.ATTACHMENT_TYPE_CONTENT
-        attachment_type1 = RecordAttachment.ATTACHMENT_TYPE_SUMMARY
-        campus_event = mommy.make(training_event.models.CampusEvent)
-        record = mommy.make(training_record.models.Record,
-                            campus_event=campus_event)
-        record_attachment = mommy.make(
-            training_record.models.RecordAttachment, record=record,
-            attachment_type=attachment_type0)
-        url = reverse('recordattachment-detail', args=(record_attachment.pk,))
-        data = {'attachment_type': attachment_type1}
-
-        response = self.client.patch(url, data, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('attachment_type', response.data)
-        self.assertEqual(response.data['attachment_type'], attachment_type1)
 
 
 class TestStatusChangeLogViewSet(APITestCase):

@@ -5,9 +5,11 @@ import xlwt
 
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from model_mommy import mommy
 
+from auth.utils import assign_perm
 from infra.exceptions import BadRequest
 from training_record.models import (
     RecordContent, RecordAttachment, CampusEventFeedback, Record)
@@ -41,6 +43,8 @@ class TestRecordService(TestCase):
 
         cls.campus_event = mommy.make(CampusEvent)
         cls.user = mommy.make(User)
+        cls.group = mommy.make(Group, name="大连理工大学-专任教师")
+        cls.user.groups.add(cls.group)
         cls.event_coefficient = mommy.make(EventCoefficient)
         cls.off_campus_event_instance = mommy.make(OffCampusEvent)
         cls.off_campus_event_data = {
@@ -54,6 +58,9 @@ class TestRecordService(TestCase):
         cls.record = mommy.make(Record,
                                 off_campus_event=cls.off_campus_event_instance,
                                 user=cls.user)
+        assign_perm('training_record.add_record', cls.group)
+        assign_perm('training_record.view_record', cls.group)
+        assign_perm('training_record.change_record', cls.group)
 
     def test_create_off_campus_record_no_event_data(self):
         '''Should raise ValueError if no off-campus event data.'''

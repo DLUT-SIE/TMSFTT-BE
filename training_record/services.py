@@ -6,6 +6,7 @@ from django.db import transaction
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 
+from auth.services import PermissonsService
 from infra.exceptions import BadRequest
 from training_record.models import (
     Record, RecordContent, RecordAttachment,
@@ -70,18 +71,24 @@ class RecordService:
                 user=user,
                 event_coefficient=event_coefficient,
             )
+            PermissonsService.assigin_object_permissions(user, record)
 
             for content in contents:
-                RecordContent.objects.create(
+                record_content = RecordContent.objects.create(
                     record=record,
                     **content
                 )
+                PermissonsService.assigin_object_permissions(
+                    user, record_content)
 
             for attachment in attachments:
-                RecordAttachment.objects.create(
+                record_attachment = RecordAttachment.objects.create(
                     record=record,
                     path=attachment,
                 )
+                PermissonsService.assigin_object_permissions(
+                    user, record_attachment)
+
         return record
 
     # pylint: disable=invalid-name
@@ -146,22 +153,26 @@ class RecordService:
 
             # add attachments
             for attachment in attachments:
-                RecordAttachment.objects.create(
+                record_attachment = RecordAttachment.objects.create(
                     record=record,
                     path=attachment,
                 )
-            if RecordAttachment.objects.filter(
-                    record=record).count() > 3:
+                PermissonsService.assigin_object_permissions(
+                    user, record_attachment)
+
+            if RecordAttachment.objects.filter(record=record).count() > 3:
                 raise BadRequest('最多允许上传3个附件')
 
             # Remove all contents and create new, whether
             # they have been changed or not.
             record.contents.all().delete()
             for content in contents:
-                RecordContent.objects.create(
+                record_content = RecordContent.objects.create(
                     record=record,
                     **content
                 )
+                PermissonsService.assigin_object_permissions(
+                    user, record_content)
         return record
 
     @staticmethod
@@ -224,7 +235,7 @@ class RecordService:
                     campus_event=campus_event, user=user,
                     status=Record.STATUS_FEEDBACK_REQUIRED,
                     event_coefficient=event_coefficient)
-
+                PermissonsService.assigin_object_permissions(user, record)
                 records.add(record)
 
         return len(records)
