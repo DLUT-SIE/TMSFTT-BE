@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.contrib.auth.models import Group
 from django.utils.timezone import now
 from model_mommy import mommy
-from data_warehouse.services.coverage_statistics_services import (
+from data_warehouse.services.coverage_statistics_service import (
     CoverageStatisticsService)
 from training_record.models import Record
 from training_event.models import CampusEvent, OffCampusEvent
@@ -156,44 +156,56 @@ class TestCoverageStatisticsService(TestCase):
         assert self.sie_admin.check_department_admin(Department.objects.get(
             name='创新创业学院'))
 
-    def test_groupby_traning_records(self):
-        '''SHOULD 按培训记录字段进行分组统计'''
-        expected = {
-            'titles': {
-                '讲师': {'coverage_count': 15},
-                '副教授': {'coverage_count': 15},
-                '教授': {'coverage_count': 15},
-                '研究员': {'coverage_count': 15}
-                },
-            'ages': {
-                CoverageStatisticsService.AGES[0][0]: {'coverage_count': 15},
-                CoverageStatisticsService.AGES[1][0]: {'coverage_count': 15},
-                CoverageStatisticsService.AGES[2][0]: {'coverage_count': 15},
-                CoverageStatisticsService.AGES[3][0]: {'coverage_count': 15}
-                },
-            'departments': {
-                '创新创业学院': {'coverage_count': 15},
-                '计算机学院': {'coverage_count': 15},
-                '机械学院': {'coverage_count': 15},
-                '管理学院': {'coverage_count': 15}
-                },
-            'total': 60,
-        }
-        ret = CoverageStatisticsService.groupby_training_records(
-            Record.objects.filter(
-                id__in=[
-                    record.id for record in self.
-                    records_on_campus_event_sie_program
-                    ])
+    def test_groupby_ages(self):
+        '''Should 按年龄段对用户查询集分组统计'''
+        user_qs = User.objects.all()
+        got = CoverageStatisticsService.groupby_ages(user_qs)
+        self.assertIsInstance(got, list)
+        for item in got:
+            self.assertEqual(
+                item.keys(),
+                {
+                    'total_count',
+                    'coverage_count',
+                    'age_range'
+                }
             )
-        self.assertEqual(ret['total'], expected['total'])
-        for key, got in ret.items():
-            if key == 'total':
-                continue
-            expected_item = expected[key]
-            for got_k, got_v in got.items():
-                self.assertEqual(expected_item[got_k]['coverage_count'],
-                                 got_v['coverage_count'])
+            self.assertGreaterEqual(item['total_count'],
+                                    item['coverage_count'])
+
+    def test_groupby_titles(self):
+        '''Should 按职称对用户查询集分组统计'''
+        user_qs = User.objects.all()
+        got = CoverageStatisticsService.groupby_titles(user_qs)
+        self.assertIsInstance(got, list)
+        for item in got:
+            self.assertEqual(
+                item.keys(),
+                {
+                    'total_count',
+                    'coverage_count',
+                    'title'
+                }
+            )
+            self.assertGreaterEqual(item['total_count'],
+                                    item['coverage_count'])
+
+    def test_groupby_departments(self):
+        '''Should 按部门对用户查询集分组统计'''
+        user_qs = User.objects.all()
+        got = CoverageStatisticsService.groupby_departments(user_qs)
+        self.assertIsInstance(got, list)
+        for item in got:
+            self.assertEqual(
+                item.keys(),
+                {
+                    'total_count',
+                    'coverage_count',
+                    'department'
+                }
+            )
+            self.assertGreaterEqual(item['total_count'],
+                                    item['coverage_count'])
 
     def test_get_traning_records_permission(self):
         '''Should 抛出正确的异常信息'''
@@ -234,6 +246,14 @@ class TestCoverageStatisticsService(TestCase):
                 start_time,
                 end_time,
             )
+        with self.assertRaisesMessage(BadRequest, '你不是校级管理员，必须指定部门ID。'):
+            CoverageStatisticsService.get_traning_records(
+                self.sie_admin,
+                None,
+                department_id=None,
+                start_time=start_time,
+                end_time=end_time,
+            )
         with self.assertRaisesMessage(BadRequest, '该培训项目不属于你管理的院系。'):
             CoverageStatisticsService.get_traning_records(
                 self.sie_admin,
@@ -271,7 +291,7 @@ class TestCoverageStatisticsService(TestCase):
 
         records = CoverageStatisticsService.get_traning_records(
             self.sie_admin,
-            -999,
+            None,
             Department.objects.get(name='创新创业学院').id,
             start_time,
             end_time
@@ -290,7 +310,7 @@ class TestCoverageStatisticsService(TestCase):
             year=2003, month=12, day=31, hour=23, minute=59, second=59)
         records = CoverageStatisticsService.get_traning_records(
             self.sie_admin,
-            -999,
+            None,
             Department.objects.get(name='创新创业学院').id,
             start_time,
             end_time

@@ -1,4 +1,5 @@
 '''Provide API views for data-graph module.'''
+import os
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import status, viewsets
@@ -11,14 +12,7 @@ from secure_file.models import SecureFile
 
 
 class AggregateDataViewSet(viewsets.ViewSet):
-    '''create API views for getting graph data'''
-    TABLE = {
-        1: '教职工表',
-        2: '专任教师表',
-        3: '培训总体情况表',
-        4: '专任教师培训覆盖率表',
-        5: '培训学时与工作量表'
-    }
+    '''create API views for getting graph data and table data'''
 
     @action(detail=False, url_path='data', url_name='data')
     def get_aggregate_data(self, request):
@@ -42,28 +36,17 @@ class AggregateDataViewSet(viewsets.ViewSet):
             url_name='table-export')
     def export(self, request):
         '''Return a xls file stream.'''
-        if 'id' not in request.GET:
+        if 'table_type' not in request.GET:
             raise BadRequest('请求的参数不正确。')
-        method_name = request.GET.get('method_name')
-        if method_name is None:
-            raise BadRequest("错误的参数格式")
-        table_id = request.GET['id']
-        target = None
-        table_id = int(table_id)
+        table_type = request.GET['table_type']
+        if not table_type.isdigit():
+            raise BadRequest('请求的table_type必须为整数。')
+        table_type = int(table_type)
         context = {key: val for (key, val) in request.GET.items()}
         context['request'] = request
-        if table_id > 5 or table_id <= 0:
-            raise BadRequest('请求的表不存在。')
-        if table_id == 1:
-            pass
-        elif table_id == 2:
-            pass
-        elif table_id == 3:
-            pass
-        elif table_id == 4:
-            target = AggregateDataService.dispatch(method_name, context)
-        elif table_id == 5:
-            pass
-        f_name = '{}.xls'.format(self.TABLE[table_id])
-        secure_file = SecureFile.from_path(request.user, f_name, target)
+        ret_file_path, file_name = AggregateDataService.dispatch(
+            'table_export', context)
+        secure_file = SecureFile.from_path(request.user, file_name,
+                                           ret_file_path)
+        os.unlink(ret_file_path)
         return secure_file.generate_download_response(request)
