@@ -33,10 +33,14 @@ class TestReviewNoteViewSet(APITestCase):
         '''ReviewNote should be created by POST request.'''
         off_campus_event = mommy.make(tevent.OffCampusEvent)
         user = mommy.make(User)
+        username = 'aaa'
         record = mommy.make(trecord.Record, off_campus_event=off_campus_event)
         content = 'Reviewnote is created.'
         url = reverse('reviewnote-list')
-        data = {'user': user.pk, 'record': record.pk, 'content': content}
+        data = {'user': user.pk,
+                'record': record.pk,
+                'content': content,
+                'user_name': username}
 
         response = self.client.post(url, data, format='json')
 
@@ -45,6 +49,7 @@ class TestReviewNoteViewSet(APITestCase):
         self.assertEqual(treview.ReviewNote.objects.get().user.pk, user.pk)
         self.assertEqual(treview.ReviewNote.objects.get().record.pk, record.pk)
         self.assertEqual(treview.ReviewNote.objects.get().content, content)
+        self.assertEqual(treview.ReviewNote.objects.get().user_name, username)
 
     def test_list_review_note(self):
         '''ReviewNotes list should be accessed by GET request.'''
