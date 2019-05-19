@@ -1,4 +1,5 @@
 '''Provide API views for training_record module.'''
+import django_filters
 from django.db.models import Q
 from rest_framework import viewsets, status, decorators
 from rest_framework.response import Response
@@ -48,7 +49,8 @@ class RecordViewSet(MultiSerializerActionClassMixin,
             ['%(app_label)s.view_%(model_name)s'],
         'get_role_choices': ['%(app_label)s.add_%(model_name)s'],
     }
-    filter_backends = (filters.DjangoObjectPermissionsFilter,)
+    filter_backends = (filters.DjangoObjectPermissionsFilter,
+                       django_filters.rest_framework.DjangoFilterBackend,)
     permission_classes = (
         auth.permissions.DjangoObjectPermissions,
     )
@@ -137,7 +139,8 @@ class RecordContentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
     queryset = training_record.models.RecordContent.objects.all()
     serializer_class = training_record.serializers.RecordContentSerializer
     filter_class = training_record.filters.RecordContentFilter
-    filter_backends = (filters.DjangoObjectPermissionsFilter,)
+    filter_backends = (filters.DjangoObjectPermissionsFilter,
+                       django_filters.rest_framework.DjangoFilterBackend,)
     permission_classes = (
         auth.permissions.DjangoObjectPermissions,
     )
@@ -148,7 +151,8 @@ class RecordAttachmentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
     queryset = training_record.models.RecordAttachment.objects.all()
     serializer_class = training_record.serializers.RecordAttachmentSerializer
     filter_class = training_record.filters.RecordAttachmentFilter
-    filter_backends = (filters.DjangoObjectPermissionsFilter,)
+    filter_backends = (filters.DjangoObjectPermissionsFilter,
+                       django_filters.rest_framework.DjangoFilterBackend,)
     permission_classes = (
         auth.permissions.DjangoObjectPermissions,
     )

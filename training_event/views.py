@@ -7,6 +7,7 @@ from rest_framework_guardian import filters
 
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
+import django_filters
 
 import auth.permissions
 from secure_file.models import SecureFile
@@ -25,7 +26,8 @@ class CampusEventViewSet(viewsets.ModelViewSet):
         '-time')
     serializer_class = training_event.serializers.CampusEventSerializer
     filter_class = training_event.filters.CampusEventFilter
-    filter_backends = (filters.DjangoObjectPermissionsFilter,)
+    filter_backends = (filters.DjangoObjectPermissionsFilter,
+                       django_filters.rest_framework.DjangoFilterBackend,)
     permission_classes = (
         auth.permissions.DjangoObjectPermissions,
     )

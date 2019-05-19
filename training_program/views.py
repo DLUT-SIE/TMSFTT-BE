@@ -1,4 +1,5 @@
 '''Provide API views for training_program module.'''
+import django_filters
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework_guardian import filters
@@ -19,7 +20,8 @@ class ProgramViewSet(MultiSerializerActionClassMixin, viewsets.ModelViewSet):
         'update': training_program.serializers.ProgramSerializer,
     }
     serializer_class = training_program.serializers.ReadOnlyProgramSerializer
-    filter_backends = (filters.DjangoObjectPermissionsFilter,)
+    filter_backends = (filters.DjangoObjectPermissionsFilter,
+                       django_filters.rest_framework.DjangoFilterBackend,)
     permission_classes = (
         auth.permissions.DjangoObjectPermissions,
     )
