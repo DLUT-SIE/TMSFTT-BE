@@ -163,36 +163,22 @@ class TableExportService:
         Parameters
         ------
         data: dict {
-            'departments': dict {
-                key: department_name
-                value: dict {
-                    key1: total_count,
-                        该部门总人数
-                    key2: coverage_count
-                        该部门培训覆盖人数
-                }
-            },
-            'ages': dict {
-                key: ages_range_label
-                    年龄段名称，例如：35岁及以下
-                value: dict {
-                    key1: total_count,
-                        该年龄段总人数
-                    key2: coverage_count
-                        该年龄段培训覆盖人数
-                }
-            },
-            'titles': dict {
-                key: title_name
-                value: dict {
-                    key1: total_count,
-                        该职称的总人数
-                    key2: coverage_count
-                        该职称下的培训覆盖人数
-                }
-            },
-            total: int
-                指定的培训项目在指定的时间段内覆盖的总人数
+            'departments': list of dict {
+                department: string, value: string,
+                coverage_count: string, value: int,
+                total_count: string, value: int
+            }
+            'ages': list of dict {
+                age_range: string, value: string,
+                coverage_count: string, value: int,
+                total_count: string, value: int
+            }
+            'titles': list of dict {
+                title: string, value: string,
+                coverage_count: string, value: int,
+                total_count: string, value: int
+
+            }
         }
 
         Returns
@@ -214,13 +200,14 @@ class TableExportService:
         worksheet.write(0, 4, '覆盖率(%)', style)
         worksheet.write_merge(1, 1, 0, 1, '总计', style)
         # 各学部总人数合计
-        total = 0
+        total, coverage_total = 0, 0
         departments_data = data['departments']
-        worksheet.write_merge(2, 2 + len(departments_data.keys()) - 1,
+        # we just keep a blank cell in case len(departments_data) is 0.
+        worksheet.write_merge(2, max(2, 2 + len(departments_data) - 1),
                               0, 0, '单位数据', style)
         ptr_r = 2
-        for department_name, summary in departments_data.items():
-            worksheet.write(ptr_r, 1, department_name)
+        for summary in departments_data:
+            worksheet.write(ptr_r, 1, summary['department'])
             worksheet.write(ptr_r, 2, summary['total_count'])
             worksheet.write(ptr_r, 3, summary['coverage_count'])
             worksheet.write(
@@ -229,14 +216,17 @@ class TableExportService:
                 * 100 / summary['total_count']
                 )
             total += summary['total_count']
+            coverage_total += summary['coverage_count']
+            ptr_r += 1
+        if not departments_data:
             ptr_r += 1
 
         # 职称
         titles_data = data['titles']
-        worksheet.write_merge(ptr_r, ptr_r + len(titles_data.keys()) - 1,
+        worksheet.write_merge(ptr_r, max(ptr_r, ptr_r + len(titles_data) - 1),
                               0, 0, '职称', style)
-        for title_name, summary in titles_data.items():
-            worksheet.write(ptr_r, 1, title_name)
+        for summary in titles_data:
+            worksheet.write(ptr_r, 1, summary['title'])
             worksheet.write(ptr_r, 2, summary['total_count'])
             worksheet.write(ptr_r, 3, summary['coverage_count'])
             worksheet.write(
@@ -244,14 +234,16 @@ class TableExportService:
                 0 if summary['total_count'] == 0 else summary['coverage_count']
                 * 100 / summary['total_count']
                 )
+            ptr_r += 1
+        if not titles_data:
             ptr_r += 1
 
         # 年龄
         ages_data = data['ages']
-        worksheet.write_merge(ptr_r, ptr_r + len(ages_data.keys()) - 1,
+        worksheet.write_merge(ptr_r, max(ptr_r, ptr_r + len(ages_data) - 1),
                               0, 0, '年龄', style)
-        for ages_range_label, summary in ages_data.items():
-            worksheet.write(ptr_r, 1, ages_range_label)
+        for summary in ages_data:
+            worksheet.write(ptr_r, 1, summary['age_range'])
             worksheet.write(ptr_r, 2, summary['total_count'])
             worksheet.write(ptr_r, 3, summary['coverage_count'])
             worksheet.write(
@@ -261,8 +253,10 @@ class TableExportService:
                 )
             ptr_r += 1
 
+        if not ages_data:
+            ptr_r += 1
+
         # 最后写合计
-        coverage_total = data['total']
         worksheet.write(1, 2, total)
         worksheet.write(1, 3, coverage_total)
         worksheet.write(1, 4,
