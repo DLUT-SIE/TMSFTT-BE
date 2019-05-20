@@ -23,7 +23,6 @@ class Migration(migrations.Migration):
                 ('content', models.CharField(max_length=128, verbose_name='提示内容')),
                 ('record', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='training_record.Record', verbose_name='培训记录')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='创建用户')),
-                ('user_name', models.CharField(verbose_name='用户姓名', max_length=64)),
             ],
 
             options={

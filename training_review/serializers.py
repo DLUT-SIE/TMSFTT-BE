@@ -7,6 +7,8 @@ from training_review.services import ReviewNoteService
 
 class ReviewNoteSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize ReviewNote instance.'''
+    user_name = serializers.CharField(source='user.first_name', read_only=True)
+
     class Meta:
         model = training_review.models.ReviewNote
         fields = '__all__'
