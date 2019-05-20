@@ -101,9 +101,7 @@ def _update_from_teacher_information(dwid_to_department,
     '''Scan table TeacherInformation and update related tables.'''
     prod_logger.info('开始扫描并更新用户信息')
     raw_users = TeacherInformation.objects.all()
-    raw_department_ids = [
-        f'{dep.raw_department_id}'
-        for dep in dwid_to_department]
+    raw_department_ids = [f'{dwid}' for dwid in dwid_to_department]
     for raw_user in raw_users:
         user, created = User.objects.get_or_create(username=raw_user.zgh)
         if created:
