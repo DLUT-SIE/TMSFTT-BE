@@ -66,7 +66,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '[{levelname}] {asctime} {module} {process:d}: {message}',
+            'format': '[{levelname}] {asctime} {filename}(L{lineno:d}) {process:d}: {message}',
             'style': '{',
         },
     },

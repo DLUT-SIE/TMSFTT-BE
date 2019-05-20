@@ -35,6 +35,7 @@ from training_record.models import (
     StatusChangeLog
 )
 from training_review.models import ReviewNote
+from secure_file.models import SecureFile
 
 
 faker = Faker('zh_CN')
@@ -389,6 +390,7 @@ def assign_model_perms(departments):
                     )
                     assign_perm(perm_name, group)
         pb.step()
+    assign_perm('secure_file.download_file', dlut_teachers_group)
     pb.finish()
 
 
