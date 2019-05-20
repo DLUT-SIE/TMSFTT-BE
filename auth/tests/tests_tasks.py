@@ -2,6 +2,7 @@
 from unittest.mock import patch, Mock
 from django.test import TestCase
 from django.db import models
+from django.contrib.auth.models import Group
 from model_mommy import mommy
 
 from auth.models import (
@@ -20,8 +21,6 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
     def setUpTestData(cls):
         cls.dlut_name = '大连理工大学'
         cls.dlut_id = '10141'
-        cls.departments = Department.objects.exclude(
-            raw_department_id=cls.dlut_id).order_by('raw_department_id')
 
     @patch('auth.tasks.prod_logger')
     @patch('auth.tasks._update_from_department_information')
@@ -74,12 +73,14 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
             _update_from_department_information()
         )
 
-        self.assertEqual(len(self.departments), num_departments)
+        departments = Department.objects.exclude(
+            raw_department_id=self.dlut_id).order_by('raw_department_id')
+        self.assertEqual(len(departments), num_departments)
         self.assertEqual(len(dwid_to_department), num_departments)
 
         self.assertEqual(len(department_id_to_administrative), num_departments)
 
-        for info, department in zip(infos, self.departments):
+        for info, department in zip(infos, departments):
             if info.dwmc == self.dlut_name:
                 continue
             self.assertEqual(info.dwmc, department.name)
@@ -90,17 +91,36 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
     @patch('auth.tasks.prod_logger')
     def test_update_from_teacher_information(self, _):
         '''Should update user from teacher information.'''
-        dwid_to_department = {f'{dep.id}': dep for dep in self.departments}
+        num_departments = 10
+
+        departments = [mommy.make(
+            Department, id=idx, raw_department_id=idx,
+            name=f'Department{idx}') for idx in range(1, 1 + num_departments)]
+
+        for department in departments:
+            department.super_department = department
+            group_names = [f'{department.name}-管理员',
+                           f'{department.name}-专任教师']
+            for group_name in group_names:
+                Group.objects.get_or_create(name=group_name)
+            department.save()
+
+        departments[0].super_department = departments[1]
+        departments[0].save()
+        # 由于map是手动生成，mock时保证map中的链路在department自连接中存在
         department_id_to_administrative = {
-            dep.id: dep for dep in self.departments}
-        num_teachers = 20
+            dep.id: departments[dep.id - 1] for dep in departments}
+        department_id_to_administrative[departments[0].id] = departments[1]
+
+        dwid_to_department = {f'{dep.id}': dep for dep in departments}
+        num_teachers = 10
+
         raw_users = [mommy.make(
             TeacherInformation, zgh=f'2{idx:02d}', jsxm=f'name{idx}',
             nl=f'{idx}', xb='1', yxdz='asdf@123.com',
-            xy=f'{self.departments[0].raw_department_id}',
+            xy=f'{departments[idx - 1].raw_department_id}',
             rxsj='2019-12-01', rzzt='11', xl='14', zyjszc='061', rjlx='12')
                      for idx in range(1, 1 + num_teachers)]
-
         _update_from_teacher_information(dwid_to_department,
                                          department_id_to_administrative)
 
