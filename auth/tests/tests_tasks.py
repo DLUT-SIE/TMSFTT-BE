@@ -21,6 +21,8 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
     def setUpTestData(cls):
         cls.dlut_name = '大连理工大学'
         cls.dlut_id = '10141'
+        cls.num_departments = 10
+        cls.num_teachers = 10
 
     @patch('auth.tasks.prod_logger')
     @patch('auth.tasks._update_from_department_information')
@@ -60,7 +62,6 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
     @patch('auth.tasks.prod_logger')
     def test_update_from_department_information(self, _):
         '''Should update department from department information.'''
-        num_departments = 10
         infos = [mommy.make(DepartmentInformation,
                             dwid=f'{idx}',
                             dwmc=f'Department{idx}',
@@ -68,17 +69,18 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
                             _fill_optional=True,
                             dwlx=Department.DEPARTMENT_TYPE_T1
                             )
-                 for idx in range(num_departments)]
+                 for idx in range(self.num_departments)]
         dwid_to_department, department_id_to_administrative = (
             _update_from_department_information()
         )
 
         departments = Department.objects.exclude(
             raw_department_id=self.dlut_id).order_by('raw_department_id')
-        self.assertEqual(len(departments), num_departments)
-        self.assertEqual(len(dwid_to_department), num_departments)
+        self.assertEqual(len(departments), self.num_departments)
+        self.assertEqual(len(dwid_to_department), self.num_departments)
 
-        self.assertEqual(len(department_id_to_administrative), num_departments)
+        self.assertEqual(len(department_id_to_administrative),
+                         self.num_departments)
 
         for info, department in zip(infos, departments):
             if info.dwmc == self.dlut_name:
@@ -91,11 +93,12 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
     @patch('auth.tasks.prod_logger')
     def test_update_from_teacher_information(self, _):
         '''Should update user from teacher information.'''
-        num_departments = 10
 
         departments = [mommy.make(
             Department, id=idx, raw_department_id=idx,
-            name=f'Department{idx}') for idx in range(1, 1 + num_departments)]
+            name=f'Department{idx}') for idx in range(1,
+                                                      1 +
+                                                      self.num_departments)]
 
         for department in departments:
             department.super_department = department
@@ -106,27 +109,35 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
             department.save()
 
         departments[0].super_department = departments[1]
+        departments[1].super_department = departments[2]
         departments[0].save()
+        departments[1].save()
+        groups_set = set()
+        for idx in range(3):
+            groups_set.add(
+                Group.objects.get(name=f'{departments[idx].name}-专任教师'))
         # 由于map是手动生成，mock时保证map中的链路在department自连接中存在
         department_id_to_administrative = {
             dep.id: departments[dep.id - 1] for dep in departments}
-        department_id_to_administrative[departments[0].id] = departments[1]
+        department_id_to_administrative[departments[0].id] = departments[2]
+        department_id_to_administrative[departments[1].id] = departments[2]
 
         dwid_to_department = {f'{dep.id}': dep for dep in departments}
-        num_teachers = 10
-
         raw_users = [mommy.make(
             TeacherInformation, zgh=f'2{idx:02d}', jsxm=f'name{idx}',
             nl=f'{idx}', xb='1', yxdz='asdf@123.com',
             xy=f'{departments[idx - 1].raw_department_id}',
             rxsj='2019-12-01', rzzt='11', xl='14', zyjszc='061', rjlx='12')
-                     for idx in range(1, 1 + num_teachers)]
+                     for idx in range(1, 1 + self.num_teachers)]
         _update_from_teacher_information(dwid_to_department,
                                          department_id_to_administrative)
 
         users = User.objects.exclude(
             username='AnonymousUser').order_by('username')
-        self.assertEqual(len(users), num_teachers)
+        self.assertEqual(len(users), self.num_teachers)
+
+        groups = users[0].groups.all()
+        self.assertEqual(set(groups), groups_set)
 
         for raw_user, user in zip(raw_users, users):
             self.assertEqual(user.first_name, raw_user.jsxm)
