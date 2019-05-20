@@ -91,8 +91,6 @@ def _update_from_department_information():
     department_id_to_administrative = update_administrative(
         department_id_to_administrative)
 
-    # TODO(youchen): Create related groups
-
     prod_logger.info('部门信息更新完毕')
 
     return dwid_to_department, department_id_to_administrative
@@ -105,7 +103,7 @@ def _update_from_teacher_information(dwid_to_department,
     raw_users = TeacherInformation.objects.all()
     raw_department_ids = [
         f'{dep.raw_department_id}'
-        for dep in department_id_to_administrative.values()]
+        for dep in dwid_to_department]
     for raw_user in raw_users:
         user, created = User.objects.get_or_create(username=raw_user.zgh)
         if created:
@@ -118,15 +116,18 @@ def _update_from_teacher_information(dwid_to_department,
                 f'使用了一个系统中不存在的学院{raw_user.xy}'
             )
             prod_logger.warning(warn_msg)
-        else:
+        if user.department != dwid_to_department.get(raw_user.xy):
+
+            user.groups.add(Group.objects.get(
+                name=f'{user.department.name}-专任教师'))
             user.department = dwid_to_department.get(raw_user.xy)
             user.administrative_department = (
                 department_id_to_administrative[user.department.id]
             )
 
-        user.gender = User.GENDER_CHOICES_MAP[raw_user.get_xb_display()]
-        raw_age = int(raw_user.nl) if raw_user.nl else 0
-        user.age = raw_age
+        user.gender = User.GENDER_CHOICES_MAP.get(raw_user.get_xb_display(),
+                                                  User.GENDER_UNKNOWN)
+        user.age = int(raw_user.nl) if raw_user.nl else 0
         if raw_user.rxsj and user.onboard_time != raw_user.rxsj:
             user.onboard_time = make_aware(
                 parse_datetime(f'{raw_user.rxsj}T12:00:00'))
