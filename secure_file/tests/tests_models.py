@@ -18,21 +18,25 @@ class TestSecureFileModels(TestCase):
     def setUpTestData(cls):
         cls.user = mommy.make(get_user_model())
 
-    def test_create_instance_from_system_path(self):
+    @patch('secure_file.models.PermissonsService.assigin_object_permissions')
+    def test_create_instance_from_system_path(self, mocked_assign):
         '''Should create when given path to file.'''
         handle, fpath = tempfile.mkstemp()
         content = b'Hello World!\n'
         with open(handle, 'wb') as opened_file:
             opened_file.write(content)
         secure_file = SecureFile.from_path(self.user, 'fname', fpath)
+        mocked_assign.assert_called_with(self.user, secure_file)
         os.remove(fpath)
         self.assertEqual(secure_file.path.read(), content)
 
-    def test_create_instance_from_in_memory_file(self):
+    @patch('secure_file.models.PermissonsService.assigin_object_permissions')
+    def test_create_instance_from_in_memory_file(self, mocked_assign):
         '''Should create when given an InMemoryFile.'''
         content = b'Hello World!\n'
         in_memory_file = SimpleUploadedFile('fname', content)
         secure_file = SecureFile.from_path(self.user, 'fname', in_memory_file)
+        mocked_assign.assert_called_with(self.user, secure_file)
         self.assertEqual(secure_file.path.read(), content)
 
     @patch('secure_file.models.get_full_encrypted_file_download_url')

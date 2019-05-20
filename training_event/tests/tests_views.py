@@ -1,4 +1,6 @@
 '''Unit tests for training_event views.'''
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.urls import reverse
@@ -266,7 +268,8 @@ class TestWorkloadFileView(APITestCase):
     def setUpTestData(cls):
         cls.user = mommy.make(User)
 
-    def test_post(self):
+    @patch('secure_file.models.PermissonsService.assigin_object_permissions')
+    def test_post(self, _):
         '''should return 201 when successed'''
         url = reverse('download-workload')
         self.client.force_authenticate(user=self.user)  # pylint: disable=E1101
