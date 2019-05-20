@@ -101,26 +101,51 @@ def _update_from_teacher_information(dwid_to_department,
     '''Scan table TeacherInformation and update related tables.'''
     prod_logger.info('开始扫描并更新用户信息')
     raw_users = TeacherInformation.objects.all()
-    raw_department_ids = [f'{dwid}' for dwid in dwid_to_department]
+
+    def unauthorized_trace(user):
+        department = user.department
+        administrative_department = user.administrative_department
+        while department != administrative_department:
+            user.groups.remove(Group.objects.get(
+                name=f'{user.department.name}-专任教师'))
+            department = administrative_department
+            administrative_department = department.administrative_department
+        user.groups.remove(Group.objects.get(
+            name=f'{user.department.name}-专任教师'))
+
+    def authorized_trace(user):
+        department = user.department
+        administrative_department = user.administrative_department
+        while department != administrative_department:
+            user.groups.add(Group.objects.get(
+                name=f'{user.department.name}-专任教师'))
+            department = administrative_department
+            administrative_department = department.administrative_department
+        user.groups.add(Group.objects.get(
+            name=f'{user.department.name}-专任教师'))
+
     for raw_user in raw_users:
         user, created = User.objects.get_or_create(username=raw_user.zgh)
         if created:
             user.set_unusable_password()
         user.first_name = raw_user.jsxm
 
-        if raw_user.xy not in raw_department_ids:
+        if raw_user.xy not in dwid_to_department:
             warn_msg = (
                 f'职工号为{user.username}的教师'
                 f'使用了一个系统中不存在的学院{raw_user.xy}'
             )
             prod_logger.warning(warn_msg)
         if user.department != dwid_to_department.get(raw_user.xy):
+            unauthorized_trace(user)
             user.department = dwid_to_department.get(raw_user.xy)
             user.administrative_department = (
                 department_id_to_administrative[user.department.id]
             )
-            user.groups.add(Group.objects.get(
-                name=f'{user.department.name}-专任教师'))
+            if user.department:
+                user.groups.add(Group.objects.get(
+                    name=f'{user.department.name}-专任教师'))
+                authorized_trace(user)
 
         user.gender = User.GENDER_CHOICES_MAP.get(raw_user.get_xb_display(),
                                                   User.GENDER_UNKNOWN)
