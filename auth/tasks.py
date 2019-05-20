@@ -108,10 +108,10 @@ def _update_from_teacher_information(dwid_to_department,
 
         while department != administrative_department:
             handler(Group.objects.get(
-                name=f'{user.department.name}-专任教师'))
+                name=f'{department.name}-专任教师'))
             department = department.super_department
         handler(Group.objects.get(
-            name=f'{user.department.name}-专任教师'))
+            name=f'{department.name}-专任教师'))
 
     for raw_user in raw_users:
         user, created = User.objects.get_or_create(username=raw_user.zgh)
