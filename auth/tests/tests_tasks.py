@@ -16,6 +16,13 @@ from auth.tasks import (
 class TestUpdateTeachersAndDepartmentsInformation(TestCase):
     '''Unit tests for syncing from provided data.'''
 
+    @classmethod
+    def setUpTestData(cls):
+        cls.dlut_name = '大连理工大学'
+        cls.dlut_id = '10141'
+        cls.departments = Department.objects.exclude(
+            raw_department_id=cls.dlut_id).order_by('raw_department_id')
+
     @patch('auth.tasks.prod_logger')
     @patch('auth.tasks._update_from_department_information')
     @patch('auth.tasks._update_from_teacher_information')
@@ -55,8 +62,6 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
     def test_update_from_department_information(self, _):
         '''Should update department from department information.'''
         num_departments = 10
-        dlut_name = '大连理工大学'
-        dlut_id = '10141'
         infos = [mommy.make(DepartmentInformation,
                             dwid=f'{idx}',
                             dwmc=f'Department{idx}',
@@ -69,16 +74,13 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
             _update_from_department_information()
         )
 
-        departments = Department.objects.exclude(
-            raw_department_id=dlut_id).order_by('raw_department_id')
-
-        self.assertEqual(len(departments), num_departments)
+        self.assertEqual(len(self.departments), num_departments)
         self.assertEqual(len(dwid_to_department), num_departments)
 
         self.assertEqual(len(department_id_to_administrative), num_departments)
 
-        for info, department in zip(infos, departments):
-            if info.dwmc == dlut_name:
+        for info, department in zip(infos, self.departments):
+            if info.dwmc == self.dlut_name:
                 continue
             self.assertEqual(info.dwmc, department.name)
             self.assertEqual(info.dwid, department.raw_department_id)
@@ -88,16 +90,14 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
     @patch('auth.tasks.prod_logger')
     def test_update_from_teacher_information(self, _):
         '''Should update user from teacher information.'''
-        num_departments = 10
-        departments = [mommy.make(Department, id=idx, raw_department_id=idx)
-                       for idx in range(1, 1 + num_departments)]
-        dwid_to_department = {f'{dep.id}': dep for dep in departments}
-        department_id_to_administrative = {dep.id: dep for dep in departments}
+        dwid_to_department = {f'{dep.id}': dep for dep in self.departments}
+        department_id_to_administrative = {
+            dep.id: dep for dep in self.departments}
         num_teachers = 20
         raw_users = [mommy.make(
             TeacherInformation, zgh=f'2{idx:02d}', jsxm=f'name{idx}',
             nl=f'{idx}', xb='1', yxdz='asdf@123.com',
-            xy=f'{departments[0].raw_department_id}',
+            xy=f'{self.departments[0].raw_department_id}',
             rxsj='2019-12-01', rzzt='11', xl='14', zyjszc='061', rjlx='12')
                      for idx in range(1, 1 + num_teachers)]
 
