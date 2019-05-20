@@ -164,7 +164,7 @@ class TestRecordViewSet(APITestCase):
         url = reverse('record-department-admin-review', args=(record.pk,))
 
         self.client.force_authenticate(user)
-        data = {'is_approved': True}
+        data = {'isApproved': True}
         response = self.client.post(url, data)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -184,7 +184,7 @@ class TestRecordViewSet(APITestCase):
         url = reverse('record-school-admin-review', args=(record.pk,))
 
         self.client.force_authenticate(user)
-        data = {'is_approved': True}
+        data = {'isApproved': True}
         response = self.client.post(url, data)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)

@@ -29,7 +29,6 @@ class ReviewNote(models.Model):
                                on_delete=models.CASCADE)
     user = models.ForeignKey(User, verbose_name='创建用户',
                              on_delete=models.CASCADE)
-    user_name = models.CharField(verbose_name='用户姓名', max_length=64)
     content = models.CharField(verbose_name='提示内容', max_length=128)
 
     def __str__(self):
