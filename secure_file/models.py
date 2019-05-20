@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.core.files import File
 from rest_framework import response, status
 
+from auth.services import PermissonsService
 from secure_file.utils import (
     get_full_encrypted_file_download_url, get_full_plain_file_download_url)
 
@@ -49,7 +50,7 @@ class SecureFile(FileFromPathMixin, models.Model):
         verbose_name_plural = '安全文件'
         default_permissions = ()
         permissions = (
-            ('download_file', '拥有院系其他成员生成文件的下载权限'),
+            ('download_file', '文件的下载权限'),
         )
 
     created = models.DateTimeField(verbose_name='创建时间', auto_now_add=True)
@@ -58,6 +59,12 @@ class SecureFile(FileFromPathMixin, models.Model):
                              on_delete=models.PROTECT)
     path = models.FileField(verbose_name='文件路径',
                             upload_to='secure-files/%Y/%m/%d')
+
+    @classmethod
+    def from_path(cls, user, fname, target):
+        secure_file = super().from_path(user, fname, target)
+        PermissonsService.assigin_object_permissions(user, secure_file)
+        return secure_file
 
     def generate_download_response(self, request):
         '''Generate secured HTTP response for downloading this file.
