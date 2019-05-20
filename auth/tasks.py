@@ -115,13 +115,12 @@ def _update_from_teacher_information(dwid_to_department,
             )
             prod_logger.warning(warn_msg)
         if user.department != dwid_to_department.get(raw_user.xy):
-
-            user.groups.add(Group.objects.get(
-                name=f'{user.department.name}-专任教师'))
             user.department = dwid_to_department.get(raw_user.xy)
             user.administrative_department = (
                 department_id_to_administrative[user.department.id]
             )
+            user.groups.add(Group.objects.get(
+                name=f'{user.department.name}-专任教师'))
 
         user.gender = User.GENDER_CHOICES_MAP.get(raw_user.get_xb_display(),
                                                   User.GENDER_UNKNOWN)
