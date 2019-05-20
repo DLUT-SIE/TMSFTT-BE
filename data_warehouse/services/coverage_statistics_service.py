@@ -10,9 +10,6 @@ from infra.exceptions import BadRequest
 
 class CoverageStatisticsService:
     '''培训覆盖率统计服务'''
-    TITLES = (
-        '教授', '副教授', '讲师', '助教', '教授级工程师',
-        '高级工程师', '工程师', '研究员', '副研究员', '助理研究员')
     AGES = (
         ('35岁及以下', [0, 35]), ('36-45岁', [36, 45]),
         ('46-55岁', [46, 55]), ('56岁及以上', [56, 150]))
@@ -57,14 +54,18 @@ class CoverageStatisticsService:
         return data
 
     @staticmethod
-    def groupby_titles(users_qs):
+    def groupby_titles(users_qs, interest_titles=None, other_label='其他'):
         '''按照职称分组
 
         Parameters
         -------
         users_qs: QuerySet
             待分组的User查询集
-
+        interest_titles: tuple or list
+            职称的显式分组列表，不在该列表中的职称会被分组为other_label。
+            为None，则每个职称单独成组。
+        other_label: string
+            不在interest_titles的职称会被归类为该组。
         Returns
         ------
         list of dict
@@ -88,6 +89,19 @@ class CoverageStatisticsService:
                         technical_title=item['technical_title']).count()
                 }
             )
+        # merge titles which we are not interested in into single group
+        # labled with other_label
+        if interest_titles is not None:
+            item_other = {
+                'title': other_label, 'coverage_count': 0, 'total_count': 0
+                }
+            for item in data:
+                if item['title'] not in interest_titles:
+                    item_other['coverage_count'] += item['coverage_count']
+                    item_other['total_count'] += item['total_count']
+                    data.remove(item)
+            if item_other['coverage_count'] > 0:
+                data.append(item_other)
         return data
 
     @staticmethod
@@ -168,8 +182,10 @@ class CoverageStatisticsService:
             department_ids = [department_id]
         else:
             if user.is_school_admin:
-                department_ids = DepartmentService.get_top_level_departments(
-                ).values_list('id', flat=True)
+                department_ids = (
+                    DepartmentService.get_top_level_departments()
+                    .values_list('id', flat=True)
+                )
             else:
                 raise BadRequest('你不是校级管理员，必须指定部门ID。')
         if end_time is None:

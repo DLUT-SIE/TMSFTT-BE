@@ -190,6 +190,15 @@ class TestCoverageStatisticsService(TestCase):
             self.assertGreaterEqual(item['total_count'],
                                     item['coverage_count'])
 
+        got = CoverageStatisticsService.groupby_titles(
+            user_qs,
+            ['教授', '副教授', '讲师'],
+            '其他职称'
+        )
+        got_titles = [item['title'] for item in got]
+        self.assertEqual(4, len(got_titles))
+        self.assertTrue('其他职称' in got_titles)
+
     def test_groupby_departments(self):
         '''Should 按部门对用户查询集分组统计'''
         user_qs = User.objects.all()
