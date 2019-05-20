@@ -38,10 +38,8 @@ class AggregateDataViewSet(viewsets.ViewSet):
         '''Return a xls file stream.'''
         if 'table_type' not in request.GET:
             raise BadRequest('请求的参数不正确。')
-        table_type = request.GET['table_type']
-        if not table_type.isdigit():
+        if not request.GET['table_type'].isdigit():
             raise BadRequest('请求的table_type必须为整数。')
-        table_type = int(table_type)
         context = {key: val for (key, val) in request.GET.items()}
         context['request'] = request
         ret_file_path, file_name = AggregateDataService.dispatch(

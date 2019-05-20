@@ -37,6 +37,10 @@ class AggregateDataService:
         TABLE_NAME_TRANING_FEEDBACK: '培训反馈表'
     }
 
+    TITLES = (
+        '教授', '副教授', '讲师', '助教', '教授级工程师',
+        '高级工程师', '工程师', '研究员', '副研究员', '助理研究员')
+
     @classmethod
     def dispatch(cls, method_name, context):
         '''to call a specific service for getting data'''
@@ -267,7 +271,9 @@ class AggregateDataService:
         group_users_by_depts = CoverageStatisticsService.groupby_departments(
             users_qs)
         group_users_by_titles = CoverageStatisticsService.groupby_titles(
-            users_qs)
+            users_qs,
+            cls.TITLES
+            )
         grouped_records = {
             'ages': group_users_by_ages,
             'titles': group_users_by_titles,
