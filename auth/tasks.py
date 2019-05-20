@@ -132,8 +132,7 @@ def _update_from_teacher_information(dwid_to_department,
             user.administrative_department = (
                 department_id_to_administrative[user.department.id]
             )
-            if user.department:
-                update_user_groups(user, user.groups.add)
+            update_user_groups(user, user.groups.add)
 
         user.gender = User.GENDER_CHOICES_MAP.get(raw_user.get_xb_display(),
                                                   User.GENDER_UNKNOWN)
