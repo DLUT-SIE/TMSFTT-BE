@@ -1,7 +1,7 @@
 '''Provide services of training program module.'''
 from django.db import transaction
 
-from auth.services import PermissonsService
+from auth.services import PermissionService
 from training_review.models import ReviewNote
 
 
@@ -30,8 +30,8 @@ class ReviewNoteService:
 
         with transaction.atomic():
             review_note = ReviewNote.objects.create(**review_note_data)
-            PermissonsService.assigin_object_permissions(
+            PermissionService.assign_object_permissions(
                 review_note_data['user'], review_note)
-            PermissonsService.assigin_object_permissions(
+            PermissionService.assign_object_permissions(
                 review_note_data['record'].user, review_note)
             return review_note

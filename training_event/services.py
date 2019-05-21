@@ -10,7 +10,7 @@ from infra.exceptions import BadRequest
 from training_event.models import CampusEvent, Enrollment
 from training_record.models import Record
 from auth.models import User
-from auth.services import PermissonsService
+from auth.services import PermissionService
 
 
 class CampusEventService:
@@ -34,7 +34,7 @@ class CampusEventService:
 
         with transaction.atomic():
             campus_event = CampusEvent.objects.create(**campus_event_data)
-            PermissonsService.assigin_object_permissions(
+            PermissionService.assign_object_permissions(
                 context['request'].user, campus_event)
             return campus_event
 
@@ -69,7 +69,7 @@ class EnrollmentService:
             # Update the number of enrolled participants
             event.num_enrolled += 1
             event.save()
-            PermissonsService.assigin_object_permissions(
+            PermissionService.assign_object_permissions(
                 enrollment_data['user'], enrollment)
 
             return enrollment

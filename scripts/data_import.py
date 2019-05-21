@@ -26,7 +26,7 @@ from auth.utils import (
     EducationBackgroundConverter, TechnicalTitleConverter,
     TeachingTypeConverter
 )
-from auth.services import PermissonsService
+from auth.services import PermissionService
 from training_program.models import Program
 from training_event.models import CampusEvent, EventCoefficient, Enrollment
 from training_record.models import (
@@ -119,7 +119,7 @@ def make_programs():
             name=name,
             department=department,
             category=category) for name in names)
-    PermissonsService.assigin_object_permissions(admin, department)
+    PermissionService.assign_object_permissions(admin, department)
     __cached_programs = programs
     return programs
 
@@ -233,7 +233,7 @@ def read_workload_content(
             status=Record.STATUS_FEEDBACK_REQUIRED,
             event_coefficient=event_coef,
         )
-        PermissonsService.assigin_object_permissions(user, record)
+        PermissionService.assign_object_permissions(user, record)
     pb.finish()
 
 

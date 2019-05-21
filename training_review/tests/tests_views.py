@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from auth.utils import assign_perm
-from auth.services import PermissonsService
+from auth.services import PermissionService
 import training_review.models as treview
 import training_record.models as trecord
 import training_event.models as tevent
@@ -70,7 +70,7 @@ class TestReviewNoteViewSet(APITestCase):
         off_campus_event = mommy.make(tevent.OffCampusEvent)
         record = mommy.make(trecord.Record, off_campus_event=off_campus_event)
         review_note = mommy.make(treview.ReviewNote, record=record)
-        PermissonsService.assigin_object_permissions(self.user, review_note)
+        PermissionService.assign_object_permissions(self.user, review_note)
         url = reverse('reviewnote-detail', args=(review_note.pk,))
 
         response = self.client.get(url)

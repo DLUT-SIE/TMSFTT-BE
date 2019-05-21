@@ -2,7 +2,7 @@
 from django.db import transaction
 
 from training_program.models import Program
-from auth.services import PermissonsService
+from auth.services import PermissionService
 
 
 class ProgramService:
@@ -26,6 +26,6 @@ class ProgramService:
 
         with transaction.atomic():
             program = Program.objects.create(**program_data)
-            PermissonsService.assigin_object_permissions(
+            PermissionService.assign_object_permissions(
                 context['request'].user, program)
             return program

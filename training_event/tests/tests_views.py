@@ -13,7 +13,7 @@ import training_program.models
 import training_event.models
 import auth.models
 from auth.utils import assign_perm
-from auth.services import PermissonsService
+from auth.services import PermissionService
 
 User = get_user_model()
 
@@ -72,7 +72,7 @@ class TestCampusEventViewSet(APITestCase):
     def test_delete_campus_event(self):
         '''CampusEvent should be deleted by DELETE request.'''
         campus_event = mommy.make(training_event.models.CampusEvent)
-        PermissonsService.assigin_object_permissions(self.user, campus_event)
+        PermissionService.assign_object_permissions(self.user, campus_event)
         url = reverse('campusevent-detail', args=(campus_event.pk,))
 
         response = self.client.delete(url)
@@ -83,7 +83,7 @@ class TestCampusEventViewSet(APITestCase):
     def test_get_campus_event(self):
         '''CampusEvent should be accessed by GET request.'''
         campus_event = mommy.make(training_event.models.CampusEvent)
-        PermissonsService.assigin_object_permissions(self.user, campus_event)
+        PermissionService.assign_object_permissions(self.user, campus_event)
         url = reverse('campusevent-detail', args=(campus_event.pk,))
 
         response = self.client.get(url)
@@ -98,7 +98,7 @@ class TestCampusEventViewSet(APITestCase):
         name1 = 'campus_event1'
         campus_event = mommy.make(training_event.models.CampusEvent,
                                   name=name0)
-        PermissonsService.assigin_object_permissions(self.user, campus_event)
+        PermissionService.assign_object_permissions(self.user, campus_event)
         url = reverse('campusevent-detail', args=(campus_event.pk,))
         data = {'name': name1}
 
@@ -234,7 +234,7 @@ class TestEnrollmentViewSet(APITestCase):
         event.save()
         enrollment = mommy.make(training_event.models.Enrollment,
                                 user=user, campus_event=event)
-        PermissonsService.assigin_object_permissions(self.user, enrollment)
+        PermissionService.assign_object_permissions(self.user, enrollment)
         url = reverse('enrollment-detail', args=(enrollment.pk,))
         response = self.client.delete(url)
 
@@ -244,7 +244,7 @@ class TestEnrollmentViewSet(APITestCase):
         '''Enrollment should be accessed by GET request.'''
         enrollment = mommy.make(training_event.models.Enrollment)
         url = reverse('enrollment-detail', args=(enrollment.pk,))
-        PermissonsService.assigin_object_permissions(self.user, enrollment)
+        PermissionService.assign_object_permissions(self.user, enrollment)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -268,7 +268,7 @@ class TestWorkloadFileView(APITestCase):
     def setUpTestData(cls):
         cls.user = mommy.make(User)
 
-    @patch('secure_file.models.PermissonsService.assigin_object_permissions')
+    @patch('secure_file.models.PermissionService.assign_object_permissions')
     def test_get(self, _):
         '''should return 201 when successed'''
         url = reverse('download-workload')

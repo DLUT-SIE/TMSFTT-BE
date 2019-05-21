@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.core.files import File
 from rest_framework import response, status
 
-from auth.services import PermissonsService
+from auth.services import PermissionService
 from secure_file.utils import (
     get_full_encrypted_file_download_url, get_full_plain_file_download_url)
 
@@ -63,7 +63,7 @@ class SecureFile(FileFromPathMixin, models.Model):
     @classmethod
     def from_path(cls, user, fname, target):
         secure_file = super().from_path(user, fname, target)
-        PermissonsService.assigin_object_permissions(user, secure_file)
+        PermissionService.assign_object_permissions(user, secure_file)
         return secure_file
 
     def generate_download_response(self, request):
