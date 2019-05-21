@@ -23,18 +23,18 @@ class AggregateDataService:
     '''provide services for getting data'''
     TABLE_NAME_STAFF = 1
     TABLE_NAME_TEACHER = 2
-    TABLE_NAME_TRANING_SUMMARY = 3
+    TABLE_NAME_TRAINING_SUMMARY = 3
     TABLE_NAME_COVERAGE_SUMMARY = 4
-    TABLE_NAME_TRANING_HOURS_SUMMARY = 5
-    TABLE_NAME_TRANING_FEEDBACK = 6
+    TABLE_NAME_TRAINING_HOURS_SUMMARY = 5
+    TABLE_NAME_TRAINING_FEEDBACK = 6
 
     TABLE_NAME_CHOICES = {
         TABLE_NAME_STAFF: '教职工表',
         TABLE_NAME_TEACHER: '专任教师表',
-        TABLE_NAME_TRANING_SUMMARY: '培训总体情况表',
+        TABLE_NAME_TRAINING_SUMMARY: '培训总体情况表',
         TABLE_NAME_COVERAGE_SUMMARY: '专任教师培训覆盖率表',
-        TABLE_NAME_TRANING_HOURS_SUMMARY: '培训学时与工作量表',
-        TABLE_NAME_TRANING_FEEDBACK: '培训反馈表'
+        TABLE_NAME_TRAINING_HOURS_SUMMARY: '培训学时与工作量表',
+        TABLE_NAME_TRAINING_FEEDBACK: '培训反馈表'
     }
 
     TITLES = (
@@ -47,6 +47,7 @@ class AggregateDataService:
         available_method_list = (
             'teachers_statistics',
             'records_statistics',
+            'coverage_statistics',
             'personal_summary',
             'table_export'
         )
@@ -148,8 +149,8 @@ class AggregateDataService:
     def get_group_records(cls, context):
         '''get group records data'''
         group_by = context.get('group_by', '')
-        start_year = context.get('start_year', 2016)
-        end_year = context.get('end_year', 2016)
+        start_year = context.get('start_year', datetime.now().year)
+        end_year = context.get('end_year', datetime.now().year)
         department_id = context.get('department_id', '')
         if not (group_by.isdigit() and start_year.isdigit() and
                 end_year.isdigit() and department_id.isdigit()):
@@ -231,10 +232,11 @@ class AggregateDataService:
     def table_export(cls, context):
         '''处理表格导出相关的请求'''
         handlers = {
-            cls.TABLE_NAME_TRANING_HOURS_SUMMARY: 'traning_hours_statistics',
-            cls.TABLE_NAME_COVERAGE_SUMMARY: 'coverage_statistics',
-            cls.TABLE_NAME_TRANING_SUMMARY: 'trainee_statistics',
-            cls.TABLE_NAME_TRANING_FEEDBACK: 'training_feedback'
+            cls.TABLE_NAME_TRAINING_HOURS_SUMMARY: (
+                'table_training_hours_statistics'),
+            cls.TABLE_NAME_COVERAGE_SUMMARY: 'table_coverage_statistics',
+            cls.TABLE_NAME_TRAINING_SUMMARY: 'table_trainee_statistics',
+            cls.TABLE_NAME_TRAINING_FEEDBACK: 'training_feedback'
         }
         request = context.get('request', None)
         if request is None:
@@ -251,12 +253,57 @@ class AggregateDataService:
         '''to get training hours statistics data'''
 
     @classmethod
-    def trainee_statistics(cls, context):
+    def table_trainee_statistics(cls, context):
         '''培训学时与工作量'''
 
     @classmethod
     def coverage_statistics(cls, context):
-        '''专任教师培训覆盖率'''
+        '''get canvas coverage statistics data'''
+        group_data = cls.get_group_coverage_data(context)
+        data = CanvasDataFormater.format_coverage_statistics_data(group_data)
+        return data
+
+    @classmethod
+    def get_group_coverage_data(cls, context):
+        '''get group coverage data'''
+        group_by = context.get('group_by', '')
+        start_year = context.get('start_year', datetime.now().year)
+        end_year = context.get('end_year', datetime.now().year)
+        department_id = context.get('department_id', '')
+        program_id = context.get('program_id', '')
+        if not (group_by.isdigit() and start_year.isdigit() and
+                end_year.isdigit() and department_id.isdigit() and
+                program_id.isdigit()):
+            raise BadRequest("错误的参数")
+        department_id = None if department_id == '0' else department_id
+        program_id = None if program_id == '0' else program_id
+        start_time = make_aware(
+            datetime.strptime(start_year + '-1-1', '%Y-%m-%d'))
+        end_year = str(int(end_year) + 1)
+        end_time = make_aware(
+            datetime.strptime(end_year + '-1-1', '%Y-%m-%d'))
+        group_by = int(group_by)
+        records = CoverageStatisticsService.get_traning_records(
+            context['request'].user, program_id, department_id,
+            start_time, end_time)
+        users_qs = User.objects.filter(id__in=records.values_list(
+            'user', flat=True).distinct())
+        group_by_handler = {
+            EnumData.BY_TECHNICAL_TITLE: (
+                CoverageStatisticsService.groupby_titles),
+            EnumData.BY_AGE_DISTRIBUTION: (
+                CoverageStatisticsService.groupby_ages),
+            EnumData.BY_DEPARTMENT: (
+                CoverageStatisticsService.groupby_departments)
+        }
+        if group_by not in group_by_handler:
+            raise BadRequest("错误的参数")
+        group_users = group_by_handler[group_by](users_qs)
+        return group_users
+
+    @classmethod
+    def table_coverage_statistics(cls, context):
+        '''专任教师培训覆盖率表格统计'''
         request = context.get('request', None)
         program_id = context.get('program_id', None)
         start_time = context.get('start_time', None)
@@ -619,6 +666,51 @@ class CanvasDataFormater:
         }
         data['label'] = group_users.keys()
         data['group_by_data'][0]['data'] = group_users.values()
+        return data
+
+    @staticmethod
+    def format_coverage_statistics_data(group_users):
+        '''format coverage statistics data
+
+        Parameters:
+        ----------
+        group_users: list of dict
+            [
+                {
+                    "age_range" or "title" or "department": "35岁及以下",
+                    "coverage_count": 0,
+                    "total_count": 965
+                }
+            ]
+        '''
+        data = {
+            'label': [],
+            'group_by_data': [
+                {
+                    'seriesNum': 0,
+                    'seriesName': '覆盖人数',
+                    'data': []
+                },
+                {
+                    'seriesNum': 1,
+                    'seriesName': '未覆盖人数',
+                    'data': []
+                }
+            ]
+        }
+        if not bool(group_users):
+            return data
+        if 'age_range' in group_users[0].keys():
+            label_key = 'age_range'
+        elif 'department' in group_users[0].keys():
+            label_key = 'department'
+        else:
+            label_key = 'title'
+        for user in group_users:
+            data['label'].append(user[label_key])
+            data['group_by_data'][0]['data'].append(user['coverage_count'])
+            data['group_by_data'][1]['data'].append(
+                user['total_count'] - user['coverage_count'])
         return data
 
 
