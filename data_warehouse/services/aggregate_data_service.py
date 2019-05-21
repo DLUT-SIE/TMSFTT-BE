@@ -149,8 +149,8 @@ class AggregateDataService:
     def get_group_records(cls, context):
         '''get group records data'''
         group_by = context.get('group_by', '')
-        start_year = context.get('start_year', datetime.now().year)
-        end_year = context.get('end_year', datetime.now().year)
+        start_year = context.get('start_year', str(datetime.now().year))
+        end_year = context.get('end_year', str(datetime.now().year))
         department_id = context.get('department_id', '')
         if not (group_by.isdigit() and start_year.isdigit() and
                 end_year.isdigit() and department_id.isdigit()):
@@ -267,8 +267,8 @@ class AggregateDataService:
     def get_group_coverage_data(cls, context):
         '''get group coverage data'''
         group_by = context.get('group_by', '')
-        start_year = context.get('start_year', datetime.now().year)
-        end_year = context.get('end_year', datetime.now().year)
+        start_year = context.get('start_year', str(datetime.now().year))
+        end_year = context.get('end_year', str(datetime.now().year))
         department_id = context.get('department_id', '')
         program_id = context.get('program_id', '')
         if not (group_by.isdigit() and start_year.isdigit() and
