@@ -269,10 +269,10 @@ class TestWorkloadFileView(APITestCase):
         cls.user = mommy.make(User)
 
     @patch('secure_file.models.PermissonsService.assigin_object_permissions')
-    def test_post(self, _):
+    def test_get(self, _):
         '''should return 201 when successed'''
         url = reverse('download-workload')
         self.client.force_authenticate(user=self.user)  # pylint: disable=E1101
         data = {}
-        response = self.client.post(url, data, format='json')
+        response = self.client.get(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

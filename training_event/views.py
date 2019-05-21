@@ -66,12 +66,12 @@ class WorkloadFileDownloadView(APIView):
 
     FILE_NAME_TEMPLATE = '{}至{}教师工作量导出表.xls'
 
-    def post(self, request):
+    def get(self, request):
         '''get workload file by coefficient service'''
 
         # 生成excel文件
         user = request.user
-        data = request.data
+        data = request.GET
         start_time = data.get('start_time')
         end_time = data.get('end_time')
 
@@ -84,7 +84,8 @@ class WorkloadFileDownloadView(APIView):
 
         workload_dict = (
             CoefficientCalculationService.calculate_workload_by_query(
-                department=data.get('department'),
+                administrative_department=data.get(
+                    'administrative_department'),
                 start_time=start_time,
                 end_time=end_time,
                 teachers=data.get('teachers')
