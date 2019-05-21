@@ -138,3 +138,22 @@ class TestGroupService(TestCase):
         self.assertTrue(queryset.filter(id=group2.id).exists())
         self.assertTrue(queryset.filter(id=group3.id).exists())
         self.assertFalse(queryset.filter(id=group4.id).exists())
+
+
+class TestUserGroupService(TestCase):
+    '''Unit tests for UserGroupService.'''
+    @classmethod
+    def setUpTestData(cls):
+        User.objects.get_or_create(
+            username='notification-robot', defaults={'first_name': '系统通知'}
+        )
+        cls.service = services.UserGroupService
+
+    def test_add_user_to_groups(self):
+        '''Should add user to a group'''
+        user = mommy.make(User)
+        group = mommy.make(Group)
+
+        self.service.add_user_to_group(user, group)
+
+        self.assertTrue(user.groups.filter(name=group).exists())

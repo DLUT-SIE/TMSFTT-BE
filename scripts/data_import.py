@@ -396,6 +396,7 @@ def assign_model_perms():
                     assign_perm(perm_name, group)
         pb.step()
     assign_perm('secure_file.download_file', dlut_teachers_group)
+    assign_perm('infra.view_notification', dlut_teachers_group)
     pb.finish()
 
 
