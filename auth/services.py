@@ -4,7 +4,9 @@ from django.contrib.auth.models import Group
 from django.db import transaction
 
 from auth.utils import assign_perm
-from auth.models import Department
+from auth.models import Department, UserGroup
+from infra.services import NotificationService
+from infra.utils import prod_logger
 
 
 class PermissonsService:
@@ -26,6 +28,7 @@ class PermissonsService:
         -------
         None
         '''
+
         # i: assgin User-Object-Permissions for the current user
         group = Group.objects.get(name='大连理工大学-专任教师')
         cls._assigin_group_permissions(group, user, instance)
@@ -64,6 +67,9 @@ class PermissonsService:
         for perm in group.permissions.all().filter(
                 content_type_id=content_type.id):
             assign_perm(perm, user_or_group, instance)
+            prod_logger.info(
+                '赋予用户/用户组 %s 对 %s 对象的 %s 权限',
+                user_or_group, instance, perm)
 
 
 class DepartmentService:
@@ -116,3 +122,32 @@ class GroupService:
             departments.extend(search_list)
         regex = '^({})'.format('|'.join(d.name for d in departments))
         return Group.objects.filter(name__regex=regex)
+
+
+class UserGroupService:
+    '''
+    Provide services for UserGroups.
+    '''
+    @staticmethod
+    def add_user_to_group(user=None, group=None):
+        '''Add a user to a group with notification.
+
+        Parametsers
+        ----------
+        user: User
+            related user
+        group: Group
+            related group
+        Returns
+        -------
+        usergroup: UserGroup
+        '''
+
+        with transaction.atomic():
+            usergroup = UserGroup.objects.create(
+                user=user, group=group)
+            content = (f'用户({user.first_name}-{user.username})'
+                       f'被加入用户组({group})中')
+            prod_logger.info(content)
+            NotificationService.send_system_notification(user, content)
+            return usergroup

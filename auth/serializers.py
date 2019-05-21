@@ -9,7 +9,7 @@ from rest_framework_bulk import (
 )
 
 import auth.models
-
+from auth.services import UserGroupService
 
 User = get_user_model()
 
@@ -97,3 +97,6 @@ class UserGroupSerializer(serializers.ModelSerializer):
                 fields=['user', 'group']
             )
         ]
+
+    def create(self, validated_data):
+        return UserGroupService.add_user_to_group(**validated_data)
