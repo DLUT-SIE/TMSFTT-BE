@@ -11,7 +11,7 @@ from model_mommy import mommy
 from auth.models import Department
 from data_warehouse.services.aggregate_data_service import (
     AggregateDataService, TeachersGroupService,
-    RecordsGroupService
+    RecordsGroupService, CanvasDataFormater
 )
 from infra.exceptions import BadRequest
 from training_event.models import CampusEvent, OffCampusEvent
@@ -232,8 +232,8 @@ class TestAggregateDataService(TestCase):
     @patch('data_warehouse.services.aggregate_data_service'
            '.CoverageStatisticsService')
     @patch('data_warehouse.services.aggregate_data_service.TableExportService')
-    def test_coverage_statistics(self, mock_table_export_service,
-                                 mock_coverage_statistics_service):
+    def test_table_coverage_statistics(
+            self, mock_table_export_service, mock_coverage_statistics_service):
         '''Should 根据请求返回分组后的培训记录'''
         request = Mock()
         context = {
@@ -242,7 +242,7 @@ class TestAggregateDataService(TestCase):
         context['request'] = request
         context['start_time'] = now()
         context['end_time'] = now()
-        AggregateDataService.coverage_statistics(context)
+        AggregateDataService.table_coverage_statistics(context)
         (
             mock_coverage_statistics_service
             .get_traning_records.assert_called_with(
@@ -272,7 +272,7 @@ class TestAggregateDataService(TestCase):
         )
 
     @patch('data_warehouse.services.aggregate_data_service'
-           '.AggregateDataService.coverage_statistics')
+           '.AggregateDataService.table_coverage_statistics')
     def test_table_export(self, mocked_coverage_statistics):
         '''Should 应该正确的分发表格导出请求'''
         request = MagicMock()
@@ -292,6 +292,22 @@ class TestAggregateDataService(TestCase):
         context['request'] = request
         AggregateDataService.table_export(context)
         mocked_coverage_statistics.assert_called()
+
+    def test_coverage_statistics(self):
+        '''Should get coverage statistics data'''
+        self.context = {'request': self.request}
+        self.context['department_id'] = '0'
+        self.context['program_id'] = '0'
+        self.context['start_year'] = '2019'
+        self.context['end_year'] = '2019'
+        with self.assertRaisesMessage(BadRequest, '错误的参数'):
+            AggregateDataService.coverage_statistics(self.context)
+        self.context['group_by'] = '100'
+        with self.assertRaisesMessage(BadRequest, '错误的参数'):
+            AggregateDataService.coverage_statistics(self.context)
+        self.context['group_by'] = '2'
+        data = AggregateDataService.coverage_statistics(self.context)
+        self.assertEqual(len(data['label']), 4)
 
 
 class TestTeachersGroupService(TestCase):
@@ -471,3 +487,39 @@ class TestRecordsGroupService(TestCase):
             group_records['副教授'][0].id, record2.id)
         self.assertEqual(
             group_records['教授'][0].id, record1.id)
+
+
+class TestCanvasDataFormater(TestCase):
+    '''test canvas data formater'''
+    def test_format_coverage_statistics_data(self):
+        '''test coverage statistics data formater'''
+        group_users = [
+            {
+                "age_range": "35岁及以下",
+                "coverage_count": 0,
+                "total_count": 965
+            }
+        ]
+        data = CanvasDataFormater.format_coverage_statistics_data(group_users)
+        self.assertEqual(data['label'][0], '35岁及以下')
+        group_users = [
+            {
+                "title": "教授",
+                "coverage_count": 0,
+                "total_count": 965
+            }
+        ]
+        data = CanvasDataFormater.format_coverage_statistics_data(group_users)
+        self.assertEqual(data['label'][0], '教授')
+        group_users = [
+            {
+                "department": "123",
+                "coverage_count": 0,
+                "total_count": 965
+            }
+        ]
+        data = CanvasDataFormater.format_coverage_statistics_data(group_users)
+        self.assertEqual(data['label'][0], '123')
+        group_users = []
+        data = CanvasDataFormater.format_coverage_statistics_data(group_users)
+        self.assertEqual(len(data['label']), 0)
