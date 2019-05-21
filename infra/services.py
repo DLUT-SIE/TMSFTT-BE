@@ -13,11 +13,7 @@ class NotificationService:  # pylint: disable=R0903
     '''Provide services for Notification.'''
     @classmethod
     def _get_notification_robot(cls):
-        attr_name = '__notification_robot'
-        robot = getattr(cls, attr_name, None)
-        if robot is None:
-            robot = User.objects.get(username='notification-robot')
-            setattr(cls, attr_name, robot)
+        robot = User.objects.get(username='notification-robot')
         return robot
 
     @staticmethod

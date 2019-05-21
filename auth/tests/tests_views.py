@@ -104,6 +104,9 @@ class TestUserGroupViewSet(APITestCase):
     '''Unit tests for UserGroup view.'''
     @classmethod
     def setUpTestData(cls):
+        User.objects.get_or_create(
+            username='notification-robot', defaults={'first_name': '系统通知'}
+        )
         cls.user = mommy.make(User, is_staff=True)
 
     def setUp(self):
