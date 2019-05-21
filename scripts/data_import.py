@@ -437,4 +437,4 @@ def populate(base='~/Desktop/TMSFTT'):
 
 
 if __name__ == '__main__':
-    populate()
+    populate() if len(sys.argv) < 2 else populate(sys.argv[1])
