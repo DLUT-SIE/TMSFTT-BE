@@ -34,7 +34,7 @@ SECRET_KEY = get_secret_from_file('SECRET_KEY_FILE')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', 'tmsftt.local']
+ALLOWED_HOSTS = ['localhost', '39.98.197.214']
 INTERNAL_IPS = ['127.0.0.1']
 
 # Database
@@ -129,7 +129,7 @@ MEDIA_ROOT = '/protected-files/'
 MEDIA_URL = '/media/'
 
 # CAS dev settings
-CAS_SERVER_URL = 'http://localhost:8000/mock-cas/'
+CAS_SERVER_URL = 'https://39.98.197.214/mock-cas/'
 CAS_IGNORE_REFERER = True
 CAS_REDIRECT_URL = '/'
 
