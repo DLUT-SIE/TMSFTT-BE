@@ -95,7 +95,7 @@ class CoverageStatisticsService:
             item_other = {
                 'title': other_label, 'coverage_count': 0, 'total_count': 0
                 }
-            for item in data:
+            for item in data[:]:
                 if item['title'] not in interest_titles:
                     item_other['coverage_count'] += item['coverage_count']
                     item_other['total_count'] += item['total_count']
