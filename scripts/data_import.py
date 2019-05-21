@@ -3,6 +3,7 @@
 # pylint: disable=missing-docstring
 import sys
 import os
+import os.path as osp
 import random
 from datetime import datetime, timedelta
 
@@ -15,7 +16,6 @@ django.setup()
 import xlrd
 
 from faker import Faker
-from model_mommy import mommy
 from django.db import transaction
 from django.contrib.auth.models import Group
 from django.utils.timezone import make_aware, now
@@ -27,15 +27,12 @@ from auth.utils import (
     TeachingTypeConverter
 )
 from auth.services import PermissonsService
-from infra.models import Notification
 from training_program.models import Program
 from training_event.models import CampusEvent, EventCoefficient, Enrollment
 from training_record.models import (
     Record, RecordContent, RecordAttachment, CampusEventFeedback,
-    StatusChangeLog
 )
 from training_review.models import ReviewNote
-from secure_file.models import SecureFile
 
 
 faker = Faker('zh_CN')
@@ -127,19 +124,20 @@ def make_programs():
     return programs
 
 
-def create_user(username, first_name, **kwargs):
-    user = mommy.make(
-        User,
+def get_or_create_user(username, first_name, **kwargs):
+    user, created = User.objects.get_or_create(
         username=username,
         first_name=first_name,
         **kwargs
     )
+    if created:
+        user.set_unusable_password()
     department = kwargs.get('department', None)
     while department is not None:
         group = get_or_create_group(department, '专任教师')
         user.groups.add(group)
         department = department.super_department
-    return user
+    return user, created
 
 
 def row_parser_2018(row):
@@ -151,8 +149,8 @@ def row_parser_2017(row):
     return row[4], row[2], row[1], row[3], row[5], row[6], coef, 0
 
 
-def read_worload_content(
-        users, departments, row_parser=row_parser_2018, start_row=1,
+def read_workload_content(
+        row_parser=row_parser_2018, start_row=1,
         fpath='~/Desktop/TMSFTT/2018年教师发展工作量-全-0316-工号.xls'):
     '''Read xlsx file and generate records.'''
     workbook = xlrd.open_workbook(fpath)
@@ -162,6 +160,8 @@ def read_worload_content(
     event_to_program = {}
     events = {}
     coefficients = {}
+    users = {x.username: x for x in User.objects.all()}
+    departments = {x.raw_department_id: x for x in Department.objects.all()}
     departments_list = list(departments.values())
     pb = ProgressBar(num_rows, start_row)
     for idx, row in enumerate((sheet.row_values(i)
@@ -189,7 +189,7 @@ def read_worload_content(
         username = f'{int(username)}'
         user = users.get(username, None)
         if user is None:
-            user = create_user(
+            user, _ = get_or_create_user(
                 username, user_name,
                 department=random.choice(departments_list))
             users[username] = user
@@ -258,18 +258,19 @@ def read_departments_information(
     pb = ProgressBar(len(rows))
     for row in rows:
         dwid, dwmc, department_type, super_department_id = row[5:9]
-        department = Department.objects.create(
+        department, _ = Department.objects.get_or_create(
             raw_department_id=dwid,
-            name=dwmc,
-            department_type=department_type,
-            super_department=id_to_departments[super_department_id]
+            defaults={
+                'name': dwmc,
+                'department_type': department_type,
+                'super_department': id_to_departments[super_department_id],
+            },
         )
         id_to_departments[dwid] = department
         get_or_create_group(department, '管理员')
         get_or_create_group(department, '专任教师')
         pb.step()
     pb.finish()
-    return id_to_departments
 
 
 def extract_teacher_information(row):
@@ -293,8 +294,8 @@ def extract_teacher_information(row):
 
 
 def read_teachers_information(
-        departments,
         fpath='~/Desktop/TMSFTT/教师相关信息20190424部分数据.xlsx'):
+    departments = {x.raw_department_id: x for x in Department.objects.all()}
     workbook = xlrd.open_workbook(fpath)
     sheet = workbook.sheet_by_name('教师基本信息')
     num_rows = sheet.nrows
@@ -320,13 +321,13 @@ def read_teachers_information(
             'technical_title': zyjszc,
             'teaching_type': rjlx,
         }
-        user = create_user(zgh, jsxm, **kwargs)
+        user, _ = get_or_create_user(zgh, jsxm, **kwargs)
         users[zgh] = user
     pb.finish()
     return users
 
 
-def assign_model_perms(departments):
+def assign_model_perms():
     model_perms = {
         # Program
         Program: {
@@ -375,6 +376,10 @@ def assign_model_perms(departments):
     }
     dlut_department = get_dlut_department()
     dlut_teachers_group = get_or_create_group(dlut_department, '专任教师')
+    departments = {
+        x.raw_department_id: x
+        for x in Department.objects.exclude(raw_department_id='10141')
+    }
     pb = ProgressBar(len(departments))
     for department in departments.values():
         for model_class, perm_pairs in model_perms.items():
@@ -394,34 +399,40 @@ def assign_model_perms(departments):
     pb.finish()
 
 
-@transaction.atomic
-def populate():
-    print('Creating admin')
+def populate_initial_data():
     get_dlut_admin()
+    user, _ = User.objects.get_or_create(
+        username='notification-robot',
+        defaults={'first_name': '系统通知'}
+    )
+    user.set_unusable_password()
+
+
+@transaction.atomic
+def populate(base='~/Desktop/TMSFTT'):
+    print('Populating initial data')
+    populate_initial_data()
     print('Creating departments')
-    departments = read_departments_information(
-        fpath='~/Desktop/TMSFTT/教师基本信息20190508(二级单位信息).xlsx'
+    read_departments_information(
+        fpath=osp.join(base, '教师基本信息20190508(二级单位信息).xlsx')
     )
     print('Assigning model permissions')
-    assign_model_perms(departments)
+    assign_model_perms()
     print('Creating users')
-    users = read_teachers_information(
-        departments,
-        fpath='~/Desktop/TMSFTT/教师相关信息20190424部分数据.xlsx'
+    read_teachers_information(
+        fpath=osp.join(base, '教师相关信息20190424部分数据.xlsx')
     )
     print('Creating workload for 2017')
-    read_worload_content(
-        users, departments,
+    read_workload_content(
         row_parser=row_parser_2017,
         start_row=2,
-        fpath='~/Desktop/TMSFTT/2017年教师发展工作量-全-0316-工号.xlsx',
+        fpath=osp.join(base, '2017年教师发展工作量-全-0316-工号.xlsx'),
     )
     print('Creating workload for 2018')
-    read_worload_content(
-        users, departments,
+    read_workload_content(
         row_parser=row_parser_2018,
         start_row=1,
-        fpath='~/Desktop/TMSFTT/2018年教师发展工作量-全-0316-工号-获奖情况.xls',
+        fpath=osp.join(base, '2018年教师发展工作量-全-0316-工号-获奖情况.xls'),
     )
 
 
