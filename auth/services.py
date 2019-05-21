@@ -68,7 +68,8 @@ class PermissonsService:
                 content_type_id=content_type.id):
             assign_perm(perm, user_or_group, instance)
             prod_logger.info(
-                '为用户/组%s赋予Object-Level权限%s', user_or_group, perm)
+                '赋予用户/用户组 %s 对 %s 对象的 %s 权限',
+                user_or_group, instance, perm)
 
 
 class DepartmentService:
@@ -84,7 +85,6 @@ class DepartmentService:
         result: dict
             the dict of top_level_departments
         '''
-        prod_logger.info('取得所有大连理工大学的顶级学部学院')
         departments = Department.objects.filter(name='大连理工大学')
         top_department = []
         if departments.exists():
@@ -115,7 +115,6 @@ class GroupService:
         departments = list(Department.objects.filter(id=department_id))
         if not departments:
             return []
-        prod_logger.info('取得%s(学部学院)的所有用户组', departments[0])
         search_list = departments
         while search_list:
             search_list = list(Department.objects.filter(
@@ -147,7 +146,8 @@ class UserGroupService:
         with transaction.atomic():
             usergroup = UserGroup.objects.create(
                 user=user, group=group)
-            content = '用户{}被加入用户组{}中'.format(user, group)
+            content = (f'用户({user.first_name}-{user.username})'
+                       f'被加入用户组({group})中')
             prod_logger.info(content)
             NotificationService.send_system_notification(user, content)
             return usergroup
