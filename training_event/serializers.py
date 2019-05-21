@@ -13,6 +13,8 @@ class CampusEventSerializer(serializers.ModelSerializer):
     program_detail = ReadOnlyProgramSerializer(source='program',
                                                read_only=True)
     enrollment_id = serializers.SerializerMethodField(read_only=True)
+    coefficient_expect = serializers.DictField(write_only=True)
+    coefficient_participator = serializers.DictField(write_only=True)
 
     class Meta:
         model = training_event.models.CampusEvent
@@ -58,8 +60,16 @@ class CampusEventSerializer(serializers.ModelSerializer):
         return res.get(obj.id, None)
 
     def create(self, validated_data):
-        return CampusEventService.create_campus_event(
-            validated_data, self.context)
+        '''Create event and event coefficient.'''
+        key_expect = 'coefficient_expect'
+        key_participator = 'coefficient_participator'
+        coefficient_expect = validated_data.pop(key_expect)
+        coefficient_participator = validated_data.pop(key_participator)
+
+        return CampusEventService.create_campus_event(validated_data,
+                                                      coefficient_expect,
+                                                      coefficient_participator,
+                                                      self.context)
 
 
 class OffCampusEventSerializer(serializers.ModelSerializer):

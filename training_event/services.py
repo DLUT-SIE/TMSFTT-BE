@@ -7,7 +7,7 @@ from django.db import transaction
 from django.utils.timezone import now
 
 from infra.exceptions import BadRequest
-from training_event.models import CampusEvent, Enrollment
+from training_event.models import CampusEvent, Enrollment, EventCoefficient
 from training_record.models import Record
 from auth.models import User
 from auth.services import PermissionService
@@ -16,14 +16,21 @@ from auth.services import PermissionService
 class CampusEventService:
     '''Provide services for CampusEvent.'''
     @staticmethod
-    def create_campus_event(campus_event_data, context=None):
+    def create_campus_event(validated_data, coefficient_expect,
+                            coefficient_participator, context=None):
         '''Create a CampusEvent with ObjectPermission.
 
         Parametsers
         ----------
-        program_data: dict
+        validated_data: dict
             This dict should have full information needed to
-            create an Program.
+            create an CampusEvent.
+        coefficient_expect: dict
+            An optional dict to provide event_coefficient about
+            expect information.
+        coefficient_participator: dict
+            An optional dict to provide event_coefficient about
+            participator information
         context: dict
             An optional dict to provide contextual information. Default: None
 
@@ -31,10 +38,16 @@ class CampusEventService:
         -------
         campus_event: CampusEvent
         '''
-
         with transaction.atomic():
             campus_event = CampusEvent.objects.create(**campus_event_data)
-            PermissionService.assign_object_permissions(
+            campus_event = CampusEvent.objects.create(**validated_data)
+
+            EventCoefficient.objects.create(campus_event=campus_event,
+                                            **coefficient_expect)
+            EventCoefficient.objects.create(campus_event=campus_event,
+                                            **coefficient_participator)
+
+            PermissonsService.assigin_object_permissions(
                 context['request'].user, campus_event)
             return campus_event
 

@@ -2,7 +2,8 @@
 import os
 
 from rest_framework.views import APIView
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, viewsets, status
+from rest_framework.response import Response
 from rest_framework_guardian import filters
 
 from django.contrib.auth import get_user_model
@@ -104,3 +105,17 @@ class WorkloadFileDownloadView(APIView):
         os.unlink(file_path)
 
         return secure_file.generate_download_response(request)
+
+
+class EventCoefficientRoundChoices(viewsets.ViewSet):
+    '''Create API view for get round choices of event coefficient.'''
+    def list(self, request):
+        '''define how to get round choices.'''
+        round_choices = [
+            {
+                'type': item[0],
+                'name': item[1],
+            }for item in (
+                training_event.models.EventCoefficient.ROUND_CHOICES)
+        ]
+        return Response(round_choices, status=status.HTTP_200_OK)

@@ -52,6 +52,18 @@ class TestCampusEventViewSet(APITestCase):
             'num_participants': num_participants,
             'program': program.pk,
             'deadline': time,
+            'coefficient_expect': {
+                'role': 1,
+                'coefficient': 1,
+                'hours_option': 1,
+                'workload_option': 1,
+            },
+            'coefficient_participator': {
+                'role': 0,
+                'coefficient': 1,
+                'hours_option': 1,
+                'workload_option': 1,
+            }
         }
 
         response = self.client.post(url, data, format='json')
@@ -276,3 +288,16 @@ class TestWorkloadFileView(APITestCase):
         data = {}
         response = self.client.get(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+class TestEventCoefficientRoundChoicesViewSet(APITestCase):
+    '''Unit tests for EventCoefficientRoundChoicesViewSet'''
+
+    def test_event_coefficient_round_choice(self):
+        '''Should get event coefficient round choice according to request.'''
+        user = mommy.make(get_user_model())
+        url = reverse('round-choices-list')
+        self.client.force_authenticate(user)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
