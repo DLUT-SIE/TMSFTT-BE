@@ -46,10 +46,26 @@ class TestCampusEventService(TestCase):
 
     def test_create_campus_event_admin(self):
         '''Should create campus_event.'''
-        CampusEventService.create_campus_event(self.data, self.context)
-
-        count = Program.objects.all().count()
-        self.assertEqual(count, 1)
+        coefficient_expect = {
+            'role': 1,
+            'coefficient': 1,
+            'hours_option': 1,
+            'workload_option': 1,
+        }
+        coefficient_participator = {
+            'role': 0,
+            'coefficient': 1,
+            'hours_option': 1,
+            'workload_option': 1,
+        }
+        CampusEventService.create_campus_event(self.data,
+                                               coefficient_expect,
+                                               coefficient_participator,
+                                               self.context)
+        count_program = Program.objects.all().count()
+        count_event_coefficient = EventCoefficient.objects.all().count()
+        self.assertEqual(count_program, 1)
+        self.assertEqual(count_event_coefficient, 2)
 
 
 class TestEnrollmentService(TestCase):
