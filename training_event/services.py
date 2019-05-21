@@ -156,8 +156,9 @@ class CoefficientCalculationService:
                                   )
 
     @staticmethod
-    def calculate_workload_by_query(department=None, start_time=None,
-                                    end_time=None, teachers=None):
+    def calculate_workload_by_query(administrative_department=None,
+                                    start_time=None, end_time=None,
+                                    teachers=None):
         """calculate workload by department and period
 
         Parameters
@@ -183,19 +184,22 @@ class CoefficientCalculationService:
             start_time = end_time.replace(month=1, day=1, hour=0, minute=0,
                                           second=0)
         if teachers is None:
-            teachers = User.objects.all()
-            if department is not None:
-                teachers = teachers.filter(department=department)
-        teachers = teachers.select_related('department')
-
+            teachers = User.objects.exclude(
+                administrative_department__isnull=True)
+            if administrative_department is not None:
+                teachers = teachers.filter(
+                    administrative_department=administrative_department)
+        # teachers = teachers.select_related('administrative_department')
         campus_records = Record.objects.select_related(
-            'event_coefficient', 'campus_event').filter(
+            'event_coefficient', 'campus_event', 'user',
+            'user__administrative_department').filter(
                 user__in=teachers,
                 campus_event__time__gte=start_time,
                 campus_event__time__lte=end_time)
 
         off_campus_records = Record.objects.select_related(
-            'event_coefficient', 'off_campus_event').filter(
+            'event_coefficient', 'off_campus_event', 'user',
+            'user__administrative_department').filter(
                 user__in=teachers, off_campus_event__time__gte=start_time,
                 off_campus_event__time__lte=end_time)
         result = {}
@@ -234,13 +238,15 @@ class CoefficientCalculationService:
             worksheet.write(0, col, title, style)
 
         # 根据学院名排序，优化输出形式
-        workload_list = sorted(workload_dict.items(),
-                               key=lambda item: item[0].department.name)
+        workload_list = sorted(
+            workload_dict.items(),
+            key=lambda item: item[0].administrative_department.name)
         # 写数据
         for row, teacher in enumerate(workload_list):
 
             worksheet.write(row+1, 0, row+1)
-            worksheet.write(row+1, 1, teacher[0].department.name)
+            worksheet.write(row+1, 1,
+                            teacher[0].administrative_department.name)
             worksheet.write(row+1, 2, teacher[0].first_name)
             worksheet.write(row+1, 3, teacher[1])
 

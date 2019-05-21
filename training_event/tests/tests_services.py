@@ -132,7 +132,8 @@ class TestCoefficientCalculationService(TestCase):
         cls.campus_event = mommy.make(CampusEvent, num_hours=cls.NUM_HOURS,
                                       time=now())
         cls.department = mommy.make(Department)
-        cls.user = mommy.make(User, department=cls.department)
+        cls.user = mommy.make(User, department=cls.department,
+                              administrative_department=cls.department)
         cls.event_coefficient = mommy.make(
             EventCoefficient, campus_event=cls.campus_event, coefficient=1,
             hours_option=EventCoefficient.ROUND_METHOD_CEIL,
@@ -153,7 +154,7 @@ class TestCoefficientCalculationService(TestCase):
         '''Should return workload by query'''
         self.assertEqual(
             CoefficientCalculationService.calculate_workload_by_query(
-                department=self.department)[self.user],
+                administrative_department=self.department)[self.user],
             self.NUM_HOURS * self.RECORDS_NUMS)
 
     def test_generate_workload_excel_from_data(self):
