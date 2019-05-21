@@ -190,14 +190,14 @@ class CoefficientCalculationService:
                 teachers = teachers.filter(
                     administrative_department=administrative_department)
         campus_records = Record.objects.select_related(
-            'event_coefficient', 'campus_event', 'user',
+            'event_coefficient', 'user',
             'user__administrative_department').filter(
                 user__in=teachers,
                 campus_event__time__gte=start_time,
                 campus_event__time__lte=end_time)
 
         off_campus_records = Record.objects.select_related(
-            'event_coefficient', 'off_campus_event', 'user',
+            'event_coefficient', 'user',
             'user__administrative_department').filter(
                 user__in=teachers, off_campus_event__time__gte=start_time,
                 off_campus_event__time__lte=end_time)
