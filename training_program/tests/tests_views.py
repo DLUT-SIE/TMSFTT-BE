@@ -8,7 +8,7 @@ from rest_framework.test import APITestCase
 
 import auth.models
 from auth.utils import assign_perm
-from auth.services import PermissonsService
+from auth.services import PermissionService
 import training_program.models
 
 
@@ -60,7 +60,7 @@ class TestProgram(APITestCase):
     def test_delete_program(self):
         '''Program list should be deleted by DELETE request.'''
         program = mommy.make(training_program.models.Program)
-        PermissonsService.assigin_object_permissions(self.user, program)
+        PermissionService.assign_object_permissions(self.user, program)
         url = reverse('program-detail', args=(program.pk,))
 
         response = self.client.delete(url)
@@ -71,7 +71,7 @@ class TestProgram(APITestCase):
     def test_get_program(self):
         '''Program list should be GET by GET request.'''
         program = mommy.make(training_program.models.Program)
-        PermissonsService.assigin_object_permissions(self.user, program)
+        PermissionService.assign_object_permissions(self.user, program)
         url = reverse('program-detail', args=(program.pk,))
         expected_keys = {'id', 'name', 'department', 'category',
                          'category_str'}
@@ -86,7 +86,7 @@ class TestProgram(APITestCase):
         name0 = 'program0'
         name1 = 'program1'
         program = mommy.make(training_program.models.Program, name=name0)
-        PermissonsService.assigin_object_permissions(self.user, program)
+        PermissionService.assign_object_permissions(self.user, program)
         url = reverse('program-detail', args=(program.pk, ))
         data = {'name': name1}
 

@@ -14,7 +14,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from auth.utils import assign_perm
-from auth.services import PermissonsService
+from auth.services import PermissionService
 from auth.models import Department
 import training_record.models
 from training_record.models import (
@@ -93,7 +93,7 @@ class TestRecordViewSet(APITestCase):
                 off_campus_event=off_campus_event,
                 status=Record.STATUS_SCHOOL_ADMIN_APPROVED
                 if index % 4 == 0 else Record.STATUS_SUBMITTED)
-            PermissonsService.assigin_object_permissions(self.user, record)
+            PermissionService.assign_object_permissions(self.user, record)
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -120,7 +120,7 @@ class TestRecordViewSet(APITestCase):
                          'off_campus_event', 'user', 'status', 'contents',
                          'attachments', 'status_str', 'role', 'role_str',
                          'feedback'}
-        PermissonsService.assigin_object_permissions(self.user, record)
+        PermissionService.assign_object_permissions(self.user, record)
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -140,7 +140,7 @@ class TestRecordViewSet(APITestCase):
         }
         record = mommy.make(training_record.models.Record,
                             off_campus_event=off_campus_event)
-        PermissonsService.assigin_object_permissions(self.user, record)
+        PermissionService.assign_object_permissions(self.user, record)
         url = reverse('record-detail', args=(record.pk,))
         data = {'off_campus_event': json.dumps(off_campus_event_data),
                 'role': EventCoefficient.ROLE_PARTICIPATOR}
@@ -159,7 +159,7 @@ class TestRecordViewSet(APITestCase):
         group = mommy.make(Group, name="创新创业学院-管理员")
         user.groups.add(group)
         assign_perm('training_record.review_record', group)
-        PermissonsService.assigin_object_permissions(self.user, record)
+        PermissionService.assign_object_permissions(self.user, record)
 
         url = reverse('record-department-admin-review', args=(record.pk,))
 
@@ -179,7 +179,7 @@ class TestRecordViewSet(APITestCase):
         group = mommy.make(Group, name="创新创业学院-管理员")
         user.groups.add(group)
         assign_perm('training_record.review_record', group)
-        PermissonsService.assigin_object_permissions(self.user, record)
+        PermissionService.assign_object_permissions(self.user, record)
 
         url = reverse('record-school-admin-review', args=(record.pk,))
 
@@ -199,7 +199,7 @@ class TestRecordViewSet(APITestCase):
         group = mommy.make(Group, name="创新创业学院-管理员")
         user.groups.add(group)
         assign_perm('training_record.change_record', group)
-        PermissonsService.assigin_object_permissions(self.user, record)
+        PermissionService.assign_object_permissions(self.user, record)
 
         url = reverse('record-close-record', args=(record.pk,))
 
@@ -282,7 +282,7 @@ class TestRecordContentViewSet(APITestCase):
                             campus_event=campus_event)
         record_content = mommy.make(training_record.models.RecordContent,
                                     record=record)
-        PermissonsService.assigin_object_permissions(self.user, record_content)
+        PermissionService.assign_object_permissions(self.user, record_content)
         url = reverse('recordcontent-detail', args=(record_content.pk,))
         expected_keys = {'id', 'create_time', 'update_time', 'record',
                          'content_type', 'content'}
@@ -321,7 +321,7 @@ class TestRecordAttachmentViewSet(APITestCase):
                             campus_event=campus_event)
         record_attachment = mommy.make(training_record.models.RecordAttachment,
                                        record=record)
-        PermissonsService.assigin_object_permissions(
+        PermissionService.assign_object_permissions(
             self.user, record_attachment)
         url = reverse('recordattachment-detail', args=(record_attachment.pk,))
         expected_keys = {'id', 'create_time', 'update_time', 'record',

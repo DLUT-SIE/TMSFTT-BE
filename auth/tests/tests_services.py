@@ -16,23 +16,23 @@ PERMINSSION_MAP = ('add_campusevent',
                    'delete_campusevent')
 
 
-class TestPermissonsService(TestCase):
+class TestPermissionService(TestCase):
     '''Unit tests for ObjectPermissonsManager.'''
     @classmethod
     def setUpTestData(cls):
-        cls.permissionService = services.PermissonsService()
+        cls.permissionService = services.PermissionService()
         cls.object = mommy.make(CampusEvent)
         cls.object_fake = mommy.make(Department)
         cls.perms = Permission.objects.filter(codename__in=PERMINSSION_MAP)
 
-    def test_assigin_group_permissions_user(self):
+    def test_assign_group_permissions_user(self):
         '''Should True if user has permissions of the related project.'''
         user = mommy.make(User)
         group = mommy.make(Group, name="大连理工大学-专任教师")
         group.permissions.add(*(perm for perm in self.perms))
 
         # pylint: disable=W0212
-        self.permissionService._assigin_group_permissions(
+        self.permissionService._assign_group_permissions(
             group, user, self.object)
 
         for perms in PERMINSSION_MAP:
@@ -40,7 +40,7 @@ class TestPermissonsService(TestCase):
         self.assertFalse(user.has_perm('add_record', self.object))
         self.assertFalse(user.has_perm('add_campusevent', self.object_fake))
 
-    def test_assigin_group_permissions_group(self):
+    def test_assign_group_permissions_group(self):
         '''Should True if user has permissions of the related project.'''
         user = mommy.make(User)
         group = mommy.make(Group, name="创新创业学院-管理员")
@@ -48,7 +48,7 @@ class TestPermissonsService(TestCase):
         group.permissions.add(*(perm for perm in self.perms))
 
         # pylint: disable=W0212
-        self.permissionService._assigin_group_permissions(
+        self.permissionService._assign_group_permissions(
             group, group, self.object)
 
         for perms in PERMINSSION_MAP:
@@ -56,7 +56,7 @@ class TestPermissonsService(TestCase):
         self.assertFalse(user.has_perm('add_record', self.object))
         self.assertFalse(user.has_perm('add_campusevent', self.object_fake))
 
-    def test_assigin_object_permissions(self):
+    def test_assign_object_permissions(self):
         '''Should True if user has permissions of the related project.'''
         department_school = mommy.make(Department, name="大连理工大学")
         department_admin = mommy.make(
@@ -77,7 +77,7 @@ class TestPermissonsService(TestCase):
         group_admin.permissions.add(*(perm for perm in self.perms))
         group_school.permissions.add(*(perm for perm in self.perms))
 
-        self.permissionService.assigin_object_permissions(user, self.object)
+        self.permissionService.assign_object_permissions(user, self.object)
 
         for perms in PERMINSSION_MAP:
             self.assertTrue(user.has_perm(perms, self.object))

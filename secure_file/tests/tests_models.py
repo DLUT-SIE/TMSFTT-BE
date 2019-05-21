@@ -18,7 +18,7 @@ class TestSecureFileModels(TestCase):
     def setUpTestData(cls):
         cls.user = mommy.make(get_user_model())
 
-    @patch('secure_file.models.PermissonsService.assigin_object_permissions')
+    @patch('secure_file.models.PermissionService.assign_object_permissions')
     def test_create_instance_from_system_path(self, mocked_assign):
         '''Should create when given path to file.'''
         handle, fpath = tempfile.mkstemp()
@@ -30,7 +30,7 @@ class TestSecureFileModels(TestCase):
         os.remove(fpath)
         self.assertEqual(secure_file.path.read(), content)
 
-    @patch('secure_file.models.PermissonsService.assigin_object_permissions')
+    @patch('secure_file.models.PermissionService.assign_object_permissions')
     def test_create_instance_from_in_memory_file(self, mocked_assign):
         '''Should create when given an InMemoryFile.'''
         content = b'Hello World!\n'

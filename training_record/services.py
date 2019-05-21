@@ -6,7 +6,7 @@ from django.db import transaction
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 
-from auth.services import PermissonsService
+from auth.services import PermissionService
 from infra.exceptions import BadRequest
 from training_record.models import (
     Record, RecordContent, RecordAttachment,
@@ -71,14 +71,14 @@ class RecordService:
                 user=user,
                 event_coefficient=event_coefficient,
             )
-            PermissonsService.assigin_object_permissions(user, record)
+            PermissionService.assign_object_permissions(user, record)
 
             for content in contents:
                 record_content = RecordContent.objects.create(
                     record=record,
                     **content
                 )
-                PermissonsService.assigin_object_permissions(
+                PermissionService.assign_object_permissions(
                     user, record_content)
 
             for attachment in attachments:
@@ -86,7 +86,7 @@ class RecordService:
                     record=record,
                     path=attachment,
                 )
-                PermissonsService.assigin_object_permissions(
+                PermissionService.assign_object_permissions(
                     user, record_attachment)
 
         return record
@@ -157,7 +157,7 @@ class RecordService:
                     record=record,
                     path=attachment,
                 )
-                PermissonsService.assigin_object_permissions(
+                PermissionService.assign_object_permissions(
                     user, record_attachment)
 
             if RecordAttachment.objects.filter(record=record).count() > 3:
@@ -171,7 +171,7 @@ class RecordService:
                     record=record,
                     **content
                 )
-                PermissonsService.assigin_object_permissions(
+                PermissionService.assign_object_permissions(
                     user, record_content)
         return record
 
@@ -235,7 +235,7 @@ class RecordService:
                     campus_event=campus_event, user=user,
                     status=Record.STATUS_FEEDBACK_REQUIRED,
                     event_coefficient=event_coefficient)
-                PermissonsService.assigin_object_permissions(user, record)
+                PermissionService.assign_object_permissions(user, record)
                 records.add(record)
 
         return len(records)

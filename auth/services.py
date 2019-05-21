@@ -9,12 +9,12 @@ from infra.services import NotificationService
 from infra.utils import prod_logger
 
 
-class PermissonsService:
+class PermissionService:
     '''Provide services for Permissons.'''
     # pylint: disable=redefined-builtin
     @classmethod
     @transaction.atomic()
-    def assigin_object_permissions(cls, user=None, instance=None):
+    def assign_object_permissions(cls, user=None, instance=None):
         '''
         The function is used to provide permissions for releated user when
         an object is created (a teacher create a tranning record for exmaple).
@@ -31,7 +31,7 @@ class PermissonsService:
 
         # i: assgin User-Object-Permissions for the current user
         group = Group.objects.get(name='大连理工大学-专任教师')
-        cls._assigin_group_permissions(group, user, instance)
+        cls._assign_group_permissions(group, user, instance)
 
         # ii: assgin Group-Object-Permissions for DepartmentGroup
         related_department = user.department
@@ -39,12 +39,12 @@ class PermissonsService:
             for group in Group.objects.filter(
                     name__startswith=related_department.name).exclude(
                         name='大连理工大学-专任教师'):
-                cls._assigin_group_permissions(group, group, instance)
+                cls._assign_group_permissions(group, group, instance)
             related_department = related_department.super_department
 
     # pylint: disable=redefined-builtin
     @classmethod
-    def _assigin_group_permissions(
+    def _assign_group_permissions(
             cls, group=None, user_or_group=None, instance=None):
         '''
         The function is used to assign object-level-permissons to an user or a
