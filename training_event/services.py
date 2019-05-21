@@ -189,7 +189,6 @@ class CoefficientCalculationService:
             if administrative_department is not None:
                 teachers = teachers.filter(
                     administrative_department=administrative_department)
-        # teachers = teachers.select_related('administrative_department')
         campus_records = Record.objects.select_related(
             'event_coefficient', 'campus_event', 'user',
             'user__administrative_department').filter(
