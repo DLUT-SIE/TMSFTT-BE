@@ -39,16 +39,15 @@ class CampusEventService:
         campus_event: CampusEvent
         '''
         with transaction.atomic():
-            campus_event = CampusEvent.objects.create(**campus_event_data)
             campus_event = CampusEvent.objects.create(**validated_data)
+            PermissionService.assign_object_permissions(
+                context['request'].user, campus_event)
 
             EventCoefficient.objects.create(campus_event=campus_event,
                                             **coefficient_expect)
             EventCoefficient.objects.create(campus_event=campus_event,
                                             **coefficient_participator)
 
-            PermissonsService.assigin_object_permissions(
-                context['request'].user, campus_event)
             return campus_event
 
 
