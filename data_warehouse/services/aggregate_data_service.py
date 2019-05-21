@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Count
 from django.utils.timezone import datetime, make_aware
 
-from auth.models import Department
+from auth.models import (Department, User)
 from auth.services import DepartmentService
 from data_warehouse.services.user_core_statistics_service import (
     UserCoreStatisticsService
@@ -11,6 +11,9 @@ from data_warehouse.services.user_core_statistics_service import (
 from data_warehouse.services.user_ranking_service import (
     UserRankingService
 )
+from data_warehouse.services.coverage_statistics_service import (
+    CoverageStatisticsService)
+from data_warehouse.services.table_export_service import TableExportService
 from data_warehouse.consts import EnumData
 from infra.exceptions import BadRequest
 from training_record.models import Record
@@ -18,6 +21,25 @@ from training_record.models import Record
 
 class AggregateDataService:
     '''provide services for getting data'''
+    TABLE_NAME_STAFF = 1
+    TABLE_NAME_TEACHER = 2
+    TABLE_NAME_TRANING_SUMMARY = 3
+    TABLE_NAME_COVERAGE_SUMMARY = 4
+    TABLE_NAME_TRANING_HOURS_SUMMARY = 5
+    TABLE_NAME_TRANING_FEEDBACK = 6
+
+    TABLE_NAME_CHOICES = {
+        TABLE_NAME_STAFF: '教职工表',
+        TABLE_NAME_TEACHER: '专任教师表',
+        TABLE_NAME_TRANING_SUMMARY: '培训总体情况表',
+        TABLE_NAME_COVERAGE_SUMMARY: '专任教师培训覆盖率表',
+        TABLE_NAME_TRANING_HOURS_SUMMARY: '培训学时与工作量表',
+        TABLE_NAME_TRANING_FEEDBACK: '培训反馈表'
+    }
+
+    TITLES = (
+        '教授', '副教授', '讲师', '助教', '教授级工程师',
+        '高级工程师', '工程师', '研究员', '副研究员', '助理研究员')
 
     @classmethod
     def dispatch(cls, method_name, context):
@@ -25,9 +47,8 @@ class AggregateDataService:
         available_method_list = (
             'teachers_statistics',
             'records_statistics',
-            'coverage_statistics',
-            'training_hours_statistics',
             'personal_summary',
+            'table_export'
         )
         handler = getattr(cls, method_name, None)
         if method_name not in available_method_list or handler is None:
@@ -207,12 +228,64 @@ class AggregateDataService:
         return records
 
     @classmethod
-    def coverage_statistics(cls, context):
-        '''to get coverage statistics data'''
+    def table_export(cls, context):
+        '''处理表格导出相关的请求'''
+        handlers = {
+            cls.TABLE_NAME_TRANING_HOURS_SUMMARY: 'traning_hours_statistics',
+            cls.TABLE_NAME_COVERAGE_SUMMARY: 'coverage_statistics',
+            cls.TABLE_NAME_TRANING_SUMMARY: 'trainee_statistics',
+            cls.TABLE_NAME_TRANING_FEEDBACK: 'training_feedback'
+        }
+        request = context.get('request', None)
+        if request is None:
+            raise BadRequest('错误的参数。')
+        table_type = int(request.GET.get('table_type'))
+        handler = handlers.get(table_type, None)
+        if handler is None:
+            raise BadRequest('未定义的表类型。')
+        handler_method = getattr(cls, handler, None)
+        return handler_method(context)
 
     @classmethod
     def training_hours_statistics(cls, context):
         '''to get training hours statistics data'''
+
+    @classmethod
+    def trainee_statistics(cls, context):
+        '''培训学时与工作量'''
+
+    @classmethod
+    def coverage_statistics(cls, context):
+        '''专任教师培训覆盖率'''
+        request = context.get('request', None)
+        program_id = context.get('program_id', None)
+        start_time = context.get('start_time', None)
+        end_time = context.get('end_time', None)
+        department_id = context.get('department_id', None)
+
+        records = CoverageStatisticsService.get_traning_records(
+            request.user, program_id, department_id, start_time, end_time)
+        users_qs = User.objects.filter(id__in=records.values_list(
+            'user', flat=True).distinct())
+        group_users_by_ages = CoverageStatisticsService.groupby_ages(users_qs)
+        group_users_by_depts = CoverageStatisticsService.groupby_departments(
+            users_qs)
+        group_users_by_titles = CoverageStatisticsService.groupby_titles(
+            users_qs,
+            cls.TITLES
+            )
+        grouped_records = {
+            'ages': group_users_by_ages,
+            'titles': group_users_by_titles,
+            'departments': group_users_by_depts
+        }
+        file_path = TableExportService.export_traning_coverage_summary(
+            grouped_records)
+        return file_path, '专任教师培训覆盖率.xls'
+
+    @classmethod
+    def traning_feedback(cls, context):
+        '''培训记录反馈导出'''
 
 
 class TeachersGroupService:

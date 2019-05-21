@@ -1,5 +1,5 @@
 '''Unit tests for aggregate data services.'''
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, PropertyMock, MagicMock
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -228,6 +228,70 @@ class TestAggregateDataService(TestCase):
             user2, 50, time)
         self.assertEqual(records['campus_records'][0].id, record1.id)
         self.assertEqual(records['off_campus_records'][0].id, record2.id)
+
+    @patch('data_warehouse.services.aggregate_data_service'
+           '.CoverageStatisticsService')
+    @patch('data_warehouse.services.aggregate_data_service.TableExportService')
+    def test_coverage_statistics(self, mock_table_export_service,
+                                 mock_coverage_statistics_service):
+        '''Should 根据请求返回分组后的培训记录'''
+        request = Mock()
+        context = {
+            'request': None,
+        }
+        context['request'] = request
+        context['start_time'] = now()
+        context['end_time'] = now()
+        AggregateDataService.coverage_statistics(context)
+        (
+            mock_coverage_statistics_service
+            .get_traning_records.assert_called_with(
+                request.user,
+                None,
+                None,
+                context['start_time'],
+                context['end_time']
+            )
+        )
+        (
+            mock_coverage_statistics_service
+            .groupby_ages.assert_called()
+        )
+        (
+            mock_coverage_statistics_service
+            .groupby_departments.assert_called()
+        )
+        (
+            mock_coverage_statistics_service
+            .groupby_titles.assert_called()
+
+        )
+        (
+            mock_table_export_service
+            .export_traning_coverage_summary.assert_called()
+        )
+
+    @patch('data_warehouse.services.aggregate_data_service'
+           '.AggregateDataService.coverage_statistics')
+    def test_table_export(self, mocked_coverage_statistics):
+        '''Should 应该正确的分发表格导出请求'''
+        request = MagicMock()
+        get_mock = PropertyMock(return_value={'table_type': 9})
+        type(request).GET = get_mock
+        context = {}
+        context['request'] = request
+        with self.assertRaisesMessage(BadRequest, '未定义的表类型。'):
+            AggregateDataService.table_export(context)
+        with self.assertRaisesMessage(BadRequest, '错误的参数。'):
+            AggregateDataService.table_export({})
+
+        request = MagicMock()
+        get_mock = PropertyMock(return_value={'table_type': 4})
+        type(request).GET = get_mock
+        context = {}
+        context['request'] = request
+        AggregateDataService.table_export(context)
+        mocked_coverage_statistics.assert_called()
 
 
 class TestTeachersGroupService(TestCase):
