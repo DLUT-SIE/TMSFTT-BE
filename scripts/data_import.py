@@ -378,7 +378,7 @@ def assign_model_perms():
     dlut_teachers_group = get_or_create_group(dlut_department, '专任教师')
     departments = {
         x.raw_department_id: x
-        for x in Department.objects.exclude(raw_department_id='10141')
+        for x in Department.objects.all()
     }
     pb = ProgressBar(len(departments))
     for department in departments.values():
