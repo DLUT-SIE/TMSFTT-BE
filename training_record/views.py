@@ -47,7 +47,7 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         'batch_submit': ['%(app_label)s.batchadd_%(model_name)s'],
         'get_number_of_records_without_feedback':
             ['%(app_label)s.view_%(model_name)s'],
-        'get_role_choices': ['%(app_label)s.add_%(model_name)s'],
+        'get_role_choices': ['%(app_label)s.view_%(model_name)s'],
     }
     filter_backends = (filters.DjangoObjectPermissionsFilter,
                        django_filters.rest_framework.DjangoFilterBackend,)
