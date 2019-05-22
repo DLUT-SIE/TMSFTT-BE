@@ -803,13 +803,22 @@ class CanvasDataFormater:
         }
         if not bool(group_users):
             return data
+        interest_label = None
         if 'age_range' in group_users[0].keys():
             label_key = 'age_range'
+            interest_label = EnumData.AGE_LABEL
         elif 'department' in group_users[0].keys():
             label_key = 'department'
+            interest_label = list(
+                DepartmentService
+                .get_top_level_departments()
+                .values_list('name', flat=True))
         else:
             label_key = 'title'
+            interest_label = EnumData.TITLE_LABEL
         for user in group_users:
+            if interest_label and user[label_key] not in interest_label:
+                continue
             data['label'].append(user[label_key])
             data['group_by_data'][0]['data'].append(user['coverage_count'])
             data['group_by_data'][1]['data'].append(
