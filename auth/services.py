@@ -36,7 +36,7 @@ class PermissionService:
         related_department = user.department
         while related_department:
             for group in Group.objects.filter(
-                    name__startswith=related_department.name):
+                    name__startswith=f'{related_department.name}-'):
                 cls._assign_group_permissions(group, group, instance)
             related_department = related_department.super_department
 
