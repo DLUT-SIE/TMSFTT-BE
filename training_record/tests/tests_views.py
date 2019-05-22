@@ -91,6 +91,7 @@ class TestRecordViewSet(APITestCase):
             record = mommy.make(
                 Record,
                 off_campus_event=off_campus_event,
+                user=self.user,
                 status=Record.STATUS_SCHOOL_ADMIN_APPROVED
                 if index % 4 == 0 else Record.STATUS_SUBMITTED)
             PermissionService.assign_object_permissions(self.user, record)
@@ -114,7 +115,8 @@ class TestRecordViewSet(APITestCase):
         '''Record should be accessed by GET request.'''
         campus_event = mommy.make(training_event.models.CampusEvent)
         record = mommy.make(training_record.models.Record,
-                            campus_event=campus_event)
+                            campus_event=campus_event,
+                            user=self.user)
         url = reverse('record-detail', args=(record.pk,))
         expected_keys = {'id', 'create_time', 'update_time', 'campus_event',
                          'off_campus_event', 'user', 'status', 'contents',
@@ -139,7 +141,8 @@ class TestRecordViewSet(APITestCase):
             'num_participants': 30,
         }
         record = mommy.make(training_record.models.Record,
-                            off_campus_event=off_campus_event)
+                            off_campus_event=off_campus_event,
+                            user=self.user)
         PermissionService.assign_object_permissions(self.user, record)
         url = reverse('record-detail', args=(record.pk,))
         data = {'off_campus_event': json.dumps(off_campus_event_data),
