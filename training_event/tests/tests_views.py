@@ -52,17 +52,17 @@ class TestCampusEventViewSet(APITestCase):
             'num_participants': num_participants,
             'program': program.pk,
             'deadline': time,
-            'coefficient_expect': {
-                'role': 1,
-                'coefficient': 1,
-                'hours_option': 1,
-                'workload_option': 1,
-            },
-            'coefficient_participator': {
-                'role': 0,
-                'coefficient': 1,
-                'hours_option': 1,
-                'workload_option': 1,
+            'coefficients': {
+                "参与": {
+                    "coefficient": 1.0,
+                    "hours_option": 1,
+                    "workload_option": 3,
+                },
+                "专家": {
+                    "coefficient": 4.0,
+                    "hours_option": 1,
+                    "workload_option": 3,
+                },
             }
         }
 

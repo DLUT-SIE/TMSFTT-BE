@@ -16,8 +16,7 @@ from auth.services import PermissionService
 class CampusEventService:
     '''Provide services for CampusEvent.'''
     @staticmethod
-    def create_campus_event(validated_data, coefficient_expect,
-                            coefficient_participator, context=None):
+    def create_campus_event(validated_data, coefficients, context=None):
         '''Create a CampusEvent with ObjectPermission.
 
         Parametsers
@@ -25,12 +24,9 @@ class CampusEventService:
         validated_data: dict
             This dict should have full information needed to
             create an CampusEvent.
-        coefficient_expect: dict
+        coefficients: dict
             An optional dict to provide event_coefficient about
-            expect information.
-        coefficient_participator: dict
-            An optional dict to provide event_coefficient about
-            participator information
+            expert information and participator information.
         context: dict
             An optional dict to provide contextual information. Default: None
 
@@ -43,10 +39,11 @@ class CampusEventService:
             PermissionService.assign_object_permissions(
                 context['request'].user, campus_event)
 
-            EventCoefficient.objects.create(campus_event=campus_event,
-                                            **coefficient_expect)
-            EventCoefficient.objects.create(campus_event=campus_event,
-                                            **coefficient_participator)
+            for key in coefficients:
+                role = EventCoefficient.ROLE_CHOICES_MAP[key]
+                EventCoefficient.objects.create(campus_event=campus_event,
+                                                role=role,
+                                                **coefficients[key])
 
             return campus_event
 
