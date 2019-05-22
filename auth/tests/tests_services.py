@@ -1,4 +1,6 @@
 '''Unit tests for auth services.'''
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, Group
@@ -28,7 +30,7 @@ class TestPermissionService(TestCase):
     def test_assign_group_permissions_user(self):
         '''Should True if user has permissions of the related project.'''
         user = mommy.make(User)
-        group = mommy.make(Group, name="大连理工大学-专任教师")
+        group = mommy.make(Group, name="个人权限")
         group.permissions.add(*(perm for perm in self.perms))
 
         # pylint: disable=W0212
@@ -63,7 +65,7 @@ class TestPermissionService(TestCase):
             Department, name="创新创业学院", super_department=department_school)
 
         user = mommy.make(User, department=department_admin)
-        group = mommy.make(Group, name="大连理工大学-专任教师")
+        group = mommy.make(Group, name="个人权限")
 
         group_school = mommy.make(Group, name="大连理工大学-管理员")
         user_school = mommy.make(User)
@@ -149,11 +151,13 @@ class TestUserGroupService(TestCase):
         )
         cls.service = services.UserGroupService
 
-    def test_add_user_to_groups(self):
+    @patch('infra.services.NotificationService.send_system_notification')
+    def test_add_user_to_groups(self, mocked_send):
         '''Should add user to a group'''
         user = mommy.make(User)
         group = mommy.make(Group)
 
         self.service.add_user_to_group(user, group)
+        mocked_send.assert_called()
 
         self.assertTrue(user.groups.filter(name=group).exists())

@@ -50,7 +50,7 @@ class SecureFile(FileFromPathMixin, models.Model):
         verbose_name_plural = '安全文件'
         default_permissions = ()
         permissions = (
-            ('download_file', '文件的下载权限'),
+            ('view_securefile', '下载文件'),
         )
 
     created = models.DateTimeField(verbose_name='创建时间', auto_now_add=True)
@@ -85,7 +85,7 @@ class SecureFile(FileFromPathMixin, models.Model):
             points to the real file created.
         '''
         url = get_full_encrypted_file_download_url(
-            request, type(self), 'path', self.path.name, 'download_file'
+            request, type(self), 'path', self.path.name, 'view_securefile'
         )
         return response.Response({'url': url}, status=status.HTTP_201_CREATED)
 

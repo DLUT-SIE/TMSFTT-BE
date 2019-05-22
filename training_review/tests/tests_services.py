@@ -18,7 +18,7 @@ class TestReviewNoteService(APITestCase):
     '''Test services provided by ReviewNoteService.'''
     def setUp(self):
         depart = mommy.make(Department, name="创新创业学院")
-        group1 = mommy.make(Group, name="大连理工大学-专任教师")
+        group1 = mommy.make(Group, name="个人权限")
         group2 = mommy.make(Group, name="创新创业学院-管理员")
         off_campus_event_instance = mommy.make(OffCampusEvent)
         self.user1 = mommy.make(User, department=depart)

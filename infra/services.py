@@ -2,7 +2,6 @@
 from django.utils.timezone import now
 from django.contrib.auth import get_user_model
 
-from auth.utils import assign_perm
 from infra.models import Notification
 
 
@@ -51,4 +50,5 @@ class NotificationService:  # pylint: disable=R0903
             recipient=recipient,
             content=content
         )
-        assign_perm('view_notification', recipient, notification)
+        from auth.services import PermissionService
+        PermissionService.assign_object_permissions(recipient, notification)

@@ -55,7 +55,7 @@ class TestSecuredFileDownloadView(TestCase):
         self.model_name = 'App.Model'
         self.field_name = 'path'
         self.path = 'path/to/file'
-        self.perm_name = 'download_file'
+        self.perm_name = 'view_securefile'
 
     @patch('secure_file.views.decrypt_file_download_url')
     def test_get_decryption_failed(self, mocked_decrypt):

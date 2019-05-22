@@ -23,7 +23,7 @@ class TestProgram(APITestCase):
         cls.user = mommy.make(User, department=cls.depart)
         cls.group = mommy.make(Group, name="创新创业学院-管理员")
         cls.user.groups.add(cls.group)
-        mommy.make(Group, name="大连理工大学-专任教师")
+        mommy.make(Group, name="个人权限")
         assign_perm('training_program.add_program', cls.group)
         assign_perm('training_program.view_program', cls.group)
         assign_perm('training_program.change_program', cls.group)

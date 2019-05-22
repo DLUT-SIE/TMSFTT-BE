@@ -33,7 +33,6 @@ INSTALLED_APPS = [
     'rest_framework_bulk',
     'django_filters',
     'django_cas',
-    'corsheaders',  # TODO(youchen): Remove this in production server
     "guardian",
 
     'secure_file',
@@ -49,7 +48,6 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

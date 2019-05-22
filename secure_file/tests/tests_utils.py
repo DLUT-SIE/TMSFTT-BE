@@ -24,7 +24,7 @@ class TestSecureFileUtils(TestCase):
             f'{model_class._meta.app_label}.{model_class._meta.object_name}'
         )
         field_name = 'path'
-        perm_name = 'download_file'
+        perm_name = 'view_securefile'
         file_path = 'path/to/file'
         query_params = OrderedDict([
             ('model_name', model_name),
@@ -47,7 +47,7 @@ class TestSecureFileUtils(TestCase):
         expected_path = 'path/to/file'
         expected_model_name = 'Mock_App.Mock_Class'
         expected_field_name = 'path'
-        expected_perm_name = 'download_file'
+        expected_perm_name = 'view_securefile'
         decrypted_path = (
             f'{expected_path}?model_name={expected_model_name}'
             f'&field={expected_field_name}'
@@ -71,7 +71,7 @@ class TestSecureFileUtils(TestCase):
         '''Should raise ValueError if no model_name.'''
         expected_path = 'path/to/file'
         expected_field_name = 'path'
-        expected_perm_name = 'download_file'
+        expected_perm_name = 'view_securefile'
         decrypted_path = (
             f'{expected_path}?'
             f'&field={expected_field_name}'

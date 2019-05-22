@@ -43,7 +43,7 @@ class TestRecordService(TestCase):
 
         cls.campus_event = mommy.make(CampusEvent)
         cls.user = mommy.make(User)
-        cls.group = mommy.make(Group, name="大连理工大学-专任教师")
+        cls.group = mommy.make(Group, name="个人权限")
         cls.user.groups.add(cls.group)
         cls.event_coefficient = mommy.make(EventCoefficient)
         cls.off_campus_event_instance = mommy.make(OffCampusEvent)

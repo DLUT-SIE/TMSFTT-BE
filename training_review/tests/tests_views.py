@@ -21,7 +21,7 @@ class TestReviewNoteViewSet(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = mommy.make(User)
-        cls.group = mommy.make(Group, name="大连理工大学-专任教师")
+        cls.group = mommy.make(Group, name="个人权限")
         cls.user.groups.add(cls.group)
         assign_perm('training_review.add_reviewnote', cls.group)
         assign_perm('training_review.view_reviewnote', cls.group)

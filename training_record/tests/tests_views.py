@@ -32,7 +32,7 @@ class TestRecordViewSet(APITestCase):
     def setUpTestData(cls):
         depart = mommy.make(Department, name="创新创业学院")
         cls.user = mommy.make(User, department=depart)
-        cls.group = mommy.make(Group, name="大连理工大学-专任教师")
+        cls.group = mommy.make(Group, name="个人权限")
         cls.user.groups.add(cls.group)
         assign_perm('training_record.add_record', cls.group)
         assign_perm('training_record.view_record', cls.group)
@@ -260,7 +260,7 @@ class TestRecordContentViewSet(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = mommy.make(User)
-        cls.group = mommy.make(Group, name="大连理工大学-专任教师")
+        cls.group = mommy.make(Group, name="个人权限")
         cls.user.groups.add(cls.group)
         assign_perm('training_record.view_recordcontent', cls.group)
 
@@ -299,7 +299,7 @@ class TestRecordAttachmentViewSet(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = mommy.make(User)
-        cls.group = mommy.make(Group, name="大连理工大学-专任教师")
+        cls.group = mommy.make(Group, name="个人权限")
         cls.user.groups.add(cls.group)
         assign_perm('training_record.view_recordattachment', cls.group)
 
@@ -423,7 +423,7 @@ class TestCampusEventFeedbackViewSet(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = mommy.make(User)
-        cls.group = mommy.make(Group, name="大连理工大学-专任教师")
+        cls.group = mommy.make(Group, name="个人权限")
         cls.user.groups.add(cls.group)
         assign_perm('training_record.add_campuseventfeedback', cls.group)
 

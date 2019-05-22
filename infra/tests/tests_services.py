@@ -3,6 +3,7 @@ from unittest.mock import patch, call, Mock
 
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from model_mommy import mommy
 
 from infra.services import NotificationService
@@ -19,6 +20,7 @@ class TestNotificationService(TestCase):
         User.objects.get_or_create(
             username='notification-robot', defaults={'first_name': '系统通知'}
         )
+        Group.objects.create(name='个人权限')
         cls.service = NotificationService
 
     @patch('infra.services.now')

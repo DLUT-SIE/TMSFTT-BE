@@ -26,7 +26,7 @@ class TestCampusEventViewSet(APITestCase):
         cls.user = mommy.make(User, department=cls.depart)
         cls.group = mommy.make(Group, name="创新创业学院-管理员")
         cls.user.groups.add(cls.group)
-        mommy.make(Group, name="大连理工大学-专任教师")
+        mommy.make(Group, name="个人权限")
         assign_perm('training_event.add_campusevent', cls.group)
         assign_perm('training_event.view_campusevent', cls.group)
         assign_perm('training_event.change_campusevent', cls.group)
@@ -205,7 +205,7 @@ class TestEnrollmentViewSet(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = mommy.make(User)
-        cls.group = mommy.make(Group, name="大连理工大学-专任教师")
+        cls.group = mommy.make(Group, name="个人权限")
         cls.user.groups.add(cls.group)
         assign_perm('training_event.add_enrollment', cls.group)
         assign_perm('training_event.delete_enrollment', cls.group)

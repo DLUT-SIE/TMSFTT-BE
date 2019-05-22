@@ -107,6 +107,7 @@ class TestUserGroupViewSet(APITestCase):
         User.objects.get_or_create(
             username='notification-robot', defaults={'first_name': '系统通知'}
         )
+        Group.objects.create(name='个人权限')
         cls.user = mommy.make(User, is_staff=True)
 
     def setUp(self):

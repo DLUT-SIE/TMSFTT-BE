@@ -78,7 +78,7 @@ def decrypt_file_download_url(encrypted_url):
         dev_logger.info('参数无效')
         raise ValueError('参数无效')
     field_name = query_params.get('field', ['path'])[0]
-    perm_name = query_params.get('perm', ['download_file'])[0]
+    perm_name = query_params.get('perm', ['view_securefile'])[0]
     return model_name, field_name, path, perm_name
 
 

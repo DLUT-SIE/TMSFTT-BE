@@ -52,7 +52,7 @@ class TestSecureFileModels(TestCase):
         resp = secure_file.generate_download_response(request)
 
         mocked_get_url.assert_called_with(
-            request, SecureFile, 'path', path, 'download_file'
+            request, SecureFile, 'path', path, 'view_securefile'
         )
 
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)

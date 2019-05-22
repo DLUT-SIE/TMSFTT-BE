@@ -7,6 +7,7 @@ SECRET_KEY = '0jn@1=-wjx6zt)vg7^s9=g-yads8qrwy5*(r#a$*pbf2o11d(h'
 
 # Application definition
 DEV_INSTALLED_APPS = [
+    'corsheaders',
     'debug_toolbar',
     'mock_cas',
 
@@ -15,9 +16,11 @@ DEV_INSTALLED_APPS = [
 INSTALLED_APPS.extend(DEV_INSTALLED_APPS)
 
 DEV_MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
-MIDDLEWARE.extend(DEV_MIDDLEWARE)
+for middleware in DEV_MIDDLEWARE[::-1]:
+    MIDDLEWARE.insert(0, middleware)
 
 
 # SECURITY WARNING: don't run with debug turned on in production!

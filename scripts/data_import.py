@@ -1,6 +1,7 @@
 '''Generate training records from xlsx file.'''
 # pylint: disable=wrong-import-position,ungrouped-imports,invalid-name
 # pylint: disable=missing-docstring
+import logging
 import sys
 import os
 import os.path as osp
@@ -20,6 +21,8 @@ from django.db import transaction
 from django.contrib.auth.models import Group
 from django.utils.timezone import make_aware, now
 
+from infra.utils import prod_logger
+from infra.models import Notification
 from auth.models import User, Department
 from auth.utils import (
     assign_perm, GenderConverter, TenureStatusConverter,
@@ -33,10 +36,12 @@ from training_record.models import (
     Record, RecordContent, RecordAttachment, CampusEventFeedback,
 )
 from training_review.models import ReviewNote
+from secure_file.models import SecureFile
 
 
 faker = Faker('zh_CN')
 faker.seed(0)
+prod_logger.setLevel(logging.WARNING)
 
 
 class ProgressBar:
@@ -91,18 +96,23 @@ def get_dlut_admin():
     user, created = User.objects.get_or_create(
         username='admin',
         first_name='管理员',
-        department=department
+        department=department,
+        administrative_department=department
     )
     if created:
-        user.groups.add(get_or_create_group(department, '管理员'))
+        user.groups.add(get_or_create_group(department, '管理员'),
+                        get_personal_permissions_group())
     return user
 
+def get_personal_permissions_group():
+    return Group.objects.get_or_create(name='个人权限')[0]
 
-__cached_programs = None
+
+cached_programs = None
 def make_programs():
-    global __cached_programs
-    if __cached_programs:
-        return __cached_programs
+    global cached_programs
+    if cached_programs:
+        return cached_programs
     candidate_programs = {
         Program.PROGRAM_CATEGORY_TRAINING: [
             '名师讲坛', '青年教学观摩', '教学基本功培训'],
@@ -115,12 +125,14 @@ def make_programs():
     department = get_dlut_department()
     admin = get_dlut_admin()
     for category, names in candidate_programs.items():
-        programs.extend(Program.objects.create(
+        _programs = [Program.objects.create(
             name=name,
             department=department,
-            category=category) for name in names)
-    PermissionService.assign_object_permissions(admin, department)
-    __cached_programs = programs
+            category=category) for name in names]
+        programs.extend(_programs)
+        for program in _programs:
+            PermissionService.assign_object_permissions(admin, program)
+    cached_programs = programs
     return programs
 
 
@@ -160,9 +172,9 @@ def read_workload_content(
     event_to_program = {}
     events = {}
     coefficients = {}
+    dlut_admin = get_dlut_admin()
     users = {x.username: x for x in User.objects.all()}
     departments = {x.raw_department_id: x for x in Department.objects.all()}
-    departments_list = list(departments.values())
     pb = ProgressBar(num_rows, start_row)
     for idx, row in enumerate((sheet.row_values(i)
                                for i in range(start_row, num_rows))):
@@ -189,10 +201,8 @@ def read_workload_content(
         username = f'{int(username)}'
         user = users.get(username, None)
         if user is None:
-            user, _ = get_or_create_user(
-                username, user_name,
-                department=random.choice(departments_list))
-            users[username] = user
+            print(f'Unknown User at row {idx}: {user_name}({username})')
+            continue
 
         # Program, Event and Coefficient
         program = event_to_program.setdefault(
@@ -214,6 +224,7 @@ def read_workload_content(
                 num_participants=random.randint(20, 100),
                 description=faker.text(100)
             )
+            PermissionService.assign_object_permissions(dlut_admin, event)
             events[event_name] = event
 
         event = events[event_name]
@@ -301,7 +312,20 @@ def read_teachers_information(
     num_rows = sheet.nrows
     users = {}
     pb = ProgressBar(num_rows, 2)
-    for row in (sheet.row_values(i) for i in range(2, num_rows)):
+    personal_permissions_group = get_personal_permissions_group()
+
+    def update_user_groups(user, handler):
+        department = user.department
+        administrative_department = user.administrative_department
+
+        while department != administrative_department:
+            handler(Group.objects.get(
+                name=f'{department.name}-专任教师'))
+            department = department.super_department
+        handler(Group.objects.get(
+            name=f'{department.name}-专任教师'))
+
+    for idx, row in enumerate((sheet.row_values(i) for i in range(2, num_rows)), 2):
         pb.step()
         if row[0] in users:
             continue
@@ -309,6 +333,9 @@ def read_teachers_information(
          rzzt, xl, zyjszc, rjlx) = extract_teacher_information(row)
         zgh = f'{int(zgh)}'
         department = departments.get(department_id, None)
+        if department is None:
+            print(f'Unknown department for user {jsxm}({zgh}) at row {idx}: {department_id}')
+            continue
         administrative_department = get_administrative_department(department)
         kwargs = {
             'department': department,
@@ -321,7 +348,10 @@ def read_teachers_information(
             'technical_title': zyjszc,
             'teaching_type': rjlx,
         }
-        user, _ = get_or_create_user(zgh, jsxm, **kwargs)
+        user, created = get_or_create_user(zgh, jsxm, **kwargs)
+        if created:
+            update_user_groups(user, user.groups.add)
+            user.groups.add(personal_permissions_group)
         users[zgh] = user
     pb.finish()
     return users
@@ -329,53 +359,62 @@ def read_teachers_information(
 
 def assign_model_perms():
     model_perms = {
+        Notification: {
+            '管理员': [],
+            '专任教师': [],
+            '个人权限': ['view'],
+        },
         # Program
         Program: {
             '管理员': ['add', 'view', 'change', 'delete'],
-            '专任教师': [],
-            '大连理工大学-专任教师': ['view'],
+            '专任教师': ['view'],
+            '个人权限': [],
         },
         # Event
         CampusEvent: {
             '管理员': ['add', 'view', 'change', 'delete'],
-            '专任教师': [],
-            '大连理工大学-专任教师': ['view'],
+            '专任教师': ['view'],
+            '个人权限': [],
         },
         Enrollment: {
             '管理员': [],
             '专任教师': [],
-            '大连理工大学-专任教师': ['add', 'delete'],
+            '个人权限': ['add', 'delete'],
         },
         # Record
         Record: {
             '管理员': ['batchadd', 'view', 'review'],
             '专任教师': [],
-            '大连理工大学-专任教师': ['add', 'view', 'change'],
+            '个人权限': ['add', 'view', 'change'],
         },
         RecordContent: {
             '管理员': ['view'],
             '专任教师': [],
-            '大连理工大学-专任教师': ['view'],
+            '个人权限': ['view'],
         },
         RecordAttachment: {
             '管理员': ['view'],
             '专任教师': [],
-            '大连理工大学-专任教师': ['view'],
+            '个人权限': ['view'],
         },
         CampusEventFeedback: {
             '管理员': [],
             '专任教师': [],
-            '大连理工大学-专任教师': ['add'],
+            '个人权限': ['add'],
         },
         # Review
         ReviewNote: {
             '管理员': ['add', 'view'],
             '专任教师': [],
-            '大连理工大学-专任教师': ['add', 'view'],
+            '个人权限': ['add', 'view'],
+        },
+        SecureFile: {
+            '管理员': ['view'],
+            '专任教师': [],
+            '个人权限': ['view'],
         },
     }
-    dlut_department = get_dlut_department()
-    dlut_teachers_group = get_or_create_group(dlut_department, '专任教师')
+    personal_permissions_group, _ = Group.objects.get_or_create(name='个人权限')
     departments = {
         x.raw_department_id: x
         for x in Department.objects.all()
@@ -384,8 +423,8 @@ def assign_model_perms():
     for department in departments.values():
         for model_class, perm_pairs in model_perms.items():
             for role, perms in perm_pairs.items():
-                if role == '大连理工大学-专任教师':
-                    group = dlut_teachers_group
+                if role == '个人权限':
+                    group = personal_permissions_group
                 else:
                     group = get_or_create_group(department, role)
                 for perm in perms:
@@ -395,8 +434,6 @@ def assign_model_perms():
                     )
                     assign_perm(perm_name, group)
         pb.step()
-    assign_perm('secure_file.download_file', dlut_teachers_group)
-    assign_perm('infra.view_notification', dlut_teachers_group)
     pb.finish()
 
 
@@ -438,4 +475,7 @@ def populate(base='~/Desktop/TMSFTT'):
 
 
 if __name__ == '__main__':
-    populate() if len(sys.argv) < 2 else populate(sys.argv[1])
+    if len(sys.argv) < 2:
+        populate()
+    else:
+        populate(sys.argv[1])

@@ -24,7 +24,7 @@ class TestProgramService(APITestCase):
         self.request = HttpRequest()
         self.request.user = self.user
         self.context = {'request': self.request, 'data': ''}
-        mommy.make(Group, name="大连理工大学-专任教师")
+        mommy.make(Group, name="个人权限")
         assign_perm('training_program.add_program', self.group)
         assign_perm('training_program.view_program', self.group)
 

@@ -40,7 +40,7 @@ class TestCampusEventService(TestCase):
         self.request = HttpRequest()
         self.request.user = self.user
         self.context = {'request': self.request, 'data': ''}
-        mommy.make(Group, name="大连理工大学-专任教师")
+        mommy.make(Group, name="个人权限")
         assign_perm('training_program.add_program', self.group)
         assign_perm('training_program.view_program', self.group)
 
@@ -72,7 +72,7 @@ class TestEnrollmentService(TestCase):
     def setUp(self):
         self.event = mommy.make(CampusEvent, num_participants=0)
         self.user = mommy.make(User)
-        self.group = mommy.make(Group, name="大连理工大学-专任教师")
+        self.group = mommy.make(Group, name="个人权限")
         self.user.groups.add(self.group)
         self.data = {'campus_event': self.event, 'user': self.user}
         assign_perm('training_event.add_enrollment', self.group)

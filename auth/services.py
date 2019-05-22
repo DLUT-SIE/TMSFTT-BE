@@ -5,7 +5,6 @@ from django.db import transaction
 
 from auth.utils import assign_perm
 from auth.models import Department, UserGroup
-from infra.services import NotificationService
 from infra.utils import prod_logger
 
 
@@ -30,15 +29,14 @@ class PermissionService:
         '''
 
         # i: assgin User-Object-Permissions for the current user
-        group = Group.objects.get(name='大连理工大学-专任教师')
+        group = Group.objects.get(name='个人权限')
         cls._assign_group_permissions(group, user, instance)
 
         # ii: assgin Group-Object-Permissions for DepartmentGroup
         related_department = user.department
         while related_department:
             for group in Group.objects.filter(
-                    name__startswith=related_department.name).exclude(
-                        name='大连理工大学-专任教师'):
+                    name__startswith=related_department.name):
                 cls._assign_group_permissions(group, group, instance)
             related_department = related_department.super_department
 
@@ -142,6 +140,7 @@ class UserGroupService:
         -------
         usergroup: UserGroup
         '''
+        from infra.services import NotificationService
 
         with transaction.atomic():
             usergroup = UserGroup.objects.create(
