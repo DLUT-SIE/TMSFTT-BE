@@ -1,5 +1,6 @@
 '''Provide API views for training_program module.'''
 import django_filters
+from rest_framework.decorators import action
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework_guardian import filters
@@ -7,6 +8,7 @@ from rest_framework_guardian import filters
 import auth.permissions
 import training_program.models
 import training_program.serializers
+from training_program.services import ProgramService
 from infra.mixins import MultiSerializerActionClassMixin
 
 
@@ -26,6 +28,16 @@ class ProgramViewSet(MultiSerializerActionClassMixin, viewsets.ModelViewSet):
         auth.permissions.DjangoObjectPermissions,
     )
     filter_fields = ('department',)
+    perms_map = {
+        'get_group_programs': ['%(app_label)s.view_%(model_name)s']
+    }
+
+    @action(detail=False, url_path='group-programs', url_name='group')
+    def get_group_programs(self, request):
+        '''get group programs'''
+        group_programs = ProgramService.group_programs_by_department(
+            request.user)
+        return Response(group_programs, status=status.HTTP_200_OK)
 
 
 class ProgramCategoryViewSet(viewsets.ViewSet):
