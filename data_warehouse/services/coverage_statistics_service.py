@@ -182,10 +182,10 @@ class CoverageStatisticsService:
             department_ids = [department_id]
         else:
             if user.is_school_admin:
-                department_ids = (
-                    DepartmentService.get_top_level_departments()
-                    .values_list('id', flat=True)
-                )
+                departments = DepartmentService.get_top_level_departments()
+                dlut = Department.objects.filter(name='大连理工大学')
+                department_ids = departments.union(dlut).values_list(
+                    'id', flat=True)
             else:
                 raise BadRequest('你不是校级管理员，必须指定部门ID。')
         if end_time is None:
