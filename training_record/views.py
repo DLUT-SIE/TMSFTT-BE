@@ -55,6 +55,12 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         auth.permissions.DjangoObjectPermissions,
     )
 
+    def filter_queryset(self, queryset):
+        for backend in list(self.filter_backends):
+            queryset = backend().filter_queryset(self.request, queryset, self)
+        queryset = queryset.filter(user=self.request.user)
+        return queryset
+
 # TODO: rename this action
     def _get_reviewed_status_filtered_records(self, request, is_reviewed):
         '''Return filtered records based on status.'''
