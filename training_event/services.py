@@ -42,7 +42,7 @@ class CampusEventService:
             for key in coefficients:
                 role = EventCoefficient.ROLE_CHOICES_MAP.get(key, None)
                 if role is None:
-                    raise BadRequest
+                    raise BadRequest('不存在当前参与形式')
                 EventCoefficient.objects.create(campus_event=campus_event,
                                                 role=role,
                                                 **coefficients[key])
