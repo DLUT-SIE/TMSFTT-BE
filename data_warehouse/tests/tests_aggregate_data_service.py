@@ -464,7 +464,7 @@ class TestTeachersGroupService(TestCase):
         self.assertEqual(
             group_users['35岁及以下'][2].id, user1.id)
         self.assertEqual(
-            group_users['36~45岁'][0].id, user2.id)
+            group_users['36-45岁'][0].id, user2.id)
 
 
 class TestRecordsGroupService(TestCase):
@@ -509,7 +509,7 @@ class TestRecordsGroupService(TestCase):
         self.assertEqual(
             group_records['35岁及以下'][0].id, record1.id)
         self.assertEqual(
-            group_records['36~45岁'][0].id, record2.id)
+            group_records['36-45岁'][0].id, record2.id)
 
     def test_group_records_by_department(self):
         '''Should get group records by department'''
