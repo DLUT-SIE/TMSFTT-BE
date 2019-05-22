@@ -6,7 +6,7 @@ import sys
 import os
 import os.path as osp
 import random
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import django
 
@@ -162,7 +162,7 @@ def row_parser_2017(row):
 
 
 def read_workload_content(
-        row_parser=row_parser_2018, start_row=1,
+        row_parser=row_parser_2018, start_row=1, year=2017,
         fpath='~/Desktop/TMSFTT/2018年教师发展工作量-全-0316-工号.xls'):
     '''Read xlsx file and generate records.'''
     workbook = xlrd.open_workbook(fpath)
@@ -174,8 +174,9 @@ def read_workload_content(
     coefficients = {}
     dlut_admin = get_dlut_admin()
     users = {x.username: x for x in User.objects.all()}
-    departments = {x.raw_department_id: x for x in Department.objects.all()}
     pb = ProgressBar(num_rows, start_row)
+    event_time = now().replace(year=year, month=1, day=1,
+                               hour=0, minute=0, second=0)
     for idx, row in enumerate((sheet.row_values(i)
                                for i in range(start_row, num_rows))):
         pb.step()
@@ -217,8 +218,8 @@ def read_workload_content(
             event = CampusEvent.objects.create(
                 name=event_name,
                 program=program,
-                time=now(),
-                deadline=now()+timedelta(days=random.randint(1, 100)),
+                time=event_time,
+                deadline=event_time,
                 location='大连理工大学',
                 num_hours=num_hours,
                 num_participants=random.randint(20, 100),
@@ -464,12 +465,14 @@ def populate(base='~/Desktop/TMSFTT'):
     read_workload_content(
         row_parser=row_parser_2017,
         start_row=2,
+        year=2017,
         fpath=osp.join(base, '2017年教师发展工作量-全-0316-工号.xlsx'),
     )
     print('Creating workload for 2018')
     read_workload_content(
         row_parser=row_parser_2018,
         start_row=1,
+        year=2018,
         fpath=osp.join(base, '2018年教师发展工作量-全-0316-工号-获奖情况.xls'),
     )
 
