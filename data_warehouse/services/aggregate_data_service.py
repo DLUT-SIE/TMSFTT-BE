@@ -840,9 +840,9 @@ class CanvasOptionsService:
              'key': 'RECORDS_STATISTICS',
              'subOption': cls.tuple_to_dict_list(
                  EnumData.TRAINEE_GROUPING_CHOICES)},
-            {'type': EnumData.FULL_TIME_TEACHER_TRAINED_COVERAGE,
+            {'type': EnumData.COVERAGE_STATISTICS,
              'name': '专任教师培训覆盖率统计',
-             'key': 'FULL_TIME_TEACHER_TRAINED_COVERAGE',
+             'key': 'COVERAGE_STATISTICS',
              'subOption': cls.tuple_to_dict_list(
                  EnumData.TRAINEE_GROUPING_CHOICES)},
             {'type': EnumData.TRAINING_HOURS_WORKLOAD_STATISTICS,
