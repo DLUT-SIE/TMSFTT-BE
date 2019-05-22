@@ -65,7 +65,7 @@ class TestUserCoreStatisticsService(TestCase):
         self.assertIn('timestamp', new_res)
         self.assertEqual(new_res['timestamp'], res['timestamp'])
 
-    def test_get_montly_added_records_statistics(self):
+    def test_get_monthly_added_records_statistics(self):
         '''Should return number of records added by month.'''
         current = now().replace(month=1, day=1)
 
