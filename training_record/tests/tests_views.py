@@ -246,7 +246,7 @@ class TestRecordViewSet(APITestCase):
         user = mommy.make(User)
         group = mommy.make(Group, name="创新创业学院-管理员")
         user.groups.add(group)
-        assign_perm('training_record.add_record', group)
+        assign_perm('training_record.view_record', group)
         url = reverse('record-get-role-choices')
 
         self.client.force_authenticate(user)
