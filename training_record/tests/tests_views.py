@@ -90,6 +90,7 @@ class TestRecordViewSet(APITestCase):
             off_campus_event = mommy.make(training_event.models.OffCampusEvent)
             record = mommy.make(
                 Record,
+                user=self.user,
                 off_campus_event=off_campus_event,
                 status=Record.STATUS_SCHOOL_ADMIN_APPROVED
                 if index % 4 == 0 else Record.STATUS_SUBMITTED)
@@ -110,10 +111,25 @@ class TestRecordViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_list_record_for_review(self):
+        '''should return records for admin'''
+        url = reverse('record-list-record-for-review')
+        for _ in range(10):
+            off_campus_event = mommy.make(training_event.models.OffCampusEvent)
+            record = mommy.make(
+                Record,
+                off_campus_event=off_campus_event,)
+            PermissionService.assign_object_permissions(self.user, record)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 10)
+
     def test_get_record(self):
         '''Record should be accessed by GET request.'''
         campus_event = mommy.make(training_event.models.CampusEvent)
         record = mommy.make(training_record.models.Record,
+                            user=self.user,
                             campus_event=campus_event)
         url = reverse('record-detail', args=(record.pk,))
         expected_keys = {'id', 'create_time', 'update_time', 'campus_event',
@@ -139,6 +155,7 @@ class TestRecordViewSet(APITestCase):
             'num_participants': 30,
         }
         record = mommy.make(training_record.models.Record,
+                            user=self.user,
                             off_campus_event=off_campus_event)
         PermissionService.assign_object_permissions(self.user, record)
         url = reverse('record-detail', args=(record.pk,))

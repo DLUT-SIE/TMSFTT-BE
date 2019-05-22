@@ -48,6 +48,7 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         'get_number_of_records_without_feedback':
             ['%(app_label)s.view_%(model_name)s'],
         'get_role_choices': ['%(app_label)s.view_%(model_name)s'],
+        'list_record_for_review': ['%(app_label)s.view_%(model_name)s'],
     }
     filter_backends = (filters.DjangoObjectPermissionsFilter,
                        django_filters.rest_framework.DjangoFilterBackend,)
@@ -55,15 +56,8 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         auth.permissions.DjangoObjectPermissions,
     )
 
-# TODO: rename this action
-    def _get_reviewed_status_filtered_records(self, request, is_reviewed):
-        '''Return filtered records based on status.'''
-        queryset = self.filter_queryset(self.get_queryset())
-        queryset = queryset.filter(
-            Q(status=training_record.models.Record
-              .STATUS_SCHOOL_ADMIN_APPROVED) |
-            Q(campus_event__isnull=False))
-
+    def _get_paginated_response(self, queryset):
+        '''Return paginated response'''
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -72,10 +66,35 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    def list(self, request):
+        queryset = self.filter_queryset(self.get_queryset()).filter(
+            user=request.user)
+        return self._get_paginated_response(queryset)
+
+    @decorators.action(detail=False, methods=['GET'],
+                       url_path='list-record-for-review')
+    def list_record_for_review(self, request):
+        '''Return all offCampusRecords for admin'''
+        queryset = self.filter_queryset(self.get_queryset()).filter(
+            off_campus_event__isnull=False,
+        )
+        return self._get_paginated_response(queryset)
+
+# TODO: rename this action
+    def _get_reviewed_status_filtered_records(self, request):
+        '''Return filtered records based on status.'''
+        queryset = self.filter_queryset(self.get_queryset()).filter(
+            Q(user=request.user),
+            Q(status=training_record.models.Record
+              .STATUS_SCHOOL_ADMIN_APPROVED) |
+            Q(campus_event__isnull=False),
+        )
+        return self._get_paginated_response(queryset)
+
     @decorators.action(detail=False, methods=['GET'], url_path='reviewed')
     def reviewed(self, request):
         '''Return records which are already reviewed.'''
-        return self._get_reviewed_status_filtered_records(request, True)
+        return self._get_reviewed_status_filtered_records(request)
 
     @decorators.action(detail=True, methods=['POST'],
                        url_path='department-admin-review')
