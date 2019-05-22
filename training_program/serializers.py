@@ -15,6 +15,10 @@ class ProgramSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return ProgramService.create_program(validated_data, self.context)
 
+    def update(self, instance, validated_data):
+        return ProgramService.update_program(instance, validated_data,
+                                             self.context)
+
 
 class ReadOnlyProgramSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize read_only Program instance.'''

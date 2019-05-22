@@ -34,3 +34,10 @@ class TestProgramService(APITestCase):
 
         count = Program.objects.all().count()
         self.assertEqual(count, 1)
+
+    def test_update_program_admin(self):
+        '''Should update training_program.'''
+        program = ProgramService.create_program(self.data, self.context)
+        program1 = ProgramService.update_program(program, name=2)
+
+        self.assertEqual(program1.name, 2)

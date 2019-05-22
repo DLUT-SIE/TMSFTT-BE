@@ -2,7 +2,8 @@
 from django.db import transaction
 
 from training_program.models import Program
-from auth.services import PermissionService
+from auth.services import PermissonsService
+from infra.utils import prod_logger
 
 
 class ProgramService:
@@ -26,6 +27,40 @@ class ProgramService:
 
         with transaction.atomic():
             program = Program.objects.create(**program_data)
-            PermissionService.assign_object_permissions(
+            user = context['request'].user
+            msg = (f'用户{user}创建了培训机构为'
+                   + f'{program.department}的培训项目{program.name}')
+            prod_logger.info(msg)
+            PermissonsService.assigin_object_permissions(
                 context['request'].user, program)
             return program
+
+    @staticmethod
+    def update_program(program, validated_data, context=None):
+        '''Update program
+
+        Parameters
+        ----------
+        program: Program
+            The program we will update.
+        category: Categoty
+            The categoty of which the program is related to.
+        name: The program's name
+
+        Returns
+        -------
+        program: Program
+        '''
+
+        # update the program
+        for attr, value in validated_data.items():
+            setattr(program, attr, value)
+        program.save()
+
+        # log the update
+        user = context['request'].user
+        msg = (f'用户{user}修改了培训机构为'
+               + f'{program.department}的培训项目{program.name}')
+        prod_logger.info(msg)
+        return program
+
