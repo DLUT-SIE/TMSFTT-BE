@@ -20,6 +20,8 @@ class TestProgram(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.depart = mommy.make(auth.models.Department, name="创新创业学院")
+        cls.dlut_depart = mommy.make(
+            auth.models.Department, name='大连理工大学')
         cls.user = mommy.make(User, department=cls.depart)
         cls.group = mommy.make(Group, name="创新创业学院-管理员")
         cls.user.groups.add(cls.group)
@@ -52,6 +54,14 @@ class TestProgram(APITestCase):
     def test_list_program(self):
         '''Program list should be accessed by GET request.'''
         url = reverse('program-list')
+
+        reponse = self.client.get(url)
+
+        self.assertEqual(reponse.status_code, status.HTTP_200_OK)
+
+    def test_get_group_programs(self):
+        '''Program group should be accessed by GET request.'''
+        url = reverse('program-group')
 
         reponse = self.client.get(url)
 
