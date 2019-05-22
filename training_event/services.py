@@ -40,7 +40,9 @@ class CampusEventService:
                 context['request'].user, campus_event)
 
             for key in coefficients:
-                role = EventCoefficient.ROLE_CHOICES_MAP[key]
+                role = EventCoefficient.ROLE_CHOICES_MAP.get(key, None)
+                if role is None:
+                    raise BadRequest
                 EventCoefficient.objects.create(campus_event=campus_event,
                                                 role=role,
                                                 **coefficients[key])
