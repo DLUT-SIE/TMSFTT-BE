@@ -10,4 +10,5 @@ class GroupFilter(filters.FilterSet):
         model = Group
         fields = {
             'name': ['startswith'],
+            'id': ['in'],
         }
