@@ -46,21 +46,20 @@ class TestCampusEventService(TestCase):
 
     def test_create_campus_event_admin(self):
         '''Should create campus_event.'''
-        coefficient_expect = {
-            'role': 1,
-            'coefficient': 1,
-            'hours_option': 1,
-            'workload_option': 1,
-        }
-        coefficient_participator = {
-            'role': 0,
-            'coefficient': 1,
-            'hours_option': 1,
-            'workload_option': 1,
+        coefficients = {
+            "参与": {
+                "coefficient": 1.0,
+                "hours_option": 1,
+                "workload_option": 3,
+            },
+            "专家": {
+                "coefficient": 4.0,
+                "hours_option": 1,
+                "workload_option": 3,
+            },
         }
         CampusEventService.create_campus_event(self.data,
-                                               coefficient_expect,
-                                               coefficient_participator,
+                                               coefficients,
                                                self.context)
         count_program = Program.objects.all().count()
         count_event_coefficient = EventCoefficient.objects.all().count()
