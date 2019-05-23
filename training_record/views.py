@@ -81,7 +81,7 @@ class RecordViewSet(MultiSerializerActionClassMixin,
                        url_path='department-admin-review')
     def department_admin_review(self, request, pk):
         '''Pass the record which is being reviewed.'''
-        is_approved = request.data.get('is_approved')
+        is_approved = request.data.get('isApproved')
         RecordService.department_admin_review(pk,
                                               is_approved,
                                               request.user)
@@ -91,7 +91,7 @@ class RecordViewSet(MultiSerializerActionClassMixin,
                        url_path='school-admin-review')
     def school_admin_review(self, request, pk):
         '''Pass the record which is being reviewed.'''
-        is_approved = request.data.get('is_approved')
+        is_approved = request.data.get('isApproved')
         RecordService.school_admin_review(pk,
                                           is_approved,
                                           request.user)

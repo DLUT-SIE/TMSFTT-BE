@@ -10,5 +10,4 @@ class ReviewNoteFilter(filters.FilterSet):
         model = ReviewNote
         fields = {
             'record': ['exact'],
-            'user': ['exact'],
         }

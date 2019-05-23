@@ -52,18 +52,20 @@ class TestCampusEventViewSet(APITestCase):
             'num_participants': num_participants,
             'program': program.pk,
             'deadline': time,
-            'coefficients': {
-                "参与": {
-                    "coefficient": 1.0,
-                    "hours_option": 1,
-                    "workload_option": 3,
+            'coefficients': [
+                {
+                    'role': 0,
+                    'hours_option': 1,
+                    'workload_option': 3,
+                    'coefficient': 1,
                 },
-                "专家": {
-                    "coefficient": 4.0,
-                    "hours_option": 1,
-                    "workload_option": 3,
-                },
-            }
+                {
+                    'role': 1,
+                    'hours_option': 1,
+                    'workload_option': 3,
+                    'coefficient': 1,
+                }
+            ]
         }
 
         response = self.client.post(url, data, format='json')
