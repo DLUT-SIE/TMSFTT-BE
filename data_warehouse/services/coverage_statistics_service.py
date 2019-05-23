@@ -217,5 +217,5 @@ class CoverageStatisticsService:
             )
         records = campus_event_records.union(off_campus_event_records)
         return records.filter(
-            user__teaching_type__in=('专任教师', '实验技术人员'),
+            user__teaching_type__in=('专任教师', '实验技术'),
             user__administrative_department__department_type='T3')
