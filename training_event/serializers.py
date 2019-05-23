@@ -13,7 +13,7 @@ class CampusEventSerializer(serializers.ModelSerializer):
     program_detail = ReadOnlyProgramSerializer(source='program',
                                                read_only=True)
     enrollment_id = serializers.SerializerMethodField(read_only=True)
-    coefficients = serializers.DictField(write_only=True)
+    coefficients = serializers.ListField(write_only=True)
 
     class Meta:
         model = training_event.models.CampusEvent
