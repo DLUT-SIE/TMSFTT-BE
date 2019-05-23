@@ -42,7 +42,11 @@ class ProgramService:
         Parameters
         ----------
         program: Program
+<<<<<<< a8854aeb335613c4011d054f5d8569afa55b9d5d
             The program we will update.
+=======
+            The program wo will update.
+>>>>>>> 增加filter 和 log
         category: Categoty
             The categoty of which the program is related to.
         name: The program's name
@@ -53,6 +57,7 @@ class ProgramService:
         '''
 
         # update the program
+<<<<<<< a8854aeb335613c4011d054f5d8569afa55b9d5d
         for attr, value in validated_data.items():
             setattr(program, attr, value)
         program.save()
@@ -61,6 +66,14 @@ class ProgramService:
         user = context['request'].user
         msg = (f'用户{user}修改了培训机构为'
                + f'{program.department}的培训项目{program.name}')
+=======
+        program.category = category
+        program.name = name
+        program.save()
+
+        # log the updation
+        msg = '培训项目{}修改成功'.format(program.name)
+>>>>>>> 增加filter 和 log
         prod_logger.info(msg)
         return program
 
