@@ -271,6 +271,8 @@ class RecordService:
             if record.status != Record.STATUS_SUBMITTED:
                 raise BadRequest('无权更改！')
             pre_status = record.status
+            if is_approved is None:
+                raise BadRequest('请求无效！')
             if is_approved:
                 record.status = Record.STATUS_DEPARTMENT_ADMIN_APPROVED
             else:
@@ -316,6 +318,8 @@ class RecordService:
             if record.status != Record.STATUS_DEPARTMENT_ADMIN_APPROVED:
                 raise BadRequest('无权更改！')
             pre_status = record.status
+            if is_approved is None:
+                raise BadRequest('请求无效！')
             if is_approved:
                 record.status = Record.STATUS_SCHOOL_ADMIN_APPROVED
             else:

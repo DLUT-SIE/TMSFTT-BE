@@ -337,6 +337,17 @@ class TestRecordService(TestCase):
                 BadRequest, '无权更改！'):
             RecordService.department_admin_review(record.id, True, user)
 
+    def test_department_admin_review_no_request_data(self):
+        '''Should raise BadRequest if request data not has approve field.'''
+        off_campus_event = mommy.make(OffCampusEvent)
+        record = mommy.make(Record,
+                            off_campus_event=off_campus_event,
+                            status=Record.STATUS_SUBMITTED)
+        user = mommy.make(get_user_model())
+        with self.assertRaisesMessage(
+                BadRequest, '请求无效！'):
+            RecordService.department_admin_review(record.id, None, user)
+
     def test_department_admin_review_approve(self):
         '''Should change the status of off-campus training record.'''
         off_campus_event = mommy.make(OffCampusEvent)
@@ -382,6 +393,17 @@ class TestRecordService(TestCase):
         with self.assertRaisesMessage(
                 BadRequest, '无权更改！'):
             RecordService.school_admin_review(record.id, True, user)
+
+    def test_school_admin_review_no_request_data(self):
+        '''Should raise BadRequest if request data not has approve field.'''
+        off_campus_event = mommy.make(OffCampusEvent)
+        record = mommy.make(Record,
+                            off_campus_event=off_campus_event,
+                            status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
+        user = mommy.make(get_user_model())
+        with self.assertRaisesMessage(
+                BadRequest, '请求无效！'):
+            RecordService.school_admin_review(record.id, None, user)
 
     def test_school_admin_review_approve(self):
         '''Should change the status of off-campus training record.'''

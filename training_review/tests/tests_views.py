@@ -36,7 +36,9 @@ class TestReviewNoteViewSet(APITestCase):
         record = mommy.make(trecord.Record, off_campus_event=off_campus_event)
         content = 'Reviewnote is created.'
         url = reverse('reviewnote-list')
-        data = {'user': user.pk, 'record': record.pk, 'content': content}
+        data = {'user': user.pk,
+                'record': record.pk,
+                'content': content}
 
         response = self.client.post(url, data, format='json')
 
