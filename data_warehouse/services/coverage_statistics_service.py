@@ -215,4 +215,7 @@ class CoverageStatisticsService:
             campus_event__program_id__in=valid_program_ids,
             campus_event__time__range=(start_time, end_time)
             )
-        return campus_event_records.union(off_campus_event_records)
+        records = campus_event_records.union(off_campus_event_records)
+        return records.filter(
+            user__teaching_type__in=('专任教师', '实验技术人员'),
+            user__administrative_department__department_type='T3')
