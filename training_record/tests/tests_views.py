@@ -127,7 +127,7 @@ class TestRecordViewSet(APITestCase):
         self.assertEqual(len(response.data['results']), 10)
 
     def test_search_record_with_no_query_params(self):
-        '''should return matched records''' 
+        '''should return matched records'''
         url = reverse('record-search')
         for _ in range(10):
             off_campus_event = mommy.make(training_event.models.OffCampusEvent)
