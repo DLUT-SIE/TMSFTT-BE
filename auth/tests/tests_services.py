@@ -167,11 +167,11 @@ class TestUserService(TestCase):
     '''Unit tests for UserService.'''
     def test_get_full_time_teachers(self):
         '''Should return queryset for full time teachers.'''
-        n = 10
-        for i in range(n):
+        num_users = 10
+        for idx in range(num_users):
             mommy.make(
                 User,
-                teaching_type='专任教师' if i % 2 == 0 else '实验技术',
+                teaching_type='专任教师' if idx % 2 == 0 else '实验技术',
                 administrative_department__department_type='T3'
                 )
         for _ in range(20):
@@ -182,4 +182,4 @@ class TestUserService(TestCase):
 
         cnt = services.UserService.get_full_time_teachers().count()
 
-        self.assertEqual(cnt, n)
+        self.assertEqual(cnt, num_users)

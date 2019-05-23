@@ -12,7 +12,9 @@ from data_warehouse.services.school_core_statistics_service import (
     SchoolCoreStatisticsService
 )
 
+
 class TestSchoolCoreStatisticsService(TestCase):
+    '''Unit tests for SchoolCoreStatisticsService.'''
     def test_get_events_statistics(self):
         '''Should return statistics data for events.'''
         num_events = 10
@@ -68,7 +70,7 @@ class TestSchoolCoreStatisticsService(TestCase):
         self.assertIsInstance(data, dict)
         self.assertEqual(data['num_records'], num_records)
         self.assertEqual(
-            data['num_records_added_in_current_month'], 
+            data['num_records_added_in_current_month'],
             num_records_added_in_current_month)
         self.assertAlmostEqual(
             data['num_average_records'], num_average_records)
@@ -100,7 +102,7 @@ class TestSchoolCoreStatisticsService(TestCase):
             )
             num_campus_records = 15
             num_reviewed_off_campus_records = num_records - num_campus_records
-             # Off-campus records, approved, were added in this month
+            # Off-campus records, approved, were added in this month
             mommy.make(
                 Record,
                 status=Record.STATUS_SCHOOL_ADMIN_APPROVED,
@@ -118,12 +120,10 @@ class TestSchoolCoreStatisticsService(TestCase):
 
         self.assertIsInstance(res, dict)
         for item, expected_item in zip(res['data'], department_details):
-            (expected_department_name, expected_num_users,
-             expected_num_records) = expected_item
-            self.assertEqual(item['department'], expected_department_name)
-            self.assertEqual(item['num_users'], expected_num_users)
-            self.assertEqual(item['num_records'], expected_num_records)
-            
+            self.assertEqual(item['department'], expected_item[0])
+            self.assertEqual(item['num_users'], expected_item[1])
+            self.assertEqual(item['num_records'], expected_item[2])
+
     @patch('django.utils.timezone.now')
     def test_get_monthly_added_records_statistics(self, mocked_now):
         '''Should return records statistics for latest 12 months.'''

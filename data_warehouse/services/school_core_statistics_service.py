@@ -22,7 +22,7 @@ class SchoolCoreStatisticsService:
                 timestamp: datetime
                     The time when this data was generated.
                 available_to_enroll: int
-                    The number of events which are available to enroll. 
+                    The number of events which are available to enroll.
             }
         '''
         cache_key = 'events_statistics'
