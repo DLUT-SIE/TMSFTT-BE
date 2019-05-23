@@ -12,6 +12,7 @@ from django.utils.timezone import now
 from model_mommy import mommy
 from rest_framework import status
 from rest_framework.test import APITestCase
+from infra.exceptions import BadRequest
 
 from auth.utils import assign_perm
 from auth.services import PermissionService
@@ -124,6 +125,48 @@ class TestRecordViewSet(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 10)
+
+    def test_search_record_with_no_query_params(self):
+        '''should return matched records''' 
+        url = reverse('record-search')
+        for _ in range(10):
+            off_campus_event = mommy.make(training_event.models.OffCampusEvent)
+            record = mommy.make(Record,
+                                user=self.user,
+                                off_campus_event=off_campus_event,)
+            PermissionService.assign_object_permissions(self.user, record)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 10)
+
+    def test_search_record_with_bad_start_time(self):
+        '''should return matched records'''
+        url = reverse('record-search') + '?startTime=er'
+        for _ in range(10):
+            off_campus_event = mommy.make(training_event.models.OffCampusEvent)
+            record = mommy.make(Record,
+                                user=self.user,
+                                off_campus_event=off_campus_event,)
+            PermissionService.assign_object_permissions(self.user, record)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertRaisesMessage(BadRequest, '无效的起始时间')
+
+    def test_search_record_with_bad_end_time(self):
+        '''should return matched records'''
+        url = reverse('record-search') + '?endTime=er'
+        for _ in range(10):
+            off_campus_event = mommy.make(training_event.models.OffCampusEvent)
+            record = mommy.make(Record,
+                                user=self.user,
+                                off_campus_event=off_campus_event,)
+            PermissionService.assign_object_permissions(self.user, record)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertRaisesMessage(BadRequest, '无效的截止时间')
 
     def test_get_record(self):
         '''Record should be accessed by GET request.'''

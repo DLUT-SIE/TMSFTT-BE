@@ -1,12 +1,14 @@
 '''Provide API views for training_record module.'''
 import django_filters
 from django.db.models import Q
+from django.utils.timezone import datetime
 from rest_framework import viewsets, status, decorators
 from rest_framework.response import Response
 from rest_framework_bulk.mixins import (
     BulkCreateModelMixin,
 )
 from rest_framework_guardian import filters
+from infra.exceptions import BadRequest
 
 import auth.permissions
 import training_record.models
@@ -48,6 +50,7 @@ class RecordViewSet(MultiSerializerActionClassMixin,
             ['%(app_label)s.view_%(model_name)s'],
         'get_role_choices': ['%(app_label)s.view_%(model_name)s'],
         'list_records_for_review': ['%(app_label)s.view_%(model_name)s'],
+        'search': ['%(app_label)s.view_%(model_name)s'],
     }
     filter_backends = (filters.DjangoObjectPermissionsFilter,
                        django_filters.rest_framework.DjangoFilterBackend,)
@@ -87,6 +90,50 @@ class RecordViewSet(MultiSerializerActionClassMixin,
             Q(status=training_record.models.Record
               .STATUS_SCHOOL_ADMIN_APPROVED) |
             Q(campus_event__isnull=False),
+        )
+        return self._get_paginated_response(queryset)
+
+    @decorators.action(detail=False, methods=['GET'],
+                       url_path='search')
+    def search(self, request):
+        '''Return all matched Records'''
+        event_name = request.query_params.get('event__name')
+        event_location = request.query_params.get('event__location')
+        start_time = request.query_params.get('startTime')
+        end_time = request.query_params.get('endTime')
+        if event_name is None:
+            event_name = ''
+        if event_location is None:
+            event_location = ''
+        if start_time == '' or start_time is None:
+            start_time = datetime.strptime('1900-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+        else:
+            try:
+                start_time = datetime.strptime(
+                    start_time, '%a %b %d %Y %H:%M:%S GMT+0800 (China Standard Time)')
+            except ValueError:
+                raise BadRequest('无效的起始时间')
+        if end_time == '' or end_time is None:
+            end_time = datetime.now()
+        else:
+            try:
+                end_time = datetime.strptime(
+                    end_time, '%a %b %d %Y %H:%M:%S GMT+0800 (China Standard Time)')
+            except ValueError:
+                raise BadRequest('无效的截止时间')
+        queryset = self.filter_queryset(self.get_queryset()).filter(
+            Q(user=request.user),
+            (
+                Q(off_campus_event__name__startswith=event_name) &
+                Q(off_campus_event__location__startswith=event_location) &
+                Q(off_campus_event__time__gte=start_time) &
+                Q(off_campus_event__time__lte=end_time)
+            ) | (
+                Q(campus_event__name__startswith=event_name) &
+                Q(campus_event__location__startswith=event_location) &
+                Q(campus_event__time__gte=start_time) &
+                Q(campus_event__time__lte=end_time)
+            )
         )
         return self._get_paginated_response(queryset)
 
