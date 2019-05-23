@@ -9,6 +9,7 @@ from infra.exceptions import BadRequest
 class TableExportService:
     '''TableExportService'''
     COVERAGE_SHEET_NAME = '专任教师培训覆盖率'
+    FEEDBACK_SHEET_NAME = '培训反馈表'
 
     @staticmethod
     def export_staff_basic_info():
@@ -292,6 +293,53 @@ class TableExportService:
         ptr = 1 + len(departments_qs)
         worksheet.write(ptr, 0, '总计', style)
 
+        # 写入数据
+        _, file_path = tempfile.mkstemp()
+        workbook.save(file_path)
+        return file_path
+
+    @classmethod
+    def export_training_feedback(cls, data):
+        '''导出培训反馈表
+        Parameters
+        ------
+
+        data: list of dict {
+            key: prgoram_name,
+            key: campus_event_name,
+            key: feedback_content,
+            key: feedback_time,
+            key: feedback_user_name,
+            key: feedback_user_email
+        }
+        Returns
+        -------
+        string
+            excel临时文件路径。
+        '''
+        if data is None or not data:
+            raise BadRequest('导出内容不存在。')
+        # 初始化excel
+        workbook = xlwt.Workbook()
+        worksheet = workbook.add_sheet(cls.FEEDBACK_SHEET_NAME)
+        style = xlwt.easyxf(('font: bold on; '
+                             'align: wrap on, vert centre, horiz center'))
+        # 生成表头
+        worksheet.write(0, 0, '培训项目', style)
+        worksheet.write(0, 1, '培训活动', style)
+        worksheet.write(0, 2, '反馈内容', style)
+        worksheet.write(0, 3, '反馈时间', style)
+        worksheet.write(0, 4, '反馈人姓名', style)
+        worksheet.write(0, 5, '反馈人邮箱', style)
+
+        ptr_r = 1
+        for item in data:
+            worksheet.write(ptr_r, 0, item['program_name'], style)
+            worksheet.write(ptr_r, 1, item['campus_event_name'], style)
+            worksheet.write(ptr_r, 2, item['feedback_content'], style)
+            worksheet.write(ptr_r, 3, item['feedback_time'], style)
+            worksheet.write(ptr_r, 4, item['feedback_user_name'], style)
+            worksheet.write(ptr_r, 5, item['feedback_user_email'], style)
         # 写入数据
         _, file_path = tempfile.mkstemp()
         workbook.save(file_path)
