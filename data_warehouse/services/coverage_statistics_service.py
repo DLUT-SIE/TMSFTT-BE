@@ -134,7 +134,7 @@ class CoverageStatisticsService:
                     'department': item['administrative_department__name'],
                     'coverage_count': item['coverage_count'],
                     'total_count': User.objects.filter(
-                        department__name=item[
+                        administrative_department__name=item[
                             'administrative_department__name']).count()
                 }
             )
