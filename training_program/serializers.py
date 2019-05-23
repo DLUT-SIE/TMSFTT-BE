@@ -16,6 +16,7 @@ class ProgramSerializer(serializers.ModelSerializer):
         return ProgramService.create_program(validated_data, self.context)
 
     def update(self, instance, validated_data):
+<<<<<<< 58bf057d678f948c0efbb25bf625cc1a1ed00e46
 <<<<<<< a8854aeb335613c4011d054f5d8569afa55b9d5d
         return ProgramService.update_program(instance, validated_data,
                                              self.context)
@@ -23,6 +24,10 @@ class ProgramSerializer(serializers.ModelSerializer):
         validated_data.pop('department')
         return ProgramService.update_program(instance, **validated_data)
 >>>>>>> 增加filter 和 log
+=======
+        return ProgramService.update_program(instance, validated_data,
+                                             self.context)
+>>>>>>> change some format
 
 
 class ReadOnlyProgramSerializer(serializers.ModelSerializer):
