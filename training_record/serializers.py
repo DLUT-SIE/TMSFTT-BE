@@ -64,6 +64,9 @@ class ReadOnlyRecordSerializer(serializers.ModelSerializer):
     role = serializers.IntegerField(
         source='event_coefficient.role',
         read_only=True)
+    allow_ordinary_user_review = serializers.BooleanField(read_only=True, default=False)
+    allow_department_admin_review = serializers.BooleanField(read_only=True, default=False)
+    allow_school_admin_review = serializers.BooleanField(read_only=True, default=False)
     off_campus_event = OffCampusEventSerializer(read_only=True)
     campus_event = BasicReadOnlyCampusEventSerializer(read_only=True)
 
@@ -71,7 +74,9 @@ class ReadOnlyRecordSerializer(serializers.ModelSerializer):
         model = Record
         fields = ('id', 'create_time', 'update_time', 'campus_event',
                   'off_campus_event', 'user', 'status', 'contents',
-                  'attachments', 'status_str', 'feedback', 'role', 'role_str')
+                  'attachments', 'status_str', 'feedback', 'role', 'role_str',
+                  'allow_department_admin_review', 'allow_school_admin_review',
+                  'allow_ordinary_user_review')
 
 
 class RecordCreateSerializer(serializers.ModelSerializer):
