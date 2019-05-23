@@ -227,14 +227,18 @@ class TestAggregateDataService(TestCase):
 
     def test_get_records_by_time_department(self):
         '''Should get records by time and department'''
-        user = mommy.make(User, administrative_department=self.department_art)
+        user = mommy.make(
+            User,
+            administrative_department=self.department_art,
+            teaching_type='专任教师'
+        )
         campusevent = mommy.make(CampusEvent, time=now())
         offcampusevent = mommy.make(OffCampusEvent, time=now())
         record1 = mommy.make(
             Record, campus_event=campusevent, user=user)
         record2 = mommy.make(
             Record, off_campus_event=offcampusevent, user=user)
-        user1 = mommy.make(User)
+        user1 = mommy.make(User, teaching_type='专任教师')
         user1.groups.add(self.dlut_group)
         time = {'start': 2020, 'end': 2019}
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
@@ -252,7 +256,7 @@ class TestAggregateDataService(TestCase):
             user1, 5000, time)
         self.assertEqual(len(records['campus_records']), 0)
         self.assertEqual(len(records['off_campus_records']), 0)
-        user2 = mommy.make(User)
+        user2 = mommy.make(User, teaching_type='专任教师')
         group = mommy.make(Group, name="建筑与艺术学院-管理员")
         user2.groups.add(group)
         records = AggregateDataService.get_records_by_time_department(
