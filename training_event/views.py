@@ -119,3 +119,14 @@ class EventCoefficientRoundChoices(viewsets.ViewSet):
                 training_event.models.EventCoefficient.ROUND_CHOICES)
         ]
         return Response(round_choices, status=status.HTTP_200_OK)
+
+
+class EventCoefficientRoleChoices(viewsets.ViewSet):
+    '''Create API view for get role choices of event coefficient.'''
+    def list(self, request):
+        '''define how to get role choices.'''
+        role_choices = [
+            item[1] for item in (
+                training_event.models.EventCoefficient.ROLE_CHOICES)
+        ]
+        return Response(role_choices, status=status.HTTP_200_OK)

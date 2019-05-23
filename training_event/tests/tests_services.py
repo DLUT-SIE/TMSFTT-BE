@@ -37,6 +37,20 @@ class TestCampusEventService(TestCase):
             "description": "1",
             "program": program,
         }
+        self.coefficients = [
+            {
+                'role': 0,
+                'hours_option': 1,
+                'workload_option': 3,
+                'coefficient': 1,
+            },
+            {
+                'role': 1,
+                'hours_option': 1,
+                'workload_option': 3,
+                'coefficient': 1,
+            }
+        ]
         self.request = HttpRequest()
         self.request.user = self.user
         self.context = {'request': self.request, 'data': ''}
@@ -46,20 +60,8 @@ class TestCampusEventService(TestCase):
 
     def test_create_campus_event_admin(self):
         '''Should create campus_event.'''
-        coefficients = {
-            "参与": {
-                "coefficient": 1.0,
-                "hours_option": 1,
-                "workload_option": 3,
-            },
-            "专家": {
-                "coefficient": 4.0,
-                "hours_option": 1,
-                "workload_option": 3,
-            },
-        }
         CampusEventService.create_campus_event(self.data,
-                                               coefficients,
+                                               self.coefficients,
                                                self.context)
         count_program = Program.objects.all().count()
         count_event_coefficient = EventCoefficient.objects.all().count()
