@@ -149,7 +149,9 @@ class TestRecordViewSet(APITestCase):
         expected_keys = {'id', 'create_time', 'update_time', 'campus_event',
                          'off_campus_event', 'user', 'status', 'contents',
                          'attachments', 'status_str', 'role', 'role_str',
-                         'feedback'}
+                         'feedback', 'allow_department_admin_review',
+                         'allow_school_admin_review',
+                         'allow_ordinary_user_review'}
         PermissionService.assign_object_permissions(self.user, record)
         response = self.client.get(url)
 
