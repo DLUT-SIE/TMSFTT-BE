@@ -64,9 +64,12 @@ class ReadOnlyRecordSerializer(serializers.ModelSerializer):
     role = serializers.IntegerField(
         source='event_coefficient.role',
         read_only=True)
-    allow_ordinary_user_review = serializers.BooleanField(read_only=True, default=False)
-    allow_department_admin_review = serializers.BooleanField(read_only=True, default=False)
-    allow_school_admin_review = serializers.BooleanField(read_only=True, default=False)
+    allow_ordinary_user_review = serializers.BooleanField(read_only=True,
+                                                          default=False)
+    allow_department_admin_review = (
+        serializers.SerializerMethodField(read_only=True))
+    allow_school_admin_review = (
+        serializers.SerializerMethodField(read_only=True))
     off_campus_event = OffCampusEventSerializer(read_only=True)
     campus_event = BasicReadOnlyCampusEventSerializer(read_only=True)
 
@@ -77,6 +80,14 @@ class ReadOnlyRecordSerializer(serializers.ModelSerializer):
                   'attachments', 'status_str', 'feedback', 'role', 'role_str',
                   'allow_department_admin_review', 'allow_school_admin_review',
                   'allow_ordinary_user_review')
+
+    def get_allow_department_admin_review(self, obj):
+        '''Get status of whether department admin can review or not.'''
+        return obj.status == Record.STATUS_SUBMITTED
+
+    def get_allow_school_admin_review(self, obj):
+        '''Get status of whether school admin can review or not.'''
+        return obj.status == Record.STATUS_DEPARTMENT_ADMIN_APPROVED
 
 
 class RecordCreateSerializer(serializers.ModelSerializer):
