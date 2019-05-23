@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group
 from django.db import transaction
 
 from auth.utils import assign_perm
-from auth.models import Department, UserGroup
+from auth.models import Department, UserGroup, User
 from infra.utils import prod_logger
 
 
@@ -68,6 +68,17 @@ class PermissionService:
             prod_logger.info(
                 '赋予用户/用户组 %s 对 %s 对象的 %s 权限',
                 user_or_group, instance, perm)
+
+
+class UserService:
+    '''Provide services for User.'''
+    @staticmethod
+    def get_full_time_teachers():
+        '''Return queryset for full time teachers.'''
+        return User.objects.filter(
+            teaching_type__in=('专任教师', '实验技术'),
+            administrative_department__department_type='T3'
+        )
 
 
 class DepartmentService:

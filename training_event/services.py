@@ -24,8 +24,8 @@ class CampusEventService:
         validated_data: dict
             This dict should have full information needed to
             create an CampusEvent.
-        coefficients: dict
-            An optional dict to provide event_coefficient about
+        coefficients: list
+            An optional list to provide event_coefficient about
             expert information and participator information.
         context: dict
             An optional dict to provide contextual information. Default: None
@@ -38,14 +38,9 @@ class CampusEventService:
             campus_event = CampusEvent.objects.create(**validated_data)
             PermissionService.assign_object_permissions(
                 context['request'].user, campus_event)
-
-            for key in coefficients:
-                role = EventCoefficient.ROLE_CHOICES_MAP.get(key, None)
-                if role is None:
-                    raise BadRequest('不存在当前参与形式')
+            for coefficient in coefficients:
                 EventCoefficient.objects.create(campus_event=campus_event,
-                                                role=role,
-                                                **coefficients[key])
+                                                **coefficient)
 
             return campus_event
 
