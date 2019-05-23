@@ -13,9 +13,6 @@ router.register(r'enrollments', training_event.views.EnrollmentViewSet)
 router.register(r'round-choices',
                 training_event.views.EventCoefficientRoundChoices,
                 base_name='round-choices')
-router.register(r'role-choices',
-                training_event.views.EventCoefficientRoleChoices,
-                base_name='role-choices')
 urlpatterns = router.urls
 urlpatterns.extend([
     path('download/workload/',
