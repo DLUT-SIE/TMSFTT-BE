@@ -114,3 +114,36 @@ class TestTableExportServices(TestCase):
         self.assertEqual(sheet.cell_value(1, 4), 0.0)
         self.assertEqual(sheet.cell_value(2, 0), '单位数据')
         self.assertEqual(sheet.cell_value(2, 1), '')
+
+    def test_export_traning_feedback(self):
+        mock_data = []
+        with self.assertRaisesMessage(BadRequest, '导出内容不存在。'):
+            TableExportService.export_training_feedback(mock_data)
+
+        mock_data = [
+            {
+                'program_name': 'test_program',
+                'campus_event_name': 'test_event',
+                'feedback_content': 'test_feedback_content',
+                'feedback_time': '2018-01-01 12:42',
+                'feedback_user_name': 'test_user',
+                'feedback_user_email': 'exmaple@test.com'
+            }
+        ]
+        file_path = TableExportService.export_training_feedback(mock_data)
+        self.assertIsNotNone(file_path)
+        workbook = xlrd.open_workbook(file_path)
+        sheet = workbook.sheet_by_name(TableExportService.FEEDBACK_SHEET_NAME)
+        self.assertIsNotNone(sheet)
+        self.assertEqual(sheet.cell_value(0, 0), '培训项目')
+        self.assertEqual(sheet.cell_value(0, 1), '培训活动')
+        self.assertEqual(sheet.cell_value(0, 2), '反馈内容')
+        self.assertEqual(sheet.cell_value(0, 3), '反馈时间')
+        self.assertEqual(sheet.cell_value(0, 4), '反馈人姓名')
+        self.assertEqual(sheet.cell_value(0, 5), '反馈人邮箱')
+        self.assertEqual(sheet.cell_value(1, 0), 'test_program')
+        self.assertEqual(sheet.cell_value(1, 1), 'test_event')
+        self.assertEqual(sheet.cell_value(1, 2), 'test_feedback_content')
+        self.assertEqual(sheet.cell_value(1, 3), '2018-01-01 12:42')
+        self.assertEqual(sheet.cell_value(1, 4), 'test_user')
+        self.assertEqual(sheet.cell_value(1, 5), 'exmaple@test.com')
