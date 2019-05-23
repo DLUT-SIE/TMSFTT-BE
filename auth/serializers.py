@@ -72,6 +72,7 @@ class UserSerializer(serializers.ModelSerializer):
         source='department.name', read_only=True)
     administrative_department_str = serializers.CharField(
         source='administrative_department.name', read_only=True)
+    gender_str = serializers.CharField(source='get_gender_display')
 
     class Meta:
         model = User
@@ -80,7 +81,9 @@ class UserSerializer(serializers.ModelSerializer):
                   'department', 'department_str',
                   'administrative_department', 'administrative_department_str',
                   'is_teacher', 'is_department_admin', 'is_school_admin',
-                  'groups')
+                  'groups', 'gender_str', 'age', 'onboard_time',
+                  'tenure_status', 'education_background', 'technical_title',
+                  'teaching_type', 'cell_phone_number')
 
 
 class UserGroupSerializer(serializers.ModelSerializer):
