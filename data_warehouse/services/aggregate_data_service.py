@@ -149,6 +149,7 @@ class AggregateDataService:
             department_id = Department.objects.get(name='大连理工大学').id
         users = cls.get_users_by_department(
             context['request'].user, department_id)
+        users = users.filter(teaching_type__in=('专任教师', '实验技术'))
         group_users = TeachersGroupService.teachers_statistics_group_dispatch(
             users, group_by, True)
         return group_users
@@ -156,10 +157,12 @@ class AggregateDataService:
     @staticmethod
     def get_users_by_department(request_user, department_id):
         '''get users objects by department.
-        Parameters
+        Parameters:
         ----------
         request_user: User
         department_id: int
+
+        Return: QuerySet<User>
         '''
         departments = Department.objects.filter(id=department_id)
         if not departments:

@@ -1,4 +1,5 @@
 '''Provide services of training program module.'''
+from collections import defaultdict
 from django.db import transaction
 
 from training_program.models import Program
@@ -81,17 +82,21 @@ class ProgramService:
         dlut_department = Department.objects.get(name='大连理工大学')
         top_departments.append(
             {'id': dlut_department.id, 'name': dlut_department.name})
-        programs = list(
-            Program.objects.all().values('id', 'name', 'department'))
+        top_department_ids = [x['id'] for x in top_departments]
+        programs = Program.objects.filter(
+            department__id__in=top_department_ids).values(
+                'id', 'name', 'department')
+        programs_dict = defaultdict(list)
+        for program in programs:
+            programs_dict[program['department']].append(program)
         group_programs = [
             {
                 'id': dep['id'],
                 'name': dep['name'],
                 'programs': (
-                    list(filter(lambda x, dep=dep: (
-                        x['department'] == dep['id']), programs)) if (
-                            is_school_admin or
-                            dep['name'] in admin_departments) else [])
+                    programs_dict[dep['id']] if (
+                        is_school_admin or
+                        dep['name'] in admin_departments) else [])
             } for dep in top_departments
         ]
         group_programs.sort(key=lambda x: x['id'])

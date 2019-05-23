@@ -339,6 +339,9 @@ class TestAggregateDataService(TestCase):
         self.context['group_by'] = '2'
         data = AggregateDataService.coverage_statistics(self.context)
         self.assertEqual(len(data['label']), 4)
+        self.context['department_id'] = '50'
+        data = AggregateDataService.coverage_statistics(self.context)
+        self.assertEqual(len(data['label']), 4)
 
     @patch('data_warehouse.services.aggregate_data_service'
            '.CampusEventFeedbackService')
