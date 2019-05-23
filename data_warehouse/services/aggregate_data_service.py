@@ -8,6 +8,9 @@ from auth.services import DepartmentService
 from data_warehouse.services.user_core_statistics_service import (
     UserCoreStatisticsService
 )
+from data_warehouse.services.school_core_statistics_service import (
+    SchoolCoreStatisticsService
+)
 from data_warehouse.services.user_ranking_service import (
     UserRankingService
 )
@@ -48,6 +51,7 @@ class AggregateDataService:
             'teachers_statistics',
             'records_statistics',
             'coverage_statistics',
+            'school_summary',
             'personal_summary',
             'table_export'
         )
@@ -55,6 +59,26 @@ class AggregateDataService:
         if method_name not in available_method_list or handler is None:
             raise BadRequest("错误的参数")
         return handler(context)
+
+    @staticmethod
+    def school_summary(_):
+        '''Populate an overview statistics for the system.'''
+        res = {
+            'events_statistics': (
+                SchoolCoreStatisticsService.get_events_statistics()
+            ),
+            'records_statistics': (
+                SchoolCoreStatisticsService.get_records_statistics()
+            ),
+            'department_records_statistics': (
+                SchoolCoreStatisticsService.get_department_records_statistics()
+            ),
+            'monthly_added_records_statistics': (
+                SchoolCoreStatisticsService
+                .get_monthly_added_records_statistics()
+            )
+        }
+        return res
 
     @staticmethod
     def personal_summary(context):

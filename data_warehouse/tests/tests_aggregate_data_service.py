@@ -121,6 +121,37 @@ class TestAggregateDataService(TestCase):
             .assert_called_with(self.user)
         )
 
+    @patch(
+        'data_warehouse.services.aggregate_data_service.'
+        'SchoolCoreStatisticsService')
+    def test_school_summary(self, mocked_school_core_service):
+        '''Should return school summary.'''
+        res = AggregateDataService.school_summary({})
+
+        self.assertIsInstance(res, dict)
+        self.assertEqual(
+            {'events_statistics', 'records_statistics',
+             'department_records_statistics',
+             'monthly_added_records_statistics'},
+            set(res.keys())
+        )
+        (
+            mocked_school_core_service
+            .get_events_statistics.assert_called()
+        )
+        (
+            mocked_school_core_service
+            .get_records_statistics.assert_called()
+        )
+        (
+            mocked_school_core_service
+            .get_department_records_statistics()
+        )
+        (
+            mocked_school_core_service
+            .get_monthly_added_records_statistics()
+        )
+
     def test_teachers_statistics(self):
         '''Should get a teachers_statistics data'''
         self.context = {'request': self.request}

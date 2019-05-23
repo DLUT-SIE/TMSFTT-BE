@@ -161,3 +161,25 @@ class TestUserGroupService(TestCase):
         mocked_send.assert_called()
 
         self.assertTrue(user.groups.filter(name=group).exists())
+
+
+class TestUserService(TestCase):
+    '''Unit tests for UserService.'''
+    def test_get_full_time_teachers(self):
+        '''Should return queryset for full time teachers.'''
+        n = 10
+        for i in range(n):
+            mommy.make(
+                User,
+                teaching_type='专任教师' if i % 2 == 0 else '实验技术',
+                administrative_department__department_type='T3'
+                )
+        for _ in range(20):
+            mommy.make(
+                User,
+                administrative_department__department_type='T3'
+                )
+
+        cnt = services.UserService.get_full_time_teachers().count()
+
+        self.assertEqual(cnt, n)
