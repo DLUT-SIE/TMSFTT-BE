@@ -21,9 +21,15 @@ from data_warehouse.services.workload_service import (
 from data_warehouse.services.coverage_statistics_service import (
     CoverageStatisticsService)
 from data_warehouse.services.table_export_service import TableExportService
+from data_warehouse.services.campus_event_feedback_service import (
+    CampusEventFeedbackService
+)
+from data_warehouse.decorators.context_params_check_decorators import (
+    admin_required)
 from data_warehouse.consts import EnumData
 from infra.exceptions import BadRequest
 from training_record.models import Record
+from training_program.models import Program
 
 
 class AggregateDataService:
@@ -370,6 +376,7 @@ class AggregateDataService:
         return file_path, file_name
 
     @classmethod
+    @admin_required()
     def table_coverage_statistics(cls, context):
         '''专任教师培训覆盖率表格统计'''
         request = context.get('request', None)
@@ -399,8 +406,36 @@ class AggregateDataService:
         return file_path, '专任教师培训覆盖率.xls'
 
     @classmethod
+    @admin_required()
     def traning_feedback(cls, context):
         '''培训记录反馈导出'''
+        request = context.get('request')
+        program_id = context.get('program_id', None)
+        deparment_id = context.get('department_id', None)
+        if not (program_id or deparment_id):
+            raise BadRequest('必须给定部门ID或者项目ID')
+        elif not deparment_id:
+            program_ids = [program_id]
+        else:
+            program_ids = list(Program.objects.filter(
+                department_id__in=deparment_id))
+        feedbacks = CampusEventFeedbackService.get_feedbacks(
+            request.user, program_ids)
+        # prepare data to be written in excel.
+        data = []
+        for feedback in feedbacks:
+            data.append(
+                {
+                    'program_name': feedback.record.campus_event.program.name,
+                    'campus_event_name': feedback.record.campus_event.name,
+                    'feedback_content': feedback.content,
+                    'feedback_time': feedback.create_time,
+                    'feedback_user_name': feedback.record.user.name,
+                    'feedback_user_email': feedback.record.user.email
+                }
+            )
+        file_path = TableExportService.export_training_feedback(data)
+        return file_path, '培训反馈表'
 
 
 class TeachersGroupService:
