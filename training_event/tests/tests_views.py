@@ -303,16 +303,3 @@ class TestEventCoefficientRoundChoicesViewSet(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-
-class TestEventCoefficientRoleChoicesViewSet(APITestCase):
-    '''Unit tests for EventCoefficientRoleChoicesViewSet'''
-
-    def test_event_coefficient_role_choice(self):
-        '''Should get event coefficient role choice according to request.'''
-        user = mommy.make(get_user_model())
-        url = reverse('role-choices-list')
-        self.client.force_authenticate(user)
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
