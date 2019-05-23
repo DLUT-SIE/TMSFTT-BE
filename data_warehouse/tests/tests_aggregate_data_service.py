@@ -340,6 +340,36 @@ class TestAggregateDataService(TestCase):
         data = AggregateDataService.coverage_statistics(self.context)
         self.assertEqual(len(data['label']), 4)
 
+    @patch('data_warehouse.services.aggregate_data_service'
+           '.CampusEventFeedbackService')
+    @patch('data_warehouse.services.aggregate_data_service'
+           '.TableExportService')
+    def test_training_feedback(self, mock_table_export_service,
+                               mock_campus_event_feedback_service):
+        '''Should 正确的处理培训反馈'''
+        context = {}
+        with self.assertRaisesMessage(BadRequest, '未在context参数中指定request。'):
+            AggregateDataService.traning_feedback(context)
+        request = MagicMock()
+        request.user = MagicMock()
+        type(request.user).is_department_admin = PropertyMock(
+            return_value=False)
+        type(request.user).is_school_admin = PropertyMock(return_value=False)
+        context = {'request': request}
+        with self.assertRaisesMessage(BadRequest, '你不是管理员。'):
+            AggregateDataService.traning_feedback(context)
+        request = Mock()
+        context = {
+            'request': request,
+            'program_id': 1,
+            }
+        AggregateDataService.traning_feedback(context)
+        mock_campus_event_feedback_service.get_feedbacks.assert_called_with(
+            request.user,
+            [1]
+        )
+        mock_table_export_service.export_training_feedback.assert_called()
+
 
 class TestTeachersGroupService(TestCase):
     '''test TeachersGroupService'''

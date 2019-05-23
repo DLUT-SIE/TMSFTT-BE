@@ -116,6 +116,7 @@ class TestTableExportServices(TestCase):
         self.assertEqual(sheet.cell_value(2, 1), '')
 
     def test_export_traning_feedback(self):
+        '''Should 正确的导出培训反馈'''
         mock_data = []
         with self.assertRaisesMessage(BadRequest, '导出内容不存在。'):
             TableExportService.export_training_feedback(mock_data)
