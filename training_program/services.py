@@ -69,7 +69,6 @@ class ProgramService:
     @staticmethod
     def get_grouped_programs_by_department(user):
         '''group all programs by department'''
-        is_school_admin = user.is_school_admin
         admin_departments = user.groups.filter(
             name__endswith='-管理员').values_list('name', flat=True)
         if not admin_departments:
@@ -83,21 +82,22 @@ class ProgramService:
         top_departments.append(
             {'id': dlut_department.id, 'name': dlut_department.name})
         top_department_ids = [x['id'] for x in top_departments]
+        top_department_dict = {x['id']: x['name'] for x in top_departments}
         programs = Program.objects.filter(
             department__id__in=top_department_ids).values(
                 'id', 'name', 'department')
         programs_dict = defaultdict(list)
         for program in programs:
             programs_dict[program['department']].append(program)
+        is_school_admin = user.is_school_admin
         group_programs = [
             {
-                'id': dep['id'],
-                'name': dep['name'],
-                'programs': (
-                    programs_dict[dep['id']] if (
-                        is_school_admin or
-                        dep['name'] in admin_departments) else [])
-            } for dep in top_departments
+                'id': dep,
+                'name': top_department_dict[dep],
+                'programs': programs_dict[dep]
+            } for dep in programs_dict if (
+                is_school_admin or
+                top_department_dict[dep] in admin_departments)
         ]
         group_programs.sort(key=lambda x: x['id'])
         return group_programs
