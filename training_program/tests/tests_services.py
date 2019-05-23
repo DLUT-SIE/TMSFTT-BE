@@ -38,6 +38,6 @@ class TestProgramService(APITestCase):
     def test_update_program_admin(self):
         '''Should update training_program.'''
         program = ProgramService.create_program(self.data, self.context)
-        program1 = ProgramService.update_program(program, name=2)
+        program1 = ProgramService.update_program(program, name=2, category=1)
 
         self.assertEqual(program1.name, 2)

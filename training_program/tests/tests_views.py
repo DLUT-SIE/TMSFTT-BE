@@ -85,10 +85,13 @@ class TestProgram(APITestCase):
         '''Program list should be updated by PATCH request.'''
         name0 = 'program0'
         name1 = 'program1'
+        category = training_program.models.Program.PROGRAM_CATEGORY_TRAINING
+        department = mommy.make(auth.models.Department)
         program = mommy.make(training_program.models.Program, name=name0)
         PermissionService.assign_object_permissions(self.user, program)
         url = reverse('program-detail', args=(program.pk, ))
-        data = {'name': name1}
+        data = {'name': name1, 'category': category,
+                'department': department.id}
 
         response = self.client.patch(url, data, format='json')
 
