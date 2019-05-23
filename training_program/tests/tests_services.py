@@ -50,9 +50,11 @@ class TestProgramService(APITestCase):
         user.groups.add(group)
         department = mommy.make(Department, id=1, name='大连理工大学')
         program = mommy.make(Program, department=department)
-        group_programs = ProgramService.group_programs_by_department(user)
+        group_programs = ProgramService.get_grouped_programs_by_department(
+            user)
         self.assertEqual(len(group_programs), 1)
         self.assertEqual(group_programs[0]['programs'][0]['id'], program.id)
         user = mommy.make(User)
-        group_programs = ProgramService.group_programs_by_department(user)
+        group_programs = ProgramService.get_grouped_programs_by_department(
+            user)
         self.assertEqual(len(group_programs), 0)

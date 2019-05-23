@@ -241,11 +241,13 @@ class AggregateDataService:
         queryset = Record.objects.select_related(
             'campus_event', 'off_campus_event', 'user').all()
         campus_records = queryset.filter(
+            user__teaching_type__in=('专任教师', '实验技术'),
             campus_event__isnull=False,
             campus_event__time__range=(
                 make_aware(datetime(start_year, 1, 1)),
                 make_aware(datetime(end_year + 1, 1, 1))))
         off_campus_records = queryset.filter(
+            user__teaching_type__in=('专任教师', '实验技术'),
             off_campus_event__isnull=False,
             off_campus_event__time__range=(
                 make_aware(datetime(start_year, 1, 1)),
@@ -750,10 +752,9 @@ class CanvasDataFormater:
                 }
             ]
         }
-        if not (
-            group_records and
-            group_records['campus_records'] and
-            group_records['off_campus_records']):
+        if not (group_records and
+                group_records['campus_records'] and
+                group_records['off_campus_records']):
             return data
         random_key = list(group_records['campus_records'].keys())[0]
         labels = [
