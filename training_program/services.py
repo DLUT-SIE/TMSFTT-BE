@@ -67,14 +67,14 @@ class ProgramService:
         return program
 
     @staticmethod
-    def group_programs_by_department(user):
+    def get_grouped_programs_by_department(user):
         '''group all programs by department'''
         is_school_admin = user.is_school_admin
         admin_departments = user.groups.filter(
-            name__endswith='管理员').values_list('name', flat=True)
-        if not admin_departments.exists():
+            name__endswith='-管理员').values_list('name', flat=True)
+        if not admin_departments:
             return []
-        admin_departments = list(
+        admin_departments = set(
             map(lambda x: x.replace('-管理员', ''), admin_departments))
         top_departments = list(
             DepartmentService.get_top_level_departments()

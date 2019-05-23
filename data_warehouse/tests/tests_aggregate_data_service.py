@@ -168,7 +168,7 @@ class TestAggregateDataService(TestCase):
         self.assertEqual(len(data['label']), 1)
         self.context['group_by'] = '1'
         data = AggregateDataService.teachers_statistics(self.context)
-        self.assertEqual(len(data['label']), 10)
+        self.assertEqual(len(data['label']), 11)
         self.context['group_by'] = '2'
         data = AggregateDataService.teachers_statistics(self.context)
         self.assertEqual(len(data['label']), 4)
@@ -199,7 +199,7 @@ class TestAggregateDataService(TestCase):
         self.assertEqual(len(data['label']), 1)
         self.context['group_by'] = '1'
         data = AggregateDataService.records_statistics(self.context)
-        self.assertEqual(len(data['label']), 10)
+        self.assertEqual(len(data['label']), 11)
         self.context['group_by'] = '2'
         data = AggregateDataService.records_statistics(self.context)
         self.assertEqual(len(data['label']), 4)
