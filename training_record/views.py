@@ -8,7 +8,6 @@ from rest_framework_bulk.mixins import (
     BulkCreateModelMixin,
 )
 from rest_framework_guardian import filters
-from infra.exceptions import BadRequest
 
 import auth.permissions
 import training_record.models
@@ -18,6 +17,7 @@ from training_record.services import RecordService
 from training_record.serializers import (CampusEventFeedbackSerializer,
                                          RecordCreateSerializer,
                                          ReadOnlyRecordSerializer)
+from infra.exceptions import BadRequest
 from infra.mixins import MultiSerializerActionClassMixin
 
 
@@ -106,11 +106,13 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         if event_location is None:
             event_location = ''
         if start_time == '' or start_time is None:
-            start_time = datetime.strptime('1900-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+            start_time = datetime.strptime(
+                '1900-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
         else:
             try:
                 start_time = datetime.strptime(
-                    start_time, '%a %b %d %Y %H:%M:%S GMT+0800 (China Standard Time)')
+                    start_time,
+                    '%a %b %d %Y %H:%M:%S GMT+0800 (China Standard Time)')
             except ValueError:
                 raise BadRequest('无效的起始时间')
         if end_time == '' or end_time is None:
@@ -118,7 +120,8 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         else:
             try:
                 end_time = datetime.strptime(
-                    end_time, '%a %b %d %Y %H:%M:%S GMT+0800 (China Standard Time)')
+                    end_time,
+                    '%a %b %d %Y %H:%M:%S GMT+0800 (China Standard Time)')
             except ValueError:
                 raise BadRequest('无效的截止时间')
         queryset = self.filter_queryset(self.get_queryset()).filter(
