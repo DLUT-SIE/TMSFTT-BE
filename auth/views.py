@@ -34,9 +34,7 @@ class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class UserViewSet(mixins.RetrieveModelMixin,
-                  mixins.ListModelMixin,
-                  viewsets.GenericViewSet):
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
     '''Create API views for User.'''
     queryset = (User.objects
                 .select_related('department')
@@ -49,9 +47,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
     filter_fields = ('username',)
 
 
-class GroupViewSet(mixins.ListModelMixin,
-                   mixins.RetrieveModelMixin,
-                   viewsets.GenericViewSet):
+class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     '''Create API views for Group.'''
     queryset = Group.objects.all()
     serializer_class = auth.serializers.GroupSerializer
