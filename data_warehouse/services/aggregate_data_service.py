@@ -316,8 +316,8 @@ class AggregateDataService:
                 end_year.isdigit() and department_id.isdigit() and
                 program_id.isdigit()):
             raise BadRequest("错误的参数")
-        department_id = None if department_id == '0' else department_id
-        program_id = None if program_id == '0' else program_id
+        department_id = None if department_id == '0' else int(department_id)
+        program_id = None if program_id == '0' else int(program_id)
         start_time = make_aware(
             datetime.strptime(start_year + '-1-1', '%Y-%m-%d'))
         end_year = str(int(end_year) + 1)
