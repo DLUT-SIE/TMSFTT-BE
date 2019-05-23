@@ -35,7 +35,7 @@ class ProgramViewSet(MultiSerializerActionClassMixin, viewsets.ModelViewSet):
     @action(detail=False, url_path='group-programs', url_name='group')
     def get_group_programs(self, request):
         '''get group programs'''
-        group_programs = ProgramService.group_programs_by_department(
+        group_programs = ProgramService.get_grouped_programs_by_department(
             request.user)
         return Response(group_programs, status=status.HTTP_200_OK)
 
