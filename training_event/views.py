@@ -1,5 +1,5 @@
 '''Provide API views for training_event module.'''
-from rest_framework import mixins, viewsets, status
+from rest_framework import mixins, viewsets, status, decorators
 from rest_framework.response import Response
 from rest_framework_guardian import filters
 
@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 import django_filters
 
 import auth.permissions
-from training_event.services import EnrollmentService
+from training_event.services import EnrollmentService, CampusEventService
 import training_event.models
 import training_event.serializers
 import training_event.filters
