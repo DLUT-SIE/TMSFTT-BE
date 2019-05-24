@@ -86,6 +86,8 @@ class DjangoModelPermissions(permissions.DjangoModelPermissions):
 
         view_perms_map = getattr(view, 'perms_map', {})
         is_standard_action = view.action in STANDARD_ACTIONS
+        if view.action is None:
+            raise exceptions.NotFound
         if (is_standard_action is False
                 and (view_perms_map is None
                      or view.action not in view_perms_map)):

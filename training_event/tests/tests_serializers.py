@@ -3,6 +3,7 @@ from unittest.mock import patch, Mock
 
 from django.test import TestCase
 from django.utils.timezone import now
+from rest_framework import serializers
 
 from model_mommy import mommy
 
@@ -27,16 +28,58 @@ class TestCampusEventSerializer(TestCase):
     def test_expired_cause_by_no_more_head_counts(self):
         '''Should be expired if no more head counts for enrolling.'''
         event = mommy.make(CampusEvent, num_enrolled=10, num_participants=10)
-        data = CampusEventSerializer(event).data
+        request = Mock()
+        request.user = 23
+        context = {
+            'request': request
+        }
+        data = CampusEventSerializer(event, context=context).data
 
         self.assertTrue(data['expired'], data)
 
     def test_expired_cause_by_deadline(self):
         '''Should be expired if passed deadline.'''
         event = mommy.make(CampusEvent, deadline=now().replace(year=2018))
-        data = CampusEventSerializer(event).data
+        request = Mock()
+        request.user = 23
+        context = {
+            'request': request
+        }
+        data = CampusEventSerializer(event, context=context).data
 
         self.assertTrue(data['expired'], data)
+
+    def test_validate_coefficients_update_reviewed(self):
+        '''
+        Should raise ValidationError if non-school-admin user tries to
+        update reviewed coefficients.
+        '''
+        event = mommy.make(CampusEvent, reviewed=True)
+        request = Mock()
+        user = Mock()
+        user.is_school_admin = False
+        request.user = user
+        context = {
+            'request': request
+        }
+        serializer = CampusEventSerializer(event, context=context)
+        with self.assertRaises(serializers.ValidationError):
+            serializer.validate_coefficients({})
+
+    def test_validate_coefficients_update(self):
+        '''Should skip tests if event is not reviewed.'''
+        event = mommy.make(CampusEvent, reviewed=False)
+        request = Mock()
+        user = Mock()
+        user.is_school_admin = False
+        request.user = user
+        context = {
+            'request': request
+        }
+        serializer = CampusEventSerializer(event, context=context)
+        data = serializer.validate_coefficients({})
+
+        self.assertIsInstance(data, dict)
 
     def test_get_enrollment_id(self):
         '''should get enrollments id when serialier events.'''

@@ -2,7 +2,7 @@
 import os
 
 from rest_framework.views import APIView
-from rest_framework import mixins, viewsets, status
+from rest_framework import mixins, viewsets, status, decorators
 from rest_framework.response import Response
 from rest_framework_guardian import filters
 
@@ -12,8 +12,9 @@ import django_filters
 
 import auth.permissions
 from secure_file.models import SecureFile
-from training_event.services import CoefficientCalculationService
-from training_event.services import EnrollmentService
+from training_event.services import (
+    CoefficientCalculationService, EnrollmentService, CampusEventService
+)
 import training_event.models
 import training_event.serializers
 import training_event.filters
@@ -36,6 +37,16 @@ class CampusEventViewSet(viewsets.ModelViewSet):
     permission_classes = (
         auth.permissions.DjangoObjectPermissions,
     )
+    perms_map = {
+        'review_event': ['%(app_label)s.review_%(model_name)s'],
+    }
+
+    @decorators.action(methods=['POST'], detail=True,
+                       url_path='review-event')
+    def review_event(self, request, pk=None):
+        event = self.get_object()
+        CampusEventService.review_campus_event(event, request.user)
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class OffCampusEventViewSet(viewsets.ModelViewSet):
