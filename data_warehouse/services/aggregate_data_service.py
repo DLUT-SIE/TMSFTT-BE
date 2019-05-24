@@ -752,10 +752,6 @@ class CanvasDataFormater:
                 }
             ]
         }
-        if not (group_records and
-                group_records['campus_records'] and
-                group_records['off_campus_records']):
-            return data
         random_key = list(group_records['campus_records'].keys())[0]
         labels = [
             EnumData.AGE_LABEL,
