@@ -104,6 +104,10 @@ def get_dlut_admin():
                         get_personal_permissions_group())
     return user
 
+def get_dlut_admin_group():
+    return Group.objects.get_or_create(name='大连理工大学-管理员')[0]
+
+
 def get_personal_permissions_group():
     return Group.objects.get_or_create(name='个人权限')[0]
 
@@ -374,6 +378,7 @@ def assign_model_perms():
         # Event
         CampusEvent: {
             '管理员': ['add', 'view', 'change', 'delete'],
+            '大连理工大学-管理员': ['add', 'view', 'change', 'delete', 'review'],
             '专任教师': ['view'],
             '个人权限': [],
         },
@@ -415,7 +420,8 @@ def assign_model_perms():
             '个人权限': ['view'],
         },
     }
-    personal_permissions_group, _ = Group.objects.get_or_create(name='个人权限')
+    dlut_admin_group = get_dlut_admin_group()
+    personal_permissions_group = get_personal_permissions_group()
     departments = {
         x.raw_department_id: x
         for x in Department.objects.all()
@@ -426,6 +432,8 @@ def assign_model_perms():
             for role, perms in perm_pairs.items():
                 if role == '个人权限':
                     group = personal_permissions_group
+                elif role == '大连理工大学-管理员':
+                    group = dlut_admin_group
                 else:
                     group = get_or_create_group(department, role)
                 for perm in perms:

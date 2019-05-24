@@ -17,8 +17,12 @@ User = get_user_model()
 
 class CampusEventViewSet(viewsets.ModelViewSet):
     '''Create API views for CampusEvent.'''
-    queryset = training_event.models.CampusEvent.objects.all().order_by(
-        '-time')
+    queryset = (
+        training_event.models.CampusEvent.objects
+        .all()
+        .select_related('program', 'program__department')
+        .order_by('-time')
+    )
     serializer_class = training_event.serializers.CampusEventSerializer
     filter_class = training_event.filters.CampusEventFilter
     filter_backends = (filters.DjangoObjectPermissionsFilter,
@@ -26,6 +30,17 @@ class CampusEventViewSet(viewsets.ModelViewSet):
     permission_classes = (
         auth.permissions.DjangoObjectPermissions,
     )
+    perms_map = {
+        'review_event': ['%(app_label)s.review_%(model_name)s'],
+    }
+
+    @decorators.action(methods=['POST'], detail=True,
+                       url_path='review-event')
+    def review_event(self, request, pk=None):  # pylint: disable=invalid-name
+        '''Review campus event, mark reviewed as True.'''
+        event = self.get_object()
+        CampusEventService.review_campus_event(event, request.user)
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class OffCampusEventViewSet(viewsets.ModelViewSet):

@@ -13,16 +13,17 @@ class CampusEventSerializer(serializers.ModelSerializer):
     program_detail = ReadOnlyProgramSerializer(source='program',
                                                read_only=True)
     enrollment_id = serializers.SerializerMethodField(read_only=True)
-    coefficients = serializers.ListField(write_only=True)
+    coefficients = serializers.ListField(
+        write_only=True, child=serializers.JSONField())
 
     class Meta:
         model = training_event.models.CampusEvent
         fields = '__all__'
-        read_only_fields = ('num_enrolled',)
+        read_only_fields = ('num_enrolled', 'reviewed')
 
     def get_expired(self, obj):
         '''Get event expired status.'''
-        return now() > obj.deadline
+        return now() > obj.deadline or obj.num_enrolled >= obj.num_participants
 
     def get_enrolled(self, obj):
         '''Get event enrollments status.'''
@@ -58,12 +59,20 @@ class CampusEventSerializer(serializers.ModelSerializer):
             res = self.context[key]
         return res.get(obj.id, None)
 
+    def validate_coefficients(self, data):
+        '''Forbid non-school-admins to update reviewed coefficients.'''
+        if (self.instance  # Update an object
+                and self.instance.reviewed  # Has been reviewed by school admin
+                and not self.context['request'].user.is_school_admin):
+            raise serializers.ValidationError(
+                '非校管理员无权修改已经审核通过的培训系数')
+        return data
+
     def create(self, validated_data):
         '''Create event and event coefficient.'''
         coefficients = validated_data.pop('coefficients')
-        return CampusEventService.create_campus_event(validated_data,
-                                                      coefficients,
-                                                      self.context)
+        return CampusEventService.create_campus_event(
+            validated_data, coefficients, self.context)
 
 
 class OffCampusEventSerializer(serializers.ModelSerializer):

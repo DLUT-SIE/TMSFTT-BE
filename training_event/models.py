@@ -37,6 +37,7 @@ class CampusEvent(AbstractEvent):
             ('view_campusevent', '允许查看校内培训活动'),
             ('change_campusevent', '允许修改校内培训活动'),
             ('delete_campusevent', '允许删除校内培训活动'),
+            ('review_campusevent', '允许审核校内培训活动'),
         )
 
     program = models.ForeignKey(Program, verbose_name='培训项目',
@@ -45,6 +46,8 @@ class CampusEvent(AbstractEvent):
     num_enrolled = models.PositiveSmallIntegerField(
         verbose_name='报名人数', default=0)
     description = models.TextField(verbose_name='活动描述', default='')
+    reviewed = models.BooleanField(
+        verbose_name='是否已由校级管理员审核确认', default=False)
 
 
 class OffCampusEvent(AbstractEvent):

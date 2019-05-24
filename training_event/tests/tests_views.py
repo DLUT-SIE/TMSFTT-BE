@@ -27,11 +27,27 @@ class TestCampusEventViewSet(APITestCase):
         mommy.make(Group, name="个人权限")
         assign_perm('training_event.add_campusevent', cls.group)
         assign_perm('training_event.view_campusevent', cls.group)
+        assign_perm('training_event.review_campusevent', cls.group)
         assign_perm('training_event.change_campusevent', cls.group)
         assign_perm('training_event.delete_campusevent', cls.group)
 
     def setUp(self):
         self.client.force_authenticate(self.user)
+
+    def test_review_event(self):
+        '''Should mark event as reviewed.'''
+        event = mommy.make(training_event.models.CampusEvent)
+        assign_perm('training_event.view_campusevent', self.group, event)
+        assign_perm('training_event.review_campusevent', self.group, event)
+
+        url = reverse('campusevent-review-event', args=(event.id,))
+
+        response = self.client.post(url, {}, format='json')
+
+        event = training_event.models.CampusEvent.objects.get(id=event.id)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(event.reviewed)
 
     def test_create_campus_event(self):
         '''CampusEvent should be created by POST request.'''
@@ -270,7 +286,7 @@ class TestEnrollmentViewSet(APITestCase):
         response = self.client.patch(url, data, format='json')
 
         self.assertEqual(response.status_code,
-                         status.HTTP_403_FORBIDDEN)
+                         status.HTTP_404_NOT_FOUND)
 
 
 class TestEventCoefficientRoundChoicesViewSet(APITestCase):

@@ -1,6 +1,7 @@
 '''Provide services of training event module.'''
 from django.db import transaction
 
+from infra.utils import prod_logger
 from infra.exceptions import BadRequest
 from training_event.models import CampusEvent, Enrollment, EventCoefficient
 from auth.services import PermissionService
@@ -8,6 +9,15 @@ from auth.services import PermissionService
 
 class CampusEventService:
     '''Provide services for CampusEvent.'''
+    @staticmethod
+    def review_campus_event(event, user):
+        '''Review a campus event.'''
+        event.reviewed = True
+        event.save()
+
+        msg = f'用户 {user} 将培训活动 {event} 标记为已审核'
+        prod_logger.info(msg)
+
     @staticmethod
     def create_campus_event(validated_data, coefficients, context=None):
         '''Create a CampusEvent with ObjectPermission.

@@ -53,6 +53,14 @@ class TestCampusEventService(TestCase):
         assign_perm('training_program.add_program', self.group)
         assign_perm('training_program.view_program', self.group)
 
+    def test_review_campus_event(self):
+        '''Should mark reviewed as True.'''
+        event = mommy.make(CampusEvent)
+        CampusEventService.review_campus_event(event, self.user)
+
+        event = CampusEvent.objects.get(id=event.id)
+        self.assertTrue(event.reviewed)
+
     def test_create_campus_event_admin(self):
         '''Should create campus_event.'''
         CampusEventService.create_campus_event(self.data,
