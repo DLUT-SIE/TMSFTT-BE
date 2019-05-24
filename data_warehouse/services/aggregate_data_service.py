@@ -646,7 +646,8 @@ class RecordsGroupService:
             sum_count = 0
             for record in records:
                 sum_count += record['count']
-                group_records[record['user__technical_title']] = record['count']
+                group_records[
+                    record['user__technical_title']] = record['count']
             group_records['其他'] = total_count - sum_count
         else:
             group_records = {x: Record.objects.none() for x in title_list}
