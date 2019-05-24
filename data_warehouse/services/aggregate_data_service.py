@@ -489,11 +489,11 @@ class TeachersGroupService:
             group_users = {x: 0 for x in title_list}
             users = users.filter(
                 technical_title__in=title_list).values(
-                    'technical_title').annotate(num=Count('technical_title'))
+                    'technical_title').annotate(count=Count('technical_title'))
             sum_count = 0
             for user in users:
-                sum_count += user['num']
-                group_users[user['technical_title']] = user['num']
+                sum_count += user['count']
+                group_users[user['technical_title']] = user['count']
             group_users['其他'] = total_count - sum_count
         else:
             group_users = {
@@ -523,9 +523,9 @@ class TeachersGroupService:
             users = users.filter(
                 education_background__in=education_background_list).values(
                     'education_background').annotate(
-                        num=Count('education_background'))
+                        count=Count('education_background'))
             for user in users:
-                group_users[user['education_background']] = user['num']
+                group_users[user['education_background']] = user['count']
         else:
             group_users = {
                 x: (
@@ -559,11 +559,11 @@ class TeachersGroupService:
                 users.filter(
                     administrative_department__name__in=department_list)
                 .values('administrative_department__name')
-                .annotate(num=Count('id'))
+                .annotate(count=Count('id'))
             )
             for user in users:
                 group_users[user['administrative_department__name']] = (
-                    user['num']
+                    user['count']
                 )
         else:
             group_users = {
@@ -642,11 +642,11 @@ class RecordsGroupService:
             group_records = {x: 0 for x in title_list}
             records = records.filter(
                 user__technical_title__in=title_list).values(
-                    'user__technical_title').annotate(num=Count('user'))
+                    'user__technical_title').annotate(count=Count('user'))
             sum_count = 0
             for record in records:
-                sum_count += record['num']
-                group_records[record['user__technical_title']] = record['num']
+                sum_count += record['count']
+                group_records[record['user__technical_title']] = record['count']
             group_records['其他'] = total_count - sum_count
         else:
             group_records = {x: Record.objects.none() for x in title_list}
@@ -680,12 +680,12 @@ class RecordsGroupService:
                 records.filter(
                     user__administrative_department__name__in=department_list)
                 .values('user__administrative_department__name')
-                .annotate(num=Count('id'))
+                .annotate(count=Count('id'))
             )
             for record in records:
                 group_records[
                     record['user__administrative_department__name']] =\
-                    record['num']
+                    record['count']
         else:
             group_records = {
                 x: Record.objects.none() for x in department_list}
