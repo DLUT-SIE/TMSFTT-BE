@@ -1,6 +1,4 @@
 '''Unit tests for training_event views.'''
-from unittest.mock import patch
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.urls import reverse
