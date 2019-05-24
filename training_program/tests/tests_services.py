@@ -43,6 +43,7 @@ class TestProgramService(APITestCase):
                                                  self.data1, self.context)
 
         self.assertEqual(program1.name, '2')
+
     def test_group_program(self):
         '''Should get group programs by department'''
         user = mommy.make(User)
