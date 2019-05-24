@@ -18,11 +18,11 @@ class CampusEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = training_event.models.CampusEvent
         fields = '__all__'
-        read_only_fields = ('num_enrolled',)
+        read_only_fields = ('num_enrolled', 'reviewed')
 
     def get_expired(self, obj):
         '''Get event expired status.'''
-        return now() > obj.deadline
+        return now() > obj.deadline or obj.num_enrolled >= obj.num_participants
 
     def get_enrolled(self, obj):
         '''Get event enrollments status.'''

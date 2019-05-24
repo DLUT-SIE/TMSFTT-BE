@@ -45,6 +45,8 @@ class CampusEvent(AbstractEvent):
     num_enrolled = models.PositiveSmallIntegerField(
         verbose_name='报名人数', default=0)
     description = models.TextField(verbose_name='活动描述', default='')
+    reviewed = models.BooleanField(
+        verbose_name='是否已由校级管理员审核确认', default=False)
 
 
 class OffCampusEvent(AbstractEvent):

@@ -2,6 +2,7 @@
 from unittest.mock import patch, Mock
 
 from django.test import TestCase
+from django.utils.timezone import now
 
 from model_mommy import mommy
 
@@ -22,6 +23,20 @@ class TestCampusEventSerializer(TestCase):
         serializer.context['request'].user = 23
         data = serializer.data
         self.assertIn('expired', data[0])
+
+    def test_expired_cause_by_no_more_head_counts(self):
+        '''Should be expired if no more head counts for enrolling.'''
+        event = mommy.make(CampusEvent, num_enrolled=10, num_participants=10)
+        data = CampusEventSerializer(event).data
+
+        self.assertTrue(data['expired'], data)
+
+    def test_expired_cause_by_deadline(self):
+        '''Should be expired if passed deadline.'''
+        event = mommy.make(CampusEvent, deadline=now().replace(year=2018))
+        data = CampusEventSerializer(event).data
+
+        self.assertTrue(data['expired'], data)
 
     def test_get_enrollment_id(self):
         '''should get enrollments id when serialier events.'''
