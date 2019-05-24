@@ -111,9 +111,9 @@ class TestRecordViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_list_record_for_review(self):
+    def test_list_records_for_review(self):
         '''should return records for admin'''
-        url = reverse('record-list-record-for-review')
+        url = reverse('record-list-records-for-review')
         for _ in range(10):
             off_campus_event = mommy.make(training_event.models.OffCampusEvent)
             record = mommy.make(
