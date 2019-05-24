@@ -116,7 +116,7 @@ class TestProgramCategoryViewSet(APITestCase):
     def test_program_categories(self):
         '''Should get categories according to request.'''
         user = mommy.make(get_user_model())
-        url = reverse('program-categories-list')
+        url = reverse('program-categories')
         self.client.force_authenticate(user)
         response = self.client.get(url)
 
