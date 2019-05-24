@@ -43,7 +43,8 @@ class CampusEventViewSet(viewsets.ModelViewSet):
 
     @decorators.action(methods=['POST'], detail=True,
                        url_path='review-event')
-    def review_event(self, request, pk=None):
+    def review_event(self, request, pk=None):  # pylint: disable=invalid-name
+        '''Review campus event, mark reviewed as True.'''
         event = self.get_object()
         CampusEventService.review_campus_event(event, request.user)
         return Response(status=status.HTTP_201_CREATED)
