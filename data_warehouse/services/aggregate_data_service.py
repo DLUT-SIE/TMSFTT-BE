@@ -407,7 +407,7 @@ class AggregateDataService:
 
     @classmethod
     @admin_required()
-    def traning_feedback(cls, context):
+    def training_feedback(cls, context):
         '''培训记录反馈导出'''
         request = context.get('request')
         program_id = context.get('program_id', None)
@@ -417,8 +417,8 @@ class AggregateDataService:
         elif not deparment_id:
             program_ids = [program_id]
         else:
-            program_ids = list(Program.objects.filter(
-                department_id__in=deparment_id))
+            program_ids = Program.objects.filter(
+                department_id=deparment_id).values_list('id', flat=True)
         feedbacks = CampusEventFeedbackService.get_feedbacks(
             request.user, program_ids)
         # prepare data to be written in excel.
