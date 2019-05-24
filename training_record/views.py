@@ -16,7 +16,6 @@ from training_record.services import RecordService
 from training_record.serializers import (CampusEventFeedbackSerializer,
                                          RecordCreateSerializer,
                                          ReadOnlyRecordSerializer)
-from infra.exceptions import BadRequest
 from infra.mixins import MultiSerializerActionClassMixin
 
 
