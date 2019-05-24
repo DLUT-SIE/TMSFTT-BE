@@ -22,4 +22,5 @@ class CampusEventFilter(filters.FilterSet):
         fields = {
             'program': ['exact'],
             'id': ['in'],
+            'reviewed': ['exact'],
         }
