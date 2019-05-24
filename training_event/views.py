@@ -1,5 +1,5 @@
 '''Provide API views for training_event module.'''
-from rest_framework import mixins, viewsets, status, decorators
+from rest_framework import mixins, viewsets, views, status, decorators
 from rest_framework.response import Response
 from rest_framework_guardian import filters
 
@@ -71,15 +71,15 @@ class EnrollmentViewSet(mixins.CreateModelMixin,
         EnrollmentService.delete_enrollment(instance)
 
 
-class EventCoefficientRoundChoices(viewsets.ViewSet):
+class RoundChoicesView(views.APIView):
     '''Create API view for get round choices of event coefficient.'''
-    def list(self, request):
+    def get(self, request, format=None):
         '''define how to get round choices.'''
         round_choices = [
             {
-                'type': item[0],
-                'name': item[1],
-            } for item in (
+                'type': round_type,
+                'name': round_type_name,
+            } for round_type, round_type_name in (
                 training_event.models.EventCoefficient.ROUND_CHOICES)
         ]
         return Response(round_choices, status=status.HTTP_200_OK)
