@@ -6,7 +6,7 @@ from rest_framework.test import APITestCase
 from model_mommy import mommy
 
 from infra.exceptions import BadRequest
-
+import data_warehouse.views
 
 User = get_user_model()
 
@@ -48,3 +48,27 @@ class AggregateDataViewSet(APITestCase):
         url = reverse('aggregate-data-table-export') + '?table_type=xyz'
         response = self.client.get(url)
         self.assertRaisesMessage(BadRequest, '请求的参数不正确。')
+
+    def test_check_params(self):
+        '''Should 正确的校验http请求参数'''
+        viewset = data_warehouse.views.AggregateDataViewSet()
+        params = {
+        }
+        with self.assertRaisesMessage(BadRequest, 'table_type'
+                                      '参数不存在或类型不为整数。'):
+            viewset.check_params(params)
+        params = {
+            'table_type': '4',
+            'program_id': '1'
+        }
+        validated_data = viewset.check_params(params)
+        self.assertEqual(4, validated_data.get('table_type'))
+        self.assertEqual(1, validated_data.get('program_id'))
+
+        params = {
+            'table_type': '999',
+            'program_id': '1'
+        }
+        validated_data = viewset.check_params(params)
+        self.assertEqual(999, validated_data.get('table_type'))
+        self.assertEqual('1', validated_data.get('program_id'))
