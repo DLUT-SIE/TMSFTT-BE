@@ -1,6 +1,5 @@
 '''Register URL routes in training_event module.'''
 from rest_framework import routers
-from django.urls import path
 
 import training_event.views
 
@@ -14,8 +13,3 @@ router.register(r'round-choices',
                 training_event.views.EventCoefficientRoundChoices,
                 base_name='round-choices')
 urlpatterns = router.urls
-urlpatterns.extend([
-    path('download/workload/',
-         training_event.views.WorkloadFileDownloadView.as_view(),
-         name='download-workload'),
-])

@@ -1,4 +1,5 @@
 '''Provide services of data aggregate.'''
+from django.utils.timezone import now
 from django.contrib.auth import get_user_model
 from django.db.models import Count
 from django.utils.timezone import datetime, make_aware
@@ -14,6 +15,9 @@ from data_warehouse.services.school_core_statistics_service import (
 from data_warehouse.services.user_ranking_service import (
     UserRankingService
 )
+from data_warehouse.services.workload_service import (
+    WorkloadCalculationService
+)
 from data_warehouse.services.coverage_statistics_service import (
     CoverageStatisticsService)
 from data_warehouse.services.table_export_service import TableExportService
@@ -24,12 +28,14 @@ from training_record.models import Record
 
 class AggregateDataService:
     '''provide services for getting data'''
+    WORKLOAD_FILE_NAME_TEMPLATE = '{}至{}教师工作量导出表.xls'
     TABLE_NAME_STAFF = 1
     TABLE_NAME_TEACHER = 2
     TABLE_NAME_TRAINING_SUMMARY = 3
     TABLE_NAME_COVERAGE_SUMMARY = 4
     TABLE_NAME_TRAINING_HOURS_SUMMARY = 5
     TABLE_NAME_TRAINING_FEEDBACK = 6
+    TABLE_NAME_WORKLOAD_CALCULATION = 7
 
     TABLE_NAME_CHOICES = {
         TABLE_NAME_STAFF: '教职工表',
@@ -37,7 +43,8 @@ class AggregateDataService:
         TABLE_NAME_TRAINING_SUMMARY: '培训总体情况表',
         TABLE_NAME_COVERAGE_SUMMARY: '专任教师培训覆盖率表',
         TABLE_NAME_TRAINING_HOURS_SUMMARY: '培训学时与工作量表',
-        TABLE_NAME_TRAINING_FEEDBACK: '培训反馈表'
+        TABLE_NAME_TRAINING_FEEDBACK: '培训反馈表',
+        TABLE_NAME_WORKLOAD_CALCULATION: '工作量计算表'
     }
 
     TITLES = (
@@ -260,7 +267,8 @@ class AggregateDataService:
                 'table_training_hours_statistics'),
             cls.TABLE_NAME_COVERAGE_SUMMARY: 'table_coverage_statistics',
             cls.TABLE_NAME_TRAINING_SUMMARY: 'table_trainee_statistics',
-            cls.TABLE_NAME_TRAINING_FEEDBACK: 'training_feedback'
+            cls.TABLE_NAME_TRAINING_FEEDBACK: 'training_feedback',
+            cls.TABLE_NAME_WORKLOAD_CALCULATION: 'table_workload_calculation'
         }
         request = context.get('request', None)
         if request is None:
@@ -324,6 +332,42 @@ class AggregateDataService:
             raise BadRequest("错误的参数")
         group_users = group_by_handler[group_by](users_qs)
         return group_users
+
+    @classmethod
+    def table_workload_calculation(cls, context):
+        '''工作量计算表格'''
+        # 生成excel文件
+        request = context.get('request', None)
+        data = request.GET
+        start_time = data.get('start_time')
+        end_time = data.get('end_time')
+
+        if end_time is None:
+            end_time = now()
+        if start_time is None:
+            start_time = end_time.replace(year=end_time.year - 1,
+                                          month=12, day=31, hour=16, minute=0,
+                                          second=0)
+
+        workload_dict = (
+            WorkloadCalculationService.calculate_workload_by_query(
+                administrative_department=data.get(
+                    'administrative_department'),
+                start_time=start_time,
+                end_time=end_time,
+                teachers=data.get('teachers')
+            )
+        )
+        file_path = (
+            WorkloadCalculationService.generate_workload_excel_from_data(
+                workload_dict=workload_dict
+            )
+        )
+
+        # 拼接文件名
+        file_name = cls.FILE_NAME_TEMPLATE.format(
+            start_time.strftime('%Y-%m-%d'), end_time.strftime('%Y-%m-%d'))
+        return file_path, file_name
 
     @classmethod
     def table_coverage_statistics(cls, context):
