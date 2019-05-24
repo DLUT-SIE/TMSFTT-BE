@@ -48,7 +48,6 @@ class RecordViewSet(MultiSerializerActionClassMixin,
             ['%(app_label)s.view_%(model_name)s'],
         'get_role_choices': ['%(app_label)s.view_%(model_name)s'],
         'list_records_for_review': ['%(app_label)s.view_%(model_name)s'],
-        'search': ['%(app_label)s.view_%(model_name)s'],
     }
     filter_backends = (filters.DjangoObjectPermissionsFilter,
                        django_filters.rest_framework.DjangoFilterBackend,)
