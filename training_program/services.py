@@ -31,7 +31,7 @@ class ProgramService:
             msg = (f'用户{user}创建了培训机构为'
                    + f'{program.department}的培训项目{program.name}')
             prod_logger.info(msg)
-            PermissionService.assigin_object_permissions(
+            PermissionService.assign_object_permissions(
                 context['request'].user, program)
             return program
 
