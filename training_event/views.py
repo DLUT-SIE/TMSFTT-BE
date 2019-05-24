@@ -23,8 +23,12 @@ User = get_user_model()
 
 class CampusEventViewSet(viewsets.ModelViewSet):
     '''Create API views for CampusEvent.'''
-    queryset = training_event.models.CampusEvent.objects.all().order_by(
-        '-time')
+    queryset = (
+        training_event.models.CampusEvent.objects
+        .all()
+        .select_related('program', 'program__department')
+        .order_by('-time')
+    )
     serializer_class = training_event.serializers.CampusEventSerializer
     filter_class = training_event.filters.CampusEventFilter
     filter_backends = (filters.DjangoObjectPermissionsFilter,
