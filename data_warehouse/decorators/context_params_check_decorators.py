@@ -4,11 +4,14 @@ import functools
 
 
 def __check_request(args):
+    if not args:
+        raise ValueError('该装饰器不能用于无参函数。')
     if args[-1] is None:
-                raise BadRequest('请给定context参数。')
+                raise ValueError('请给定context参数。')
     context = args[-1]
-    if context.get('request', None) is None:
-        raise BadRequest('未在context参数中指定request。')
+    if not isinstance(context, dict) or context.get('request', None) is None:
+        raise ValueError('未在context参数中指定request，或context类型不为dict。')
+    return context.get('request')
 
 
 def request_required(func):
@@ -18,24 +21,22 @@ def request_required(func):
         return func(*args, **kwargs)
 
 
-def admin_required(mode='department_admin'):
+def admin_required(mode='admin'):
     def actual_decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            __check_request(args)
-            request = args[-1].get('request')
-            assert request is not None
+            request = __check_request(args)
             if request.user is None:
-                raise BadRequest('request未指定user。')
+                raise ValueError('request未指定user。')
             user = request.user
             if mode == 'school_admin':
                 if not user.is_school_admin:
                     raise BadRequest('你不是校级管理员。')
-            elif mode == 'department_admin':
+            elif mode == 'admin':
                 if not user.is_school_admin or not user.is_department_admin:
                     raise BadRequest('你不是管理员。')
             else:
-                raise BadRequest('装饰器参数错误，mode只能是school_admin'
+                raise ValueError('装饰器参数错误，mode只能是school_admin'
                                  ' 或者 department_admin')
             return func(*args, **kwargs)
         return wrapper
