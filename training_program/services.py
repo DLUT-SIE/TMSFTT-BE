@@ -2,7 +2,7 @@
 from django.db import transaction
 
 from training_program.models import Program
-from auth.services import PermissonsService
+from auth.services import PermissionService
 from infra.utils import prod_logger
 
 
@@ -31,7 +31,7 @@ class ProgramService:
             msg = (f'用户{user}创建了培训机构为'
                    + f'{program.department}的培训项目{program.name}')
             prod_logger.info(msg)
-            PermissonsService.assigin_object_permissions(
+            PermissionService.assigin_object_permissions(
                 context['request'].user, program)
             return program
 
@@ -63,4 +63,3 @@ class ProgramService:
                + f'{program.department}的培训项目{program.name}')
         prod_logger.info(msg)
         return program
-
