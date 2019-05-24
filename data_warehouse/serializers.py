@@ -1,8 +1,11 @@
 '''data warehouse序列化器模块'''
 from rest_framework import serializers
 
+# pylint: disable=W0223
+
 
 class BaseTableExportSerializer(serializers.Serializer):
+    '''序列化器的基类'''
     table_type = serializers.IntegerField(required=True)
 
 

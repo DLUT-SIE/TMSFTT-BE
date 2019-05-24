@@ -7,6 +7,9 @@ from rest_framework import status, viewsets
 from data_warehouse.services.aggregate_data_service import (
     AggregateDataService, CanvasOptionsService
 )
+from data_warehouse.serializers import (
+    BaseTableExportSerializer
+)
 from infra.exceptions import BadRequest
 from secure_file.models import SecureFile
 
@@ -36,11 +39,12 @@ class AggregateDataViewSet(viewsets.ViewSet):
             url_name='table-export')
     def export(self, request):
         '''Return a xls file stream.'''
+        http_params = self.check_params(request.GET)
         if 'table_type' not in request.GET:
             raise BadRequest('请求的参数不正确。')
         if not request.GET['table_type'].isdigit():
             raise BadRequest('请求的table_type必须为整数。')
-        context = {key: val for (key, val) in request.GET.items()}
+        context = {key: val for (key, val) in http_params.items()}
         context['request'] = request
         ret_file_path, file_name = AggregateDataService.dispatch(
             'table_export', context)
@@ -48,3 +52,34 @@ class AggregateDataViewSet(viewsets.ViewSet):
                                            ret_file_path)
         os.unlink(ret_file_path)
         return secure_file.generate_download_response(request)
+
+    def check_params(self, params):
+        '''根据请求的表格类型去校验http请求参数
+        Parameters
+        ------
+        params: dict
+            http params
+
+        Returns
+        ------
+        dict
+            validated params.
+        '''
+        base_serializer = BaseTableExportSerializer(data=params)
+        if not base_serializer.is_valid():
+            raise BadRequest('table_type参数不存在或类型不为整数。')
+        base_validated_data = base_serializer.validated_data
+        table_type = base_validated_data.get('table_type')
+        serializer_cls = (
+            AggregateDataService.TABLE_SERIALIZERS_CHOICES
+            .get(table_type, None)
+        )
+        # if serializer not found, we just do not touch params
+        # except table_type field.
+        if serializer_cls is None:
+            if params is not None:
+                params.update(base_validated_data)
+            return params
+        serializer = serializer_cls(data=params)
+        serializer.is_valid(raise_exception=True)
+        return serializer.validated_data

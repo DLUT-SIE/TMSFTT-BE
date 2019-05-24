@@ -26,6 +26,10 @@ from data_warehouse.services.campus_event_feedback_service import (
 )
 from data_warehouse.decorators.context_params_check_decorators import (
     admin_required)
+from data_warehouse.serializers import (
+    CoverageStatisticsSerializer,
+    TrainingFeedbackSerializer
+)
 from data_warehouse.consts import EnumData
 from infra.exceptions import BadRequest
 from training_record.models import Record
@@ -51,6 +55,12 @@ class AggregateDataService:
         TABLE_NAME_TRAINING_HOURS_SUMMARY: '培训学时与工作量表',
         TABLE_NAME_TRAINING_FEEDBACK: '培训反馈表',
         TABLE_NAME_WORKLOAD_CALCULATION: '工作量计算表'
+    }
+
+    # 校验http请求参数的序列化器配置
+    TABLE_SERIALIZERS_CHOICES = {
+        TABLE_NAME_COVERAGE_SUMMARY: CoverageStatisticsSerializer,
+        TABLE_NAME_TRAINING_FEEDBACK: TrainingFeedbackSerializer
     }
 
     TITLES = (
