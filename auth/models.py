@@ -151,25 +151,6 @@ class UserGroup(models.Model):
         return '用户{}位于用户组{}中'.format(self.user_id, self.group_id)
 
 
-class UserPermission(models.Model):
-    '''A mapping to User-Permission Many-To-Many relationship.'''
-    class Meta:
-        verbose_name = '用户权限'
-        verbose_name_plural = '用户权限'
-        managed = False  # This model is managed by Django.
-        db_table = 'tmsftt_auth_user_user_permissions'
-        default_permissions = ()
-
-    id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, verbose_name='用户',
-                             on_delete=models.CASCADE)
-    permission = models.ForeignKey(Permission, verbose_name='权限',
-                                   on_delete=models.CASCADE)
-
-    def __str__(self):
-        return '用户{}拥有权限{}'.format(self.user_id, self.permission_id)
-
-
 class GroupPermission(models.Model):
     '''A mapping to Group-Permission Many-To-Many relationship.'''
     class Meta:

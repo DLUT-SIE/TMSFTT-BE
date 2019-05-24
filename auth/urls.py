@@ -13,7 +13,6 @@ router.register(r'groups', auth.views.GroupViewSet)
 router.register(r'user-groups', auth.views.UserGroupViewSet)
 router.register(r'departments', auth.views.DepartmentViewSet)
 router.register(r'permissions', auth.views.PermissionViewSet)
-router.register(r'user-permissions', auth.views.UserPermissionViewSet)
 router.register(r'group-permissions', auth.views.GroupPermissionViewSet)
 urlpatterns = router.urls
 
