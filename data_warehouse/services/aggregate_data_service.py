@@ -159,7 +159,9 @@ class AggregateDataService:
             department_id = Department.objects.get(name='大连理工大学').id
         users = cls.get_users_by_department(
             context['request'].user, department_id)
-        users = users.filter(teaching_type__in=('专任教师', '实验技术'))
+        users = users.filter(
+            teaching_type__in=('专任教师', '实验技术')
+        )
         group_users = TeachersGroupService.teachers_statistics_group_dispatch(
             users, group_by, True)
         return group_users
@@ -174,19 +176,21 @@ class AggregateDataService:
 
         Return: QuerySet<User>
         '''
+        queryset = User.objects.all().select_related(
+            'administrative_department')
         departments = Department.objects.filter(id=department_id)
         if not departments:
-            return get_user_model().objects.none()
+            return User.objects.none()
         department = departments[0]
         if request_user.is_school_admin:
             if department.name == '大连理工大学':
-                return get_user_model().objects.all()
-            return get_user_model().objects.filter(
-                administrative_department=department)
+                return queryset
+            return queryset.filter(
+                administrative_department__id=department.id)
         if request_user.check_department_admin(department):
-            return get_user_model().objects.filter(
-                administrative_department=department)
-        return get_user_model().objects.none()
+            return queryset.filter(
+                administrative_department__id=department.id)
+        return User.objects.none()
 
     @classmethod
     def records_statistics(cls, context):
@@ -249,15 +253,15 @@ class AggregateDataService:
         if start_year > end_year:
             raise BadRequest("错误的参数")
         queryset = Record.objects.select_related(
-            'campus_event', 'off_campus_event', 'user').all()
+            'campus_event', 'off_campus_event', 'user').filter(
+                user__teaching_type__in=('专任教师', '实验技术')
+            )
         campus_records = queryset.filter(
-            user__teaching_type__in=('专任教师', '实验技术'),
             campus_event__isnull=False,
             campus_event__time__range=(
                 make_aware(datetime(start_year, 1, 1)),
                 make_aware(datetime(end_year + 1, 1, 1))))
         off_campus_records = queryset.filter(
-            user__teaching_type__in=('专任教师', '实验技术'),
             off_campus_event__isnull=False,
             off_campus_event__time__range=(
                 make_aware(datetime(start_year, 1, 1)),
@@ -272,14 +276,14 @@ class AggregateDataService:
                 records['off_campus_records'] = off_campus_records
             else:
                 records['campus_records'] = campus_records.filter(
-                    user__administrative_department=department)
+                    user__administrative_department__id=department.id)
                 records['off_campus_records'] = off_campus_records.filter(
-                    user__administrative_department=department)
+                    user__administrative_department__id=department_id)
         elif request_user.check_department_admin(department):
             records['campus_records'] = campus_records.filter(
-                user__administrative_department=department)
+                user__administrative_department__id=department.id)
             records['off_campus_records'] = off_campus_records.filter(
-                user__administrative_department=department)
+                user__administrative_department__id=department.id)
         return records
 
     @classmethod
