@@ -128,6 +128,7 @@ class TestTableExportServices(TestCase):
                 'feedback_content': 'test_feedback_content',
                 'feedback_time': '2018-01-01 12:42',
                 'feedback_user_name': 'test_user',
+                'feedback_user_department': 'test_department',
                 'feedback_user_email': 'exmaple@test.com'
             }
         ]
@@ -141,10 +142,12 @@ class TestTableExportServices(TestCase):
         self.assertEqual(sheet.cell_value(0, 2), '反馈内容')
         self.assertEqual(sheet.cell_value(0, 3), '反馈时间')
         self.assertEqual(sheet.cell_value(0, 4), '反馈人姓名')
-        self.assertEqual(sheet.cell_value(0, 5), '反馈人邮箱')
+        self.assertEqual(sheet.cell_value(0, 5), '反馈人部门')
+        self.assertEqual(sheet.cell_value(0, 6), '反馈人邮箱')
         self.assertEqual(sheet.cell_value(1, 0), 'test_program')
         self.assertEqual(sheet.cell_value(1, 1), 'test_event')
         self.assertEqual(sheet.cell_value(1, 2), 'test_feedback_content')
         self.assertEqual(sheet.cell_value(1, 3), '2018-01-01 12:42')
         self.assertEqual(sheet.cell_value(1, 4), 'test_user')
-        self.assertEqual(sheet.cell_value(1, 5), 'exmaple@test.com')
+        self.assertEqual(sheet.cell_value(1, 5), 'test_department')
+        self.assertEqual(sheet.cell_value(1, 6), 'exmaple@test.com')
