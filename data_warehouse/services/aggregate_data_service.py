@@ -166,7 +166,6 @@ class AggregateDataService:
 
         Return: QuerySet<User>
         '''
-        User = get_user_model()
         queryset = User.objects.all().select_related(
             'administrative_department')
         departments = Department.objects.filter(id=department_id)
