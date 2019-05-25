@@ -148,7 +148,7 @@ class CoverageStatisticsService:
         if non_t3_users_count > 0:
             data.append(
                 {
-                    'department': '其他部门',
+                    'department': '其他',
                     'coverage_count': non_t3_users_count,
                     'total_count': User.objects.exclude(
                         administrative_department__department_type='T3'
