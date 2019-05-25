@@ -228,7 +228,7 @@ class TestCoverageStatisticsService(TestCase):
             department_name.append(item['department'])
             self.assertGreaterEqual(item['total_count'],
                                     item['coverage_count'])
-        self.assertTrue('其他部门' in department_name)
+        self.assertTrue('其他' in department_name)
 
     def test_get_traning_records_permission(self):
         '''Should 抛出正确的异常信息'''
