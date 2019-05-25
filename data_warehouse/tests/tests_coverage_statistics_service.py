@@ -204,13 +204,13 @@ class TestCoverageStatisticsService(TestCase):
 
     def test_groupby_departments(self):
         '''Should 按部门对用户查询集分组统计'''
-        mock_t3_user = mommy.make(
+        mock_t1_user = mommy.make(
             User,
             first_name='test_non_t3_user',
             administrative_department__department_type='T1'
         )
         user_ids = [user.id for user in self.mock_users]
-        user_ids.append(mock_t3_user.id)
+        user_ids.append(mock_t1_user.id)
         user_qs = User.objects.filter(
             id__in=user_ids)
         got = CoverageStatisticsService.groupby_departments(user_qs)
