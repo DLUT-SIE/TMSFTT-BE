@@ -396,21 +396,31 @@ class AggregateDataService:
     def training_record(cls, context):
         '''个人培训记录导出'''
         request = context.get('request')
-        user = request.user
         event_name = request.query_params.get('event_name')
         event_location = request.query_params.get('event_location')
         start_time = request.query_params.get('start_time')
         end_time = request.query_params.get('end_time')
-        matched_records = TrainingRecordService.get_records(user, event_name, event_location, start_time, end_time)
+        matched_records = TrainingRecordService.get_records(
+            request.user, event_name, event_location, start_time, end_time)
         # prepare data to be written in excel.
         data = []
         for record in matched_records:
             data.append(
                 {
-                    'event_name': record.campus_event.name if record.campus_event else record.off_campus_event.name,
-                    'event_time': record.campus_event.time if record.campus_event else record.off_campus_event.time,
-                    'event_location': record.campus_event.location if record.campus_event else record.off_campus_event.location,
-                    'num_hours': record.campus_event.num_hours if record.campus_event else record.off_campus_event.num_hours,
+                    'event_name':
+                    record.campus_event.name
+                    if record.campus_event else record.off_campus_event.name,
+                    'event_time':
+                    record.campus_event.time
+                    if record.campus_event else record.off_campus_event.time,
+                    'event_location':
+                    record.campus_event.location
+                    if record.campus_event
+                    else record.off_campus_event.location,
+                    'num_hours':
+                    record.campus_event.num_hours
+                    if record.campus_event
+                    else record.off_campus_event.num_hours,
                     'create_time': record.create_time,
                     'role': record.event_coefficient.get_role_display(),
                     'status': record.get_status_display(),
