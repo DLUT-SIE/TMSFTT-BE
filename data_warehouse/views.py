@@ -5,7 +5,10 @@ from rest_framework.decorators import action
 from rest_framework import status, viewsets
 
 from data_warehouse.services.aggregate_data_service import (
-    AggregateDataService, CanvasOptionsService
+    AggregateDataService
+)
+from data_warehouse.services.canvas_options_service import (
+    CanvasOptionsService
 )
 from data_warehouse.serializers import (
     BaseTableExportSerializer
