@@ -14,4 +14,7 @@ urlpatterns = [
     path('round-choices/',
          training_event.views.RoundChoicesView.as_view(),
          name='round-choices'),
+    path('role-choices/',
+         training_event.views.RoleChoicesView.as_view(),
+         name='role-choices'),
 ] + router.urls
