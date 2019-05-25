@@ -7,6 +7,7 @@ from django.utils.timezone import make_aware
 from django.contrib.auth.models import Group
 from auth.models import (
     User, Department, DepartmentInformation, TeacherInformation)
+from auth.utils import assign_model_perms_for_department
 
 from infra.utils import prod_logger
 
@@ -40,17 +41,20 @@ def _update_from_department_information():
                 department_id_to_administrative[item_id] = administrative
         return department_id_to_administrative
 
-    for raw_department in raw_departments:
-        department, _ = Department.objects.get_or_create(
-            raw_department_id=raw_department.dwid,
-            defaults={'name': raw_department.dwmc})
-
+    def update_group_and_perms(department, created):
         # 同步group
         group_names = [f'{department.name}-管理员',
                        f'{department.name}-专任教师']
         for group_name in group_names:
             Group.objects.get_or_create(name=group_name)
+        if created:
+            assign_model_perms_for_department(department)
 
+    for raw_department in raw_departments:
+        department, created = Department.objects.get_or_create(
+            raw_department_id=raw_department.dwid,
+            defaults={'name': raw_department.dwmc})
+        update_group_and_perms(department, created)
         updated = False
         # 同步隶属单位
         if (department.super_department is None or
@@ -58,11 +62,11 @@ def _update_from_department_information():
                 raw_department.lsdw):
             super_department_name = DepartmentInformation.objects.get(
                 dwid=raw_department.lsdw).dwmc
-            super_department, _ = Department.objects.get_or_create(
+            super_department, created = Department.objects.get_or_create(
                 raw_department_id=raw_department.lsdw,
                 defaults={'name': super_department_name}
             )
-
+            update_group_and_perms(super_department, created)
             department.super_department = super_department
             updated = True
 
