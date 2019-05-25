@@ -446,13 +446,18 @@ class AggregateDataService:
                     'program_name': feedback.record.campus_event.program.name,
                     'campus_event_name': feedback.record.campus_event.name,
                     'feedback_content': feedback.content,
-                    'feedback_time': feedback.create_time,
-                    'feedback_user_name': feedback.record.user.name,
-                    'feedback_user_email': feedback.record.user.email
+                    'feedback_time': (
+                        '' if feedback.create_time is None else feedback
+                        .create_time.strftime('%Y-%m-%d %H:%M:%S')
+                        ),
+                    'feedback_user_name': feedback.record.user.first_name,
+                    'feedback_user_email': feedback.record.user.email,
+                    'feedback_user_department': (
+                        feedback.record.user.administrative_department.name)
                 }
             )
         file_path = TableExportService.export_training_feedback(data)
-        return file_path, '培训反馈表'
+        return file_path, '培训反馈表.xls'
 
 
 class TeachersGroupService:
