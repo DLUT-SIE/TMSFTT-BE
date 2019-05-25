@@ -18,7 +18,8 @@ class CampusEventFeedbackService:
             raise BadRequest('给定的这些项目中，存在项目不属于您。')
         return CampusEventFeedback.objects.filter(
             record__campus_event__program_id__in=program_ids).select_related(
-                'record__campus_event__program', 'record__user')
+                'record__campus_event__program',
+                'record__user__administrative_department')
 
     @staticmethod
     def _check_program_permission(user, program_ids):

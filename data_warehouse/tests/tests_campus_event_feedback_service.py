@@ -20,7 +20,7 @@ class TestCampusEventFeedbackService(TestCase):
         mock_now.return_value = self.mock_time
         self.mock_user = mommy.make(
             User,
-            username='test',
+            first_name='test',
             email='example@test.com'
         )
         self.mock_program = mommy.make(
@@ -52,7 +52,11 @@ class TestCampusEventFeedbackService(TestCase):
         feedback = got[0]
         self.assertEqual(feedback.content, '测试反馈')
         self.assertEqual(feedback.record.user, self.mock_user)
-        self.assertEqual(feedback.record.user.username, 'test')
+        self.assertEqual(feedback.record.user.first_name, 'test')
+        self.assertEqual(
+            feedback.record.user.administrative_department,
+            self.mock_user.administrative_department
+            )
         self.assertEqual(feedback.record.user.email, 'example@test.com')
         self.assertEqual(feedback.record, self.mock_record)
         self.assertEqual(feedback.record.campus_event.program,

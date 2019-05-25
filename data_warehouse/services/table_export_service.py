@@ -330,7 +330,8 @@ class TableExportService:
         worksheet.write(0, 2, '反馈内容', style)
         worksheet.write(0, 3, '反馈时间', style)
         worksheet.write(0, 4, '反馈人姓名', style)
-        worksheet.write(0, 5, '反馈人邮箱', style)
+        worksheet.write(0, 5, '反馈人部门', style)
+        worksheet.write(0, 6, '反馈人邮箱', style)
 
         ptr_r = 1
         for item in data:
@@ -339,7 +340,9 @@ class TableExportService:
             worksheet.write(ptr_r, 2, item['feedback_content'], style)
             worksheet.write(ptr_r, 3, item['feedback_time'], style)
             worksheet.write(ptr_r, 4, item['feedback_user_name'], style)
-            worksheet.write(ptr_r, 5, item['feedback_user_email'], style)
+            worksheet.write(ptr_r, 5, item['feedback_user_department'], style)
+            worksheet.write(ptr_r, 6, item['feedback_user_email'], style)
+            ptr_r += 1
         # 写入数据
         _, file_path = tempfile.mkstemp()
         workbook.save(file_path)
