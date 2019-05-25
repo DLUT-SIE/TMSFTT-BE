@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group
 from model_mommy import mommy
 
 from auth.models import (
-    User, Department, UserPermission, GroupPermission,
+    User, Department, GroupPermission,
     TeacherInformation, DepartmentInformation
 )
 
@@ -87,21 +87,6 @@ class TestUserGroup(TestCase):
             group_id=group_id)
 
         self.assertEqual(str(user_group), expected_str)
-
-
-class TestUserPermission(TestCase):
-    '''Unit tests for model UserPermission.'''
-    def test_str(self):
-        '''Should render string correctly.'''
-        user_id = 1
-        permission_id = 2
-        expected_str = '用户{}拥有权限{}'.format(user_id, permission_id)
-
-        user_permission = UserPermission(
-            user_id=user_id,
-            permission_id=permission_id)
-
-        self.assertEqual(str(user_permission), expected_str)
 
 
 class TestGroupPermission(TestCase):

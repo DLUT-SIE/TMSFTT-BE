@@ -5,7 +5,7 @@ class EnumData:
     ''' define enum data'''
     TEACHERS_STATISTICS = 0
     RECORDS_STATISTICS = 1
-    FULL_TIME_TEACHER_TRAINED_COVERAGE = 2
+    COVERAGE_STATISTICS = 2
     TRAINING_HOURS_WORKLOAD_STATISTICS = 3
 
     BY_DEPARTMENT = 0
@@ -39,6 +39,6 @@ class EnumData:
     )
 
     TITLE_LABEL = ('教授', '副教授', '讲师（高校）', '助教（高校）', '研究员', '副研究员',
-                   '助理研究员', '工程师', '高级工程师', '教授级高工')
+                   '助理研究员', '工程师', '高级工程师', '教授级高工', '其他')
     EDUCATION_BACKGROUD_LABEL = ('博士研究生毕业', '研究生毕业', '大学本科毕业')
-    AGE_LABEL = ('35岁及以下', '36~45岁', '46~55岁', '56岁及以上')
+    AGE_LABEL = ('35岁及以下', '36-45岁', '46-55岁', '56岁及以上')

@@ -168,7 +168,7 @@ class TestAggregateDataService(TestCase):
         self.assertEqual(len(data['label']), 1)
         self.context['group_by'] = '1'
         data = AggregateDataService.teachers_statistics(self.context)
-        self.assertEqual(len(data['label']), 10)
+        self.assertEqual(len(data['label']), 11)
         self.context['group_by'] = '2'
         data = AggregateDataService.teachers_statistics(self.context)
         self.assertEqual(len(data['label']), 4)
@@ -199,7 +199,7 @@ class TestAggregateDataService(TestCase):
         self.assertEqual(len(data['label']), 1)
         self.context['group_by'] = '1'
         data = AggregateDataService.records_statistics(self.context)
-        self.assertEqual(len(data['label']), 10)
+        self.assertEqual(len(data['label']), 11)
         self.context['group_by'] = '2'
         data = AggregateDataService.records_statistics(self.context)
         self.assertEqual(len(data['label']), 4)
@@ -227,14 +227,18 @@ class TestAggregateDataService(TestCase):
 
     def test_get_records_by_time_department(self):
         '''Should get records by time and department'''
-        user = mommy.make(User, administrative_department=self.department_art)
+        user = mommy.make(
+            User,
+            administrative_department=self.department_art,
+            teaching_type='专任教师'
+        )
         campusevent = mommy.make(CampusEvent, time=now())
         offcampusevent = mommy.make(OffCampusEvent, time=now())
         record1 = mommy.make(
             Record, campus_event=campusevent, user=user)
         record2 = mommy.make(
             Record, off_campus_event=offcampusevent, user=user)
-        user1 = mommy.make(User)
+        user1 = mommy.make(User, teaching_type='专任教师')
         user1.groups.add(self.dlut_group)
         time = {'start': 2020, 'end': 2019}
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
@@ -252,7 +256,7 @@ class TestAggregateDataService(TestCase):
             user1, 5000, time)
         self.assertEqual(len(records['campus_records']), 0)
         self.assertEqual(len(records['off_campus_records']), 0)
-        user2 = mommy.make(User)
+        user2 = mommy.make(User, teaching_type='专任教师')
         group = mommy.make(Group, name="建筑与艺术学院-管理员")
         user2.groups.add(group)
         records = AggregateDataService.get_records_by_time_department(
@@ -337,6 +341,9 @@ class TestAggregateDataService(TestCase):
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
             AggregateDataService.coverage_statistics(self.context)
         self.context['group_by'] = '2'
+        data = AggregateDataService.coverage_statistics(self.context)
+        self.assertEqual(len(data['label']), 4)
+        self.context['department_id'] = '50'
         data = AggregateDataService.coverage_statistics(self.context)
         self.assertEqual(len(data['label']), 4)
 
@@ -464,7 +471,7 @@ class TestTeachersGroupService(TestCase):
         self.assertEqual(
             group_users['35岁及以下'][2].id, user1.id)
         self.assertEqual(
-            group_users['36~45岁'][0].id, user2.id)
+            group_users['36-45岁'][0].id, user2.id)
 
 
 class TestRecordsGroupService(TestCase):
@@ -509,7 +516,7 @@ class TestRecordsGroupService(TestCase):
         self.assertEqual(
             group_records['35岁及以下'][0].id, record1.id)
         self.assertEqual(
-            group_records['36~45岁'][0].id, record2.id)
+            group_records['36-45岁'][0].id, record2.id)
 
     def test_group_records_by_department(self):
         '''Should get group records by department'''

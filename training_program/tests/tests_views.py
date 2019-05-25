@@ -20,6 +20,8 @@ class TestProgram(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.depart = mommy.make(auth.models.Department, name="创新创业学院")
+        cls.dlut_depart = mommy.make(
+            auth.models.Department, name='大连理工大学')
         cls.user = mommy.make(User, department=cls.depart)
         cls.group = mommy.make(Group, name="创新创业学院-管理员")
         cls.user.groups.add(cls.group)
@@ -57,6 +59,14 @@ class TestProgram(APITestCase):
 
         self.assertEqual(reponse.status_code, status.HTTP_200_OK)
 
+    def test_get_group_programs(self):
+        '''Program group should be accessed by GET request.'''
+        url = reverse('program-group')
+
+        reponse = self.client.get(url)
+
+        self.assertEqual(reponse.status_code, status.HTTP_200_OK)
+
     def test_delete_program(self):
         '''Program list should be deleted by DELETE request.'''
         program = mommy.make(training_program.models.Program)
@@ -85,10 +95,13 @@ class TestProgram(APITestCase):
         '''Program list should be updated by PATCH request.'''
         name0 = 'program0'
         name1 = 'program1'
+        category = training_program.models.Program.PROGRAM_CATEGORY_TRAINING
+        department = mommy.make(auth.models.Department)
         program = mommy.make(training_program.models.Program, name=name0)
         PermissionService.assign_object_permissions(self.user, program)
         url = reverse('program-detail', args=(program.pk, ))
-        data = {'name': name1}
+        data = {'name': name1, 'category': category,
+                'department': department.id}
 
         response = self.client.patch(url, data, format='json')
 
@@ -103,7 +116,7 @@ class TestProgramCategoryViewSet(APITestCase):
     def test_program_categories(self):
         '''Should get categories according to request.'''
         user = mommy.make(get_user_model())
-        url = reverse('program-categories-list')
+        url = reverse('program-categories')
         self.client.force_authenticate(user)
         response = self.client.get(url)
 

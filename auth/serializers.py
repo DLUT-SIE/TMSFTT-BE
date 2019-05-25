@@ -1,6 +1,6 @@
 '''Define how to serialize our models.'''
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission, Group
+from django.contrib.auth.models import Permission
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework_bulk import (
@@ -16,19 +16,9 @@ User = get_user_model()
 
 class DepartmentSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize Department instance.'''
-    users = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
-    admins = serializers.SerializerMethodField(read_only=True)
-
     class Meta:
         model = auth.models.Department
-        fields = ('id', 'name', 'users', 'admins')
-
-    def get_admins(self, obj):
-        '''Get department admin ids.'''
-        groups = Group.objects.filter(name=obj.name+'-管理员')
-        if groups.exists():
-            return [user.first_name for user in groups[0].user_set.all()]
-        return []
+        fields = ('id', 'name')
 
 
 class PermissionSerializer(serializers.ModelSerializer):
@@ -38,14 +28,6 @@ class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
         fields = ('id', 'codename', 'label')
-
-
-class UserPermissionSerializer(serializers.ModelSerializer):
-    '''Indicate how to serialize UserPermission instance.'''
-
-    class Meta:
-        model = auth.models.UserPermission
-        fields = ('id', 'user', 'permission')
 
 
 class GroupSerializer(serializers.ModelSerializer):

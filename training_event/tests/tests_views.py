@@ -295,7 +295,7 @@ class TestEventCoefficientRoundChoicesViewSet(APITestCase):
     def test_event_coefficient_round_choice(self):
         '''Should get event coefficient round choice according to request.'''
         user = mommy.make(get_user_model())
-        url = reverse('round-choices-list')
+        url = reverse('round-choices')
         self.client.force_authenticate(user)
         response = self.client.get(url)
 

@@ -74,7 +74,10 @@ class UserGroupViewSet(mixins.CreateModelMixin,
                        mixins.DestroyModelMixin,
                        viewsets.GenericViewSet):
     '''Create API views for GroupPermission.'''
-    queryset = auth.models.UserGroup.objects.all()
+    queryset = (
+       auth.models.UserGroup.objects.all()
+       .select_related('user')
+    )
     serializer_class = auth.serializers.UserGroupSerializer
     permission_classes = (
         auth.permissions.SchoolAdminOnlyPermission,
@@ -91,22 +94,6 @@ class GroupPermissionViewSet(BulkCreateModelMixin,
         auth.permissions.SchoolAdminOnlyPermission,
     )
     filter_fields = ('group',)
-
-
-class UserPermissionViewSet(mixins.CreateModelMixin,
-                            mixins.ListModelMixin,
-                            mixins.RetrieveModelMixin,
-                            mixins.DestroyModelMixin,
-                            viewsets.GenericViewSet):
-    '''Create API views for UserPermission.'''
-    queryset = (auth.models.UserPermission.objects
-                .select_related('permission', 'user')
-                .all())
-    serializer_class = auth.serializers.UserPermissionSerializer
-    permission_classes = (
-        auth.permissions.SchoolAdminOnlyPermission,
-    )
-    filter_fields = ('user',)
 
 
 class PermissionViewSet(viewsets.ReadOnlyModelViewSet):

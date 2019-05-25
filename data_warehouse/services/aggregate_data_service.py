@@ -159,6 +159,7 @@ class AggregateDataService:
             department_id = Department.objects.get(name='大连理工大学').id
         users = cls.get_users_by_department(
             context['request'].user, department_id)
+        users = users.filter(teaching_type__in=('专任教师', '实验技术'))
         group_users = TeachersGroupService.teachers_statistics_group_dispatch(
             users, group_by, True)
         return group_users
@@ -166,10 +167,12 @@ class AggregateDataService:
     @staticmethod
     def get_users_by_department(request_user, department_id):
         '''get users objects by department.
-        Parameters
+        Parameters:
         ----------
         request_user: User
         department_id: int
+
+        Return: QuerySet<User>
         '''
         departments = Department.objects.filter(id=department_id)
         if not departments:
@@ -245,12 +248,16 @@ class AggregateDataService:
             end_year = time['end']
         if start_year > end_year:
             raise BadRequest("错误的参数")
-        campus_records = Record.objects.filter(
+        queryset = Record.objects.select_related(
+            'campus_event', 'off_campus_event', 'user').all()
+        campus_records = queryset.filter(
+            user__teaching_type__in=('专任教师', '实验技术'),
             campus_event__isnull=False,
             campus_event__time__range=(
                 make_aware(datetime(start_year, 1, 1)),
                 make_aware(datetime(end_year + 1, 1, 1))))
-        off_campus_records = Record.objects.filter(
+        off_campus_records = queryset.filter(
+            user__teaching_type__in=('专任教师', '实验技术'),
             off_campus_event__isnull=False,
             off_campus_event__time__range=(
                 make_aware(datetime(start_year, 1, 1)),
@@ -323,8 +330,8 @@ class AggregateDataService:
                 end_year.isdigit() and department_id.isdigit() and
                 program_id.isdigit()):
             raise BadRequest("错误的参数")
-        department_id = None if department_id == '0' else department_id
-        program_id = None if program_id == '0' else program_id
+        department_id = None if department_id == '0' else int(department_id)
+        program_id = None if program_id == '0' else int(program_id)
         start_time = make_aware(
             datetime.strptime(start_year + '-1-1', '%Y-%m-%d'))
         end_year = str(int(end_year) + 1)
@@ -488,17 +495,22 @@ class TeachersGroupService:
         '''
         title_list = EnumData.TITLE_LABEL
         if count_only:
+            total_count = users.count()
             group_users = {x: 0 for x in title_list}
             users = users.filter(
                 technical_title__in=title_list).values(
-                    'technical_title').annotate(num=Count('technical_title'))
+                    'technical_title').annotate(count=Count('technical_title'))
+            sum_count = 0
             for user in users:
-                group_users[user['technical_title']] = user['num']
+                sum_count += user['count']
+                group_users[user['technical_title']] = user['count']
+            group_users['其他'] = total_count - sum_count
         else:
             group_users = {
                 x: get_user_model().objects.none() for x in title_list}
             for _, title in enumerate(title_list):
                 group_users[title] = users.filter(technical_title=title)
+            group_users['其他'] = users.exclude(technical_title__in=title_list)
         return group_users
 
     @staticmethod
@@ -521,9 +533,9 @@ class TeachersGroupService:
             users = users.filter(
                 education_background__in=education_background_list).values(
                     'education_background').annotate(
-                        num=Count('education_background'))
+                        count=Count('education_background'))
             for user in users:
-                group_users[user['education_background']] = user['num']
+                group_users[user['education_background']] = user['count']
         else:
             group_users = {
                 x: (
@@ -557,11 +569,11 @@ class TeachersGroupService:
                 users.filter(
                     administrative_department__name__in=department_list)
                 .values('administrative_department__name')
-                .annotate(num=Count('id'))
+                .annotate(count=Count('id'))
             )
             for user in users:
                 group_users[user['administrative_department__name']] = (
-                    user['num']
+                    user['count']
                 )
         else:
             group_users = {
@@ -636,17 +648,24 @@ class RecordsGroupService:
         '''
         title_list = EnumData.TITLE_LABEL
         if count_only:
+            total_count = records.count()
             group_records = {x: 0 for x in title_list}
             records = records.filter(
                 user__technical_title__in=title_list).values(
-                    'user__technical_title').annotate(num=Count('user'))
+                    'user__technical_title').annotate(count=Count('user'))
+            sum_count = 0
             for record in records:
-                group_records[record['user__technical_title']] = record['num']
+                sum_count += record['count']
+                group_records[
+                    record['user__technical_title']] = record['count']
+            group_records['其他'] = total_count - sum_count
         else:
             group_records = {x: Record.objects.none() for x in title_list}
             for _, title in enumerate(title_list):
                 group_records[title] = records.filter(
                     user__technical_title=title)
+            group_records['其他'] = records.exclude(
+                user__technical_title__in=title_list)
         return group_records
 
     @staticmethod
@@ -664,20 +683,20 @@ class RecordsGroupService:
         } for count_only=True
         '''
         department_list = list(
-            DepartmentService.get_top_level_departments().values_list('name'))
-        department_list = [x[0] for x in department_list]
+            DepartmentService.get_top_level_departments().values_list(
+                'name', flat=True))
         if count_only:
             group_records = {x: 0 for x in department_list}
             records = (
                 records.filter(
                     user__administrative_department__name__in=department_list)
                 .values('user__administrative_department__name')
-                .annotate(num=Count('id'))
+                .annotate(count=Count('id'))
             )
             for record in records:
                 group_records[
                     record['user__administrative_department__name']] =\
-                    record['num']
+                    record['count']
         else:
             group_records = {
                 x: Record.objects.none() for x in department_list}
@@ -744,19 +763,23 @@ class CanvasDataFormater:
                 }
             ]
         }
-        sorted_campus_records = sorted(
-            group_records['campus_records'].items(), key=lambda x: x[0])
-        data['label'] = [x[0] for x in sorted_campus_records]
-        data['group_by_data'][0]['data'] = (
-            [x[1] for x in sorted_campus_records]
-        )
-        sorted_off_campus_records = sorted(
-            group_records['off_campus_records'].items(),
-            key=lambda x: x[0]
-        )
-        data['group_by_data'][1]['data'] = (
-            [x[1] for x in sorted_off_campus_records]
-        )
+        random_key = list(group_records['campus_records'].keys())[0]
+        labels = [
+            EnumData.AGE_LABEL,
+            EnumData.EDUCATION_BACKGROUD_LABEL,
+            EnumData.TITLE_LABEL
+        ]
+        for label in labels:
+            if random_key in label:
+                data['label'] = label
+                break
+        if not data['label']:
+            data['label'] = list(group_records['campus_records'].keys())
+        for label in data['label']:
+            data['group_by_data'][0]['data'].append(
+                group_records['campus_records'][label])
+            data['group_by_data'][1]['data'].append(
+                group_records['off_campus_records'][label])
         return data
 
     @staticmethod
@@ -777,8 +800,22 @@ class CanvasDataFormater:
                 }
             ]
         }
-        data['label'] = group_users.keys()
-        data['group_by_data'][0]['data'] = group_users.values()
+        if not group_users:
+            return data
+        random_key = list(group_users.keys())[0]
+        labels = [
+            EnumData.AGE_LABEL,
+            EnumData.EDUCATION_BACKGROUD_LABEL,
+            EnumData.TITLE_LABEL
+        ]
+        for label in labels:
+            if random_key in label:
+                data['label'] = label
+                break
+        if not data['label']:
+            data['label'] = list(group_users.keys())
+        for label in data['label']:
+            data['group_by_data'][0]['data'].append(group_users[label])
         return data
 
     @staticmethod
@@ -813,13 +850,22 @@ class CanvasDataFormater:
         }
         if not bool(group_users):
             return data
+        interest_label = None
         if 'age_range' in group_users[0].keys():
             label_key = 'age_range'
+            interest_label = EnumData.AGE_LABEL
         elif 'department' in group_users[0].keys():
             label_key = 'department'
+            interest_label = list(
+                DepartmentService
+                .get_top_level_departments()
+                .values_list('name', flat=True))
         else:
             label_key = 'title'
+            interest_label = EnumData.TITLE_LABEL
         for user in group_users:
+            if interest_label and user[label_key] not in interest_label:
+                continue
             data['label'].append(user[label_key])
             data['group_by_data'][0]['data'].append(user['coverage_count'])
             data['group_by_data'][1]['data'].append(
@@ -850,9 +896,9 @@ class CanvasOptionsService:
              'key': 'RECORDS_STATISTICS',
              'subOption': cls.tuple_to_dict_list(
                  EnumData.TRAINEE_GROUPING_CHOICES)},
-            {'type': EnumData.FULL_TIME_TEACHER_TRAINED_COVERAGE,
+            {'type': EnumData.COVERAGE_STATISTICS,
              'name': '专任教师培训覆盖率统计',
-             'key': 'FULL_TIME_TEACHER_TRAINED_COVERAGE',
+             'key': 'COVERAGE_STATISTICS',
              'subOption': cls.tuple_to_dict_list(
                  EnumData.TRAINEE_GROUPING_CHOICES)},
             {'type': EnumData.TRAINING_HOURS_WORKLOAD_STATISTICS,

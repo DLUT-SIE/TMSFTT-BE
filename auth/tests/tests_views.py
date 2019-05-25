@@ -30,7 +30,7 @@ class TestDepartmentViewSet(APITestCase):
         '''Department should be accessed by GET request.'''
         department = mommy.make(auth.models.Department)
         url = reverse('department-detail', args=(department.pk,))
-        expected_keys = {'id', 'name', 'users', 'admins'}
+        expected_keys = {'id', 'name'}
 
         self.client.force_authenticate(self.user)
         response = self.client.get(url)
@@ -184,47 +184,6 @@ class TestGroupPermissionViewSet(APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(auth.models.GroupPermission.objects.count(), 0)
-
-
-class TestUserPermissionViewSet(APITestCase):
-    '''Unit tests for UserPermission view.'''
-    @classmethod
-    def setUpTestData(cls):
-        cls.user = mommy.make(User, is_staff=True)
-
-    def setUp(self):
-        self.client.force_authenticate(self.user)
-
-    def test_list_user_permission(self):
-        '''Should return all user_permissions if user is admin.'''
-        url = reverse('userpermission-list')
-
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_create_user_permission(self):
-        '''User_permissions should be created by POST request.'''
-        url = reverse('userpermission-list')
-        user = mommy.make(User)
-        permission = mommy.make(Permission)
-        data = {
-            'user': user.id,
-            'permission': permission.id,
-        }
-
-        response = self.client.post(url, data, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(auth.models.UserPermission.objects.count(), 1)
-
-    def test_delete_user_permission(self):
-        '''User_permissions should be deleted by DELETE request.'''
-        user_permission = mommy.make(auth.models.UserPermission)
-        url = reverse('userpermission-detail', args=(user_permission.pk,))
-
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(auth.models.UserPermission.objects.count(), 0)
 
 
 class TestPermissionViewSet(APITestCase):
