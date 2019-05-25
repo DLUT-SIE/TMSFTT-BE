@@ -1,6 +1,7 @@
 '''表格导出服务模块测试'''
 import xlrd
 from django.test import TestCase
+from django.utils.timezone import datetime
 from data_warehouse.services.table_export_service import TableExportService
 from infra.exceptions import BadRequest
 
@@ -185,3 +186,36 @@ class TestTableExportServices(TestCase):
         self.assertEqual(sheet.cell_value(1, 3), 100)
         self.assertEqual(sheet.cell_value(1, 4), '%.2f' % (100 / 10))
         self.assertEqual(sheet.cell_value(1, 5), '%.2f' % (100 / 9))
+
+    def test_export_records_for_user(self):
+        '''Should export matched records'''
+        mock_data = [
+            {
+                'event_name': 'event_name',
+                'event_time': datetime.strptime('2013-09-02', '%Y-%m-%d'),
+                'event_location': 'event_location',
+                'num_hours': '2',
+                'create_time': datetime.strptime('2014-08-23', '%Y-%m-%d'),
+                'role': 1,
+                'status': 2,
+            }
+        ]
+        file_path = TableExportService.export_records_for_user(mock_data)
+        self.assertIsNotNone(file_path)
+        workbook = xlrd.open_workbook(file_path)
+        sheet = workbook.sheet_by_name(TableExportService.RECORD_SHEET_NAME)
+        self.assertIsNotNone(sheet)
+        self.assertEqual(sheet.cell_value(0, 0), '培训项目')
+        self.assertEqual(sheet.cell_value(0, 1), '时间')
+        self.assertEqual(sheet.cell_value(0, 2), '地点')
+        self.assertEqual(sheet.cell_value(0, 3), '学时')
+        self.assertEqual(sheet.cell_value(0, 4), '参与身份')
+        self.assertEqual(sheet.cell_value(0, 5), '创建时间')
+        self.assertEqual(sheet.cell_value(0, 6), '审核状态')
+        self.assertEqual(sheet.cell_value(1, 0), 'event_name')
+        self.assertEqual(sheet.cell_value(1, 1), '2013-09-02')
+        self.assertEqual(sheet.cell_value(1, 2), 'event_location')
+        self.assertEqual(sheet.cell_value(1, 3), '2')
+        self.assertEqual(sheet.cell_value(1, 4), 1)
+        self.assertEqual(sheet.cell_value(1, 5), '2014-08-23')
+        self.assertEqual(sheet.cell_value(1, 6), 2)

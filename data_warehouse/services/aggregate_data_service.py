@@ -22,6 +22,8 @@ from data_warehouse.services import (
 from data_warehouse.decorators import (
     admin_required,
 )
+from data_warehouse.services.training_record_service import (
+    TrainingRecordService)
 from data_warehouse.serializers import (
     CoverageStatisticsSerializer,
     TrainingFeedbackSerializer,
@@ -41,6 +43,7 @@ class AggregateDataService:
     TABLE_NAME_TRAINING_HOURS_SUMMARY = 5
     TABLE_NAME_TRAINING_FEEDBACK = 6
     TABLE_NAME_WORKLOAD_CALCULATION = 7
+    TABLE_NAME_TRAINING_RECORDS = 8
 
     TABLE_NAME_CHOICES = {
         TABLE_NAME_STAFF: '教职工表',
@@ -49,7 +52,8 @@ class AggregateDataService:
         TABLE_NAME_COVERAGE_SUMMARY: '专任教师培训覆盖率表',
         TABLE_NAME_TRAINING_HOURS_SUMMARY: '培训学时与工作量表',
         TABLE_NAME_TRAINING_FEEDBACK: '培训反馈表',
-        TABLE_NAME_WORKLOAD_CALCULATION: '工作量计算表'
+        TABLE_NAME_WORKLOAD_CALCULATION: '工作量计算表',
+        TABLE_NAME_TRAINING_RECORDS: '个人培训记录'
     }
 
     # 校验http请求参数的序列化器配置
@@ -218,6 +222,7 @@ class AggregateDataService:
             cls.TABLE_NAME_TRAINING_SUMMARY: 'table_trainee_statistics',
             cls.TABLE_NAME_TRAINING_FEEDBACK: 'table_training_feedback',
             cls.TABLE_NAME_WORKLOAD_CALCULATION: 'table_workload_calculation',
+            cls.TABLE_NAME_TRAINING_RECORDS: 'training_record',
         }
         table_type = context.get('table_type')
         handler = handlers.get(table_type, None)
@@ -386,3 +391,30 @@ class AggregateDataService:
             )
         file_path = TableExportService.export_training_feedback(data)
         return file_path, '培训反馈表.xls'
+
+    @classmethod
+    def training_record(cls, context):
+        '''个人培训记录导出'''
+        request = context.get('request')
+        user = request.user
+        event_name = request.query_params.get('event_name')
+        event_location = request.query_params.get('event_location')
+        start_time = request.query_params.get('start_time')
+        end_time = request.query_params.get('end_time')
+        matched_records = TrainingRecordService.get_records(user, event_name, event_location, start_time, end_time)
+        # prepare data to be written in excel.
+        data = []
+        for record in matched_records:
+            data.append(
+                {
+                    'event_name': record.campus_event.name if record.campus_event else record.off_campus_event.name,
+                    'event_time': record.campus_event.time if record.campus_event else record.off_campus_event.time,
+                    'event_location': record.campus_event.location if record.campus_event else record.off_campus_event.location,
+                    'num_hours': record.campus_event.num_hours if record.campus_event else record.off_campus_event.num_hours,
+                    'create_time': record.create_time,
+                    'role': record.event_coefficient.get_role_display(),
+                    'status': record.get_status_display(),
+                }
+            )
+        file_path = TableExportService.export_records_for_user(data)
+        return file_path, '个人培训记录.xls'
