@@ -4,6 +4,7 @@ import os.path as osp
 
 import guardian.shortcuts
 from django.conf import settings
+from django.contrib.auth.models import Group
 
 
 def get_user_secret_key(user):
@@ -145,3 +146,72 @@ class TenureStatusConverter(ChoiceConverter):
 class TeachingTypeConverter(ChoiceConverter):
     '''Convert between teaching type pairs.'''
     mapping_name = 'teaching_type'
+
+
+# pylint: disable=too-many-locals
+def assign_model_perms_for_department(department):
+    '''Assign default model permissions for department groups.'''
+    from infra.models import Notification
+    from training_program.models import Program
+    from training_event.models import CampusEvent, Enrollment
+    from training_record.models import (
+        Record, RecordContent, RecordAttachment, CampusEventFeedback
+    )
+    from training_review.models import ReviewNote
+    from secure_file.models import SecureFile
+
+    model_perms = {
+        Notification: {
+            '管理员': [],
+            '专任教师': [],
+        },
+        # Program
+        Program: {
+            '管理员': ['add', 'view', 'change', 'delete'],
+            '专任教师': ['view'],
+        },
+        # Event
+        CampusEvent: {
+            '管理员': ['add', 'view', 'change', 'delete'],
+            '专任教师': ['view'],
+        },
+        Enrollment: {
+            '管理员': [],
+            '专任教师': [],
+        },
+        # Record
+        Record: {
+            '管理员': ['batchadd', 'view', 'review'],
+            '专任教师': [],
+        },
+        RecordContent: {
+            '管理员': ['view'],
+            '专任教师': [],
+        },
+        RecordAttachment: {
+            '管理员': ['view'],
+            '专任教师': [],
+        },
+        CampusEventFeedback: {
+            '管理员': [],
+            '专任教师': [],
+        },
+        # Review
+        ReviewNote: {
+            '管理员': ['add', 'view'],
+            '专任教师': [],
+        },
+        SecureFile: {
+            '管理员': ['view'],
+            '专任教师': [],
+        },
+    }
+    for model_class, perm_pairs in model_perms.items():
+        for role, perms in perm_pairs.items():
+            group = Group.objects.get(name=f'{department.name}-{role}')
+            for perm in perms:
+                perm_name = (
+                    f'{model_class._meta.app_label}.'
+                    f'{perm}_{model_class._meta.model_name}'
+                )
+                assign_perm(perm_name, group)

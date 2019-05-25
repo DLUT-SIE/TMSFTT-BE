@@ -27,7 +27,7 @@ from auth.models import User, Department
 from auth.utils import (
     assign_perm, GenderConverter, TenureStatusConverter,
     EducationBackgroundConverter, TechnicalTitleConverter,
-    TeachingTypeConverter
+    TeachingTypeConverter, assign_model_perms_for_department
 )
 from auth.services import PermissionService
 from training_program.models import Program
@@ -362,7 +362,7 @@ def read_teachers_information(
     return users
 
 
-def assign_model_perms():
+def assign_model_perms_for_special_groups():
     model_perms = {
         Notification: {
             '管理员': [],
@@ -420,28 +420,36 @@ def assign_model_perms():
             '个人权限': ['view'],
         },
     }
+    dlut_department = get_dlut_department()
     dlut_admin_group = get_dlut_admin_group()
     personal_permissions_group = get_personal_permissions_group()
+    pb = ProgressBar(len(departments))
+    for model_class, perm_pairs in model_perms.items():
+        for role, perms in perm_pairs.items():
+            if role == '个人权限':
+                group = personal_permissions_group
+            elif role == '大连理工大学-管理员':
+                group = dlut_admin_group
+            else:
+                group = get_or_create_group(dlut_department, role)
+            for perm in perms:
+                perm_name = (
+                    f'{model_class._meta.app_label}.'
+                    f'{perm}_{model_class._meta.model_name}'
+                )
+                assign_perm(perm_name, group)
+        pb.step()
+    pb.finish()
+
+
+def assign_model_perms():
     departments = {
         x.raw_department_id: x
-        for x in Department.objects.all()
+        for x in Department.objects.all().exclude(name='大连理工大学')
     }
     pb = ProgressBar(len(departments))
     for department in departments.values():
-        for model_class, perm_pairs in model_perms.items():
-            for role, perms in perm_pairs.items():
-                if role == '个人权限':
-                    group = personal_permissions_group
-                elif role == '大连理工大学-管理员':
-                    group = dlut_admin_group
-                else:
-                    group = get_or_create_group(department, role)
-                for perm in perms:
-                    perm_name = (
-                        f'{model_class._meta.app_label}.'
-                        f'{perm}_{model_class._meta.model_name}'
-                    )
-                    assign_perm(perm_name, group)
+        assign_model_perms_for_department(department)
         pb.step()
     pb.finish()
 

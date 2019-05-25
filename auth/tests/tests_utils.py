@@ -2,12 +2,15 @@
 from unittest.mock import Mock, patch
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.test import TestCase
 from model_mommy import mommy
 
+from auth.models import Department
 from auth.utils import (
     get_user_secret_key, jwt_response_payload_handler,
-    assign_perm, remove_perm, ChoiceConverter
+    assign_perm, remove_perm, ChoiceConverter,
+    assign_model_perms_for_department
 )
 
 
@@ -113,3 +116,16 @@ class TestChoiceConverter(TestCase):
         keys = set(DummyConverter.get_all_keys())
 
         self.assertEqual(keys, expected_keys)
+
+    def test_assign_model_perms_for_department(self):
+        '''Should assign model perms to department groups.'''
+        department = mommy.make(Department, name='A')
+        teachers_group = Group.objects.create(
+            name=f'{department.name}-专任教师')
+        admins_group = Group.objects.create(
+            name=f'{department.name}-管理员')
+
+        assign_model_perms_for_department(department)
+
+        self.assertNotEqual(teachers_group.permissions.all().count(), 0)
+        self.assertNotEqual(admins_group.permissions.all().count(), 0)
