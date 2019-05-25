@@ -172,13 +172,9 @@ class TestUserService(TestCase):
             mommy.make(
                 User,
                 teaching_type='专任教师' if idx % 2 == 0 else '实验技术',
-                administrative_department__department_type='T3'
                 )
         for _ in range(20):
-            mommy.make(
-                User,
-                administrative_department__department_type='T3'
-                )
+            mommy.make(User)
 
         cnt = services.UserService.get_full_time_teachers().count()
 
