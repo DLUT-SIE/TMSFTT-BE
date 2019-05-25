@@ -42,10 +42,33 @@ class CampusEventService:
             PermissionService.assign_object_permissions(
                 context['request'].user, campus_event)
             for coefficient in coefficients:
-                EventCoefficient.objects.create(campus_event=campus_event,
+                a = EventCoefficient.objects.create(campus_event=campus_event,
                                                 **coefficient)
 
             return campus_event
+    
+    @staticmethod
+    def update_campus_event(event, validated_data, context=None):
+        '''Update campus event
+
+        Parameters
+        ----------
+        event: CampusEvent
+            The event we will update.
+        validated_data: dict
+            the event data to update
+        context: T dict
+            An optional dict to provide contextual information. Default: None
+        Returns
+        -------
+        event: Program
+        '''
+        # update the campus event
+        for attr, value in validated_data.items():
+            setattr(event, attr, value)
+        event.save()
+        print("更新啦")
+        return event
 
 
 class EnrollmentService:
@@ -153,3 +176,64 @@ class EnrollmentService:
 
         return {event: enrolled_data[event] if event in enrolled_data else None
                 for event in events}
+
+class CoefficientService:
+    '''Provide services for coefficient.'''
+    @staticmethod
+    def get_coefficients_detail(events):
+        """Provide services for get Enrollment id.
+        Parameters
+        ----------
+        events: list
+            要查询的校内活动的对象列表或者数字列表
+
+        Returns
+        -------
+        result: dict
+        key 为活动的编号
+        value 如果有工作量计算方式就返回工作量计算方式，没有就返回None
+        """
+        if events and isinstance(events[0], CampusEvent):
+            events = [event.id for event in events]
+        #根据events列表找培训活动系数
+        result = {}
+        for event in events:
+            coefficient_detail = []
+            q = EventCoefficient.objects.filter(campus_event = event)
+            if q is None:
+                result[event] = None
+            for role in EventCoefficient.ROLE_CHOICES_MAP.values():
+                a =  q.filter(
+                        campus_event = event,
+                        role=role
+                        ).values()
+                        #a [{}] 想去掉[]
+                # with transaction.atomic():
+                #     try:
+                #         b = EventCoefficient.objects.get(
+                #             campus_event = event,
+                #             role=role
+                #         )
+                #         print(b)
+                #     except Exception:
+                #         raise BadRequest("没有这个培训活动系数")
+                if a:
+                    coefficient_detail.append(a[0])
+            result[event] = coefficient_detail
+            #[{},{}]
+        return result
+
+    @staticmethod
+    def update_coefficient(event_id, validated_data):
+        with transaction.atomic():
+            for data in validated_data:
+                coefficient_instance = (
+                    EventCoefficient.objects.select_for_update().get(
+                        campus_event = event_id,
+                        role = data['role']
+                    )
+                )
+                for attr, value in data.items():
+                    setattr(coefficient_instance, attr, value)
+                coefficient_instance.save()
+        print("更新工作量计算方式")
