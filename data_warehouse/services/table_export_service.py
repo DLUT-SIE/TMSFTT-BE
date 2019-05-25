@@ -13,7 +13,6 @@ class TableExportService:
     TRAINING_HOURS_SHEET_NAME = '培训学时统计'
     RECORD_SHEET_NAME = '个人培训记录'
 
-
     @staticmethod
     def export_staff_basic_info():
         '''导出教职工表'''
@@ -372,6 +371,10 @@ class TableExportService:
             worksheet.write(ptr_r, 4, item['feedback_user_name'], style)
             worksheet.write(ptr_r, 5, item['feedback_user_department'], style)
             worksheet.write(ptr_r, 6, item['feedback_user_email'], style)
+        # 写入数据
+        _, file_path = tempfile.mkstemp()
+        workbook.save(file_path)
+        return file_path
 
     @staticmethod
     def export_records_for_user(data):
@@ -419,11 +422,13 @@ class TableExportService:
         ptr_r = 1
         for item in data:
             worksheet.write(ptr_r, 0, item['event_name'], style)
-            worksheet.write(ptr_r, 1, item['event_time'].strftime('%Y-%m-%d'), style)
+            worksheet.write(ptr_r, 1,
+                            item['event_time'].strftime('%Y-%m-%d'), style)
             worksheet.write(ptr_r, 2, item['event_location'], style)
             worksheet.write(ptr_r, 3, item['num_hours'], style)
             worksheet.write(ptr_r, 4, item['role'], style)
-            worksheet.write(ptr_r, 5, item['create_time'].strftime('%Y-%m-%d'), style)
+            worksheet.write(ptr_r, 5,
+                            item['create_time'].strftime('%Y-%m-%d'), style)
             worksheet.write(ptr_r, 6, item['status'], style)
             ptr_r += 1
         # 写入数据

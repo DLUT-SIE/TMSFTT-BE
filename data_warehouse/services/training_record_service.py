@@ -2,10 +2,13 @@
 from django.utils.timezone import datetime
 from django.db.models import Q
 from training_record.models import Record
+
+
 class TrainingRecordService:
     '''Service for export records'''
     @staticmethod
-    def get_records(user, event_name, event_location, start_time, end_time):
+    def get_records(user, event_name=None,
+                    event_location=None, start_time=None, end_time=None):
         '''get matched records'''
         if event_name is None:
             event_name = ''
