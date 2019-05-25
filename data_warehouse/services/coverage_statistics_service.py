@@ -4,7 +4,7 @@ from django.db.models import Count
 from training_record.models import Record
 from training_program.models import Program
 from auth.models import User, Department
-from auth.services import DepartmentService
+from auth.services import (DepartmentService, UserService)
 from infra.exceptions import BadRequest
 
 
@@ -47,8 +47,10 @@ class CoverageStatisticsService:
                     'age_range': label,
                     'coverage_count': users_qs.filter(
                         age__range=age_range[1]).count(),
-                    'total_count': User.objects.filter(
-                        age__range=age_range[1]).count()
+                    'total_count': (
+                        UserService.get_full_time_teachers()
+                        .filter(age__range=age_range[1]).count()
+                    )
                 }
             )
         return data
@@ -85,7 +87,7 @@ class CoverageStatisticsService:
                 {
                     'title': item['technical_title'],
                     'coverage_count': item['coverage_count'],
-                    'total_count': User.objects.filter(
+                    'total_count': UserService.get_full_time_teachers().filter(
                         technical_title=item['technical_title']).count()
                 }
             )
@@ -125,7 +127,11 @@ class CoverageStatisticsService:
             }
         '''
         data = []
-        coverage_departments = users_qs.values(
+        t3_users_qs = users_qs.filter(
+            administrative_department__department_type='T3')
+        non_t3_users_count = users_qs.exclude(
+            administrative_department__department_type='T3').count()
+        coverage_departments = t3_users_qs.values(
             'administrative_department__name').annotate(coverage_count=Count(
                 'administrative_department__name'))
         for item in coverage_departments:
@@ -133,9 +139,20 @@ class CoverageStatisticsService:
                 {
                     'department': item['administrative_department__name'],
                     'coverage_count': item['coverage_count'],
-                    'total_count': User.objects.filter(
+                    'total_count': UserService.get_full_time_teachers().filter(
                         administrative_department__name=item[
                             'administrative_department__name']).count()
+                }
+            )
+        # non t3 departments are grouped into others.
+        if non_t3_users_count > 0:
+            data.append(
+                {
+                    'department': '其他部门',
+                    'coverage_count': non_t3_users_count,
+                    'total_count': User.objects.exclude(
+                        administrative_department__department_type='T3'
+                        ).count()
                 }
             )
         return data
@@ -217,5 +234,4 @@ class CoverageStatisticsService:
             )
         records = campus_event_records.union(off_campus_event_records)
         return records.filter(
-            user__teaching_type__in=('专任教师', '实验技术'),
-            user__administrative_department__department_type='T3')
+            user__teaching_type__in=('专任教师', '实验技术'))

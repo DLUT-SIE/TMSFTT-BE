@@ -76,8 +76,7 @@ class UserService:
     def get_full_time_teachers():
         '''Return queryset for full time teachers.'''
         return User.objects.filter(
-            teaching_type__in=('专任教师', '实验技术'),
-            administrative_department__department_type='T3'
+            teaching_type__in=('专任教师', '实验技术')
         )
 
 

@@ -47,13 +47,14 @@ class TestCoverageStatisticsService(TestCase):
         self.mock_users_info.extend([(56, '研究员', Department.objects.get(
             name='管理学院')), ] * 15)
         self.mock_users = []
-        for user_info in self.mock_users_info:
+        for idx, user_info in enumerate(self.mock_users_info):
             self.mock_users.append(
                 mommy.make(
                     User,
                     age=user_info[0],
                     technical_title=user_info[1],
                     department=user_info[2],
+                    teaching_type=('专任教师', '实验技术')[idx % 2],
                     administrative_department=user_info[2]
                 )
             )
@@ -158,7 +159,8 @@ class TestCoverageStatisticsService(TestCase):
 
     def test_groupby_ages(self):
         '''Should 按年龄段对用户查询集分组统计'''
-        user_qs = User.objects.all()
+        user_qs = User.objects.filter(
+            id__in=[user.id for user in self.mock_users])
         got = CoverageStatisticsService.groupby_ages(user_qs)
         self.assertIsInstance(got, list)
         for item in got:
@@ -175,7 +177,8 @@ class TestCoverageStatisticsService(TestCase):
 
     def test_groupby_titles(self):
         '''Should 按职称对用户查询集分组统计'''
-        user_qs = User.objects.all()
+        user_qs = User.objects.filter(
+            id__in=[user.id for user in self.mock_users])
         got = CoverageStatisticsService.groupby_titles(user_qs)
         self.assertIsInstance(got, list)
         for item in got:
@@ -201,9 +204,18 @@ class TestCoverageStatisticsService(TestCase):
 
     def test_groupby_departments(self):
         '''Should 按部门对用户查询集分组统计'''
-        user_qs = User.objects.all()
+        mock_t3_user = mommy.make(
+            User,
+            first_name='test_non_t3_user',
+            administrative_department__department_type='T1'
+        )
+        user_ids = [user.id for user in self.mock_users]
+        user_ids.append(mock_t3_user.id)
+        user_qs = User.objects.filter(
+            id__in=user_ids)
         got = CoverageStatisticsService.groupby_departments(user_qs)
         self.assertIsInstance(got, list)
+        department_name = []
         for item in got:
             self.assertEqual(
                 item.keys(),
@@ -213,8 +225,10 @@ class TestCoverageStatisticsService(TestCase):
                     'department'
                 }
             )
+            department_name.append(item['department'])
             self.assertGreaterEqual(item['total_count'],
                                     item['coverage_count'])
+        self.assertTrue('其他部门' in department_name)
 
     def test_get_traning_records_permission(self):
         '''Should 抛出正确的异常信息'''
