@@ -294,7 +294,7 @@ class AggregateDataService:
                 'table_training_hours_statistics'),
             cls.TABLE_NAME_COVERAGE_SUMMARY: 'table_coverage_statistics',
             cls.TABLE_NAME_TRAINING_SUMMARY: 'table_trainee_statistics',
-            cls.TABLE_NAME_TRAINING_FEEDBACK: 'training_feedback',
+            cls.TABLE_NAME_TRAINING_FEEDBACK: 'table_training_feedback',
             cls.TABLE_NAME_WORKLOAD_CALCULATION: 'table_workload_calculation'
         }
         request = context.get('request', None)
@@ -428,7 +428,7 @@ class AggregateDataService:
 
     @classmethod
     @admin_required()
-    def training_feedback(cls, context):
+    def table_training_feedback(cls, context):
         '''培训记录反馈导出'''
         request = context.get('request')
         program_id = context.get('program_id', None)
