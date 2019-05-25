@@ -258,19 +258,6 @@ class TestRecordViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('count', response.data)
 
-    def test_get_role_choices(self):
-        '''Should return the whole role choices'''
-        user = mommy.make(User)
-        group = mommy.make(Group, name="创新创业学院-管理员")
-        user.groups.add(group)
-        assign_perm('training_record.view_record', group)
-        url = reverse('record-get-role-choices')
-
-        self.client.force_authenticate(user)
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
 
 class TestRecordContentViewSet(APITestCase):
     '''Unit tests for RecordContent view.'''

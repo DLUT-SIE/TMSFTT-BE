@@ -73,7 +73,7 @@ class EnrollmentViewSet(mixins.CreateModelMixin,
 
 class RoundChoicesView(views.APIView):
     '''Create API view for get round choices of event coefficient.'''
-    def get(self, request, format=None):
+    def get(self, request, format=None):  # pylint: disable=redefined-builtin
         '''define how to get round choices.'''
         round_choices = [
             {
@@ -83,3 +83,16 @@ class RoundChoicesView(views.APIView):
                 training_event.models.EventCoefficient.ROUND_CHOICES)
         ]
         return Response(round_choices, status=status.HTTP_200_OK)
+
+
+class RoleChoicesView(views.APIView):
+    '''Create API view for get choices of roles.'''
+    def get(self, request, format=None):  # pylint: disable=redefined-builtin
+        '''define how to get role choices.'''
+        role_choices = [
+            {
+                'role': item[0],
+                'role_str': item[1],
+            } for item in training_event.models.EventCoefficient.ROLE_CHOICES
+        ]
+        return Response(role_choices, status=status.HTTP_200_OK)

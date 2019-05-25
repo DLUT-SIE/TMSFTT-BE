@@ -300,3 +300,15 @@ class TestEventCoefficientRoundChoicesViewSet(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_role_choices(self):
+        '''Should return the whole role choices'''
+        user = mommy.make(User)
+        group = mommy.make(Group, name="创新创业学院-管理员")
+        user.groups.add(group)
+        url = reverse('role-choices')
+
+        self.client.force_authenticate(user)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

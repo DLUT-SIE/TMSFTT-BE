@@ -45,7 +45,7 @@ class ProgramViewSet(MultiSerializerActionClassMixin, viewsets.ModelViewSet):
 
 class ProgramCategoryView(views.APIView):
     '''get program categories from background.'''
-    def get(self, request, format=None):
+    def get(self, request, format=None):  # pylint: disable=redefined-builtin
         '''define how to get program categories'''
         program_categories = [
             {

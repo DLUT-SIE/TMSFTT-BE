@@ -17,7 +17,6 @@ from training_record.serializers import (CampusEventFeedbackSerializer,
                                          RecordCreateSerializer,
                                          ReadOnlyRecordSerializer)
 from infra.mixins import MultiSerializerActionClassMixin
-from training_event.models import EventCoefficient
 
 
 # pylint: disable=C0103
@@ -134,18 +133,6 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         count = RecordService.get_number_of_records_without_feedback(
             request.user)
         return Response({'count': count}, status=status.HTTP_200_OK)
-
-    @decorators.action(detail=False, methods=['GET'],
-                       url_path='role-choices')
-    def get_role_choices(self, request):
-        '''Get role choices in event_coefficient'''
-        role_choices = [
-            {
-                'role': item[0],
-                'role_str': item[1],
-            } for item in EventCoefficient.ROLE_CHOICES
-        ]
-        return Response(role_choices, status=status.HTTP_200_OK)
 
 
 class RecordContentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
