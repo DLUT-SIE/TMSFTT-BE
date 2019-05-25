@@ -451,8 +451,7 @@ class AggregateDataService:
                     'campus_event_name': feedback.record.campus_event.name,
                     'feedback_content': feedback.content,
                     'feedback_time': (
-                        '' if feedback.create_time is None else feedback
-                        .create_time.strftime('%Y-%m-%d %H:%M:%S')
+                        feedback.create_time.strftime('%Y-%m-%d %H:%M:%S')
                         ),
                     'feedback_user_name': feedback.record.user.first_name,
                     'feedback_user_email': feedback.record.user.email,
