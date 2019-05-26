@@ -33,7 +33,7 @@ class RecordContentSerializer(BulkSerializerMixin,
 class RecordAttachmentSerializer(BulkSerializerMixin,
                                  serializers.ModelSerializer):
     '''Indicate how to serialize RecordAttachment instance.'''
-    path = SecureFileField()
+    path = SecureFileField(perm_name='view_recordattachment')
 
     class Meta:
         model = RecordAttachment
