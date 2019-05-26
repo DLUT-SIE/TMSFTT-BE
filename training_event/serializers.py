@@ -32,16 +32,18 @@ class ReadOnlyCampusEventSerializer(serializers.ModelSerializer):
     program_detail = ReadOnlyProgramSerializer(source='program',
                                                read_only=True)
     enrollment_id = serializers.SerializerMethodField(read_only=True)
-    coefficients = EventCoefficientSerializer(source='eventcoefficient_set', 
-                                              read_only=True, 
+    coefficients = EventCoefficientSerializer(source='eventcoefficient_set',
+                                              read_only=True,
                                               many=True)
 
     class Meta:
         model = training_event.models.CampusEvent
-        fields = ('id', 'name', 'time', 'location', 'create_time', 'update_time', 'reviewed',
-                  'expired', 'enrolled', 'enrollment_id', 'num_hours', 'num_participants',
-                  'program', 'program_detail', 'coefficients')
-    
+        fields = ('id', 'name', 'time', 'location', 'create_time',
+                  'update_time', 'reviewed', 'expired', 'enrolled',
+                  'enrollment_id', 'num_hours', 'num_participants',
+                  'program', 'program_detail', 'coefficients',
+                  'deadline', 'description')
+
     def get_expired(self, obj):
         '''Get event expired status.'''
         return now() > obj.deadline or obj.num_enrolled >= obj.num_participants
@@ -106,12 +108,13 @@ class CampusEventSerializer(serializers.ModelSerializer):
         coefficients = validated_data.pop('coefficients')
         return CampusEventService.create_campus_event(
             validated_data, coefficients, self.context)
-            
+
     def update(self, instance, validated_data):
         '''Update event and event coefficient.'''
-        coefficient = validated_data.pop('coefficients')
-        return CampusEventService.update_campus_event(instance, validated_data,
-                                             coefficient, self.context)
+        coefficients = validated_data.pop('coefficients')
+        return CampusEventService.update_campus_event(instance,
+                                                      validated_data,
+                                                      coefficients)
 
 
 class OffCampusEventSerializer(serializers.ModelSerializer):

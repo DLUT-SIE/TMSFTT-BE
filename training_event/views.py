@@ -13,7 +13,7 @@ from training_event.serializers import (ReadOnlyCampusEventSerializer,
                                         CampusEventSerializer,
                                         OffCampusEventSerializer,
                                         EnrollmentSerailizer)
-import training_event.serializers 
+import training_event.serializers
 import training_event.filters
 from infra.mixins import MultiSerializerActionClassMixin
 User = get_user_model()

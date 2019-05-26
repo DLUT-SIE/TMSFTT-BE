@@ -126,15 +126,78 @@ class TestCampusEventViewSet(APITestCase):
         name1 = 'campus_event1'
         campus_event = mommy.make(training_event.models.CampusEvent,
                                   name=name0)
+        coefficients0 = [
+            {
+                'campus_event': campus_event,
+                'role': 0,
+                'hours_option': 1,
+                'workload_option': 3,
+                'coefficient': 1,
+            },
+            {
+                'campus_event': campus_event,
+                'role': 1,
+                'hours_option': 1,
+                'workload_option': 3,
+                'coefficient': 1,
+            }
+        ]
+        mommy.make(training_event.models.EventCoefficient,
+                   **coefficients0[0])
+        mommy.make(training_event.models.EventCoefficient,
+                   **coefficients0[1])
         PermissionService.assign_object_permissions(self.user, campus_event)
         url = reverse('campusevent-detail', args=(campus_event.pk,))
-        data = {'name': name1}
-
+        data = {
+            'name': name1,
+            'coefficients': [
+                {
+                    'role': 0,
+                    'hours_option': 1,
+                    'workload_option': 3,
+                    'coefficient': 11,
+                },
+                {
+                    'role': 1,
+                    'hours_option': 1,
+                    'workload_option': 3,
+                    'coefficient': 11,
+                }
+            ]
+        }
         response = self.client.patch(url, data, format='json')
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('name', response.data)
         self.assertEqual(response.data['name'], name1)
+
+    def test_update_campus_event_failed(self):
+        '''CampusEvent should be updated by PATCH request.'''
+        name0 = 'campus_event0'
+        name1 = 'campus_event1'
+        campus_event = mommy.make(training_event.models.CampusEvent,
+                                  name=name0)
+        PermissionService.assign_object_permissions(self.user, campus_event)
+        url = reverse('campusevent-detail', args=(campus_event.pk,))
+        data = {
+            'name': name1,
+            'coefficients': [
+                {
+                    'role': 0,
+                    'hours_option': 1,
+                    'workload_option': 3,
+                    'coefficient': 11,
+                },
+                {
+                    'role': 1,
+                    'hours_option': 1,
+                    'workload_option': 3,
+                    'coefficient': 11,
+                }
+            ]
+        }
+        response = self.client.patch(url, data, format='json')
+        print(response.status_code)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class TestOffCampusEventViewSet(APITestCase):
