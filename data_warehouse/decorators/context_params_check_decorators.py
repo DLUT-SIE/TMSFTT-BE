@@ -41,7 +41,7 @@ def admin_required(mode='admin'):
                     raise BadRequest('你不是管理员。')
             else:
                 raise ValueError('装饰器参数错误，mode只能是school_admin'
-                                 ' 或者 department_admin')
+                                 ' 或者 admin')
             return func(*args, **kwargs)
         return wrapper
     return actual_decorator
