@@ -1,8 +1,6 @@
 '''user core statistics service'''
 from collections import defaultdict
-from datetime import datetime
 
-import pytz
 from django.core.cache import cache
 from django.db import models
 from django.db.models import functions
@@ -51,7 +49,7 @@ class UserCoreStatisticsService:
             f'competition_award_info:{user.id}'
             f'_{start_time_key}_{end_time_key}'
         )
- 
+
         cached_value = cache.get(cache_key)
         if cached_value:
             return cached_value
@@ -83,7 +81,8 @@ class UserCoreStatisticsService:
         return res
 
     @staticmethod
-    def get_monthly_added_records_statistics(user, context=None):
+    def get_monthly_added_records_statistics(
+            user, context=None):  # pylint: disable=unused-argument
         '''Latest added records (last 12 months).
 
         Parameters
@@ -208,6 +207,7 @@ class UserCoreStatisticsService:
         cache.set(cache_key, res, 3600)  # Cache for 8 hours
         return res
 
+    # pylint: disable=too-many-locals
     @staticmethod
     def get_events_statistics(user, context=None):
         '''User's events statistics.

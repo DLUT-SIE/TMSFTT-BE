@@ -29,14 +29,14 @@ class TestTasks(TestCase):
             teaching_type='专任教师',
             _quantity=20,
         )
-        
+
         send_mail_to_inactive_users()
         mocked_send_mail.assert_called()
         (mails,), kwargs = mocked_send_mail.call_args
         fail_silently = kwargs['fail_silently']
         self.assertEqual(len(mails), len(users))
         self.assertFalse(fail_silently)
-        
+
     @patch('data_warehouse.tasks.AggregateDataService.personal_summary',
            lambda _: {})
     @patch('data_warehouse.tasks.send_mass_mail')
@@ -48,11 +48,10 @@ class TestTasks(TestCase):
             _quantity=20,
         )
         skip_users = [u.id for u in users[:10]]
-        
+
         send_mail_to_inactive_users(skip_users=skip_users)
         mocked_send_mail.assert_called()
         (mails,), kwargs = mocked_send_mail.call_args
         fail_silently = kwargs['fail_silently']
         self.assertEqual(len(mails), len(users) - len(skip_users))
         self.assertFalse(fail_silently)
-        

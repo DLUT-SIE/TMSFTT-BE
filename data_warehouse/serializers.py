@@ -42,12 +42,14 @@ class SummaryParametersSerializer(serializers.Serializer):
         default=lambda: datetime.fromtimestamp(0, pytz.utc))
     end_time = serializers.DateTimeField(
         required=False, format=None,
-        default=lambda: now())
+        default=lambda: now())  # pylint: disable=unnecessary-lambda
 
     def validate_start_time(self, data):
+        '''Round to nearest hour.'''
         return data.replace(minute=0, second=0, microsecond=0)
 
     def validate_end_time(self, data):
+        '''Round to nearest hour.'''
         return data.replace(minute=0, second=0, microsecond=0)
 
     def validate(self, data):

@@ -37,8 +37,8 @@ class UserRankingService:
         return ranking
 
     @classmethod
-    def get_total_training_hours_ranking_in_department(cls, user,
-                                                       context=None):
+    def get_total_training_hours_ranking_in_department(
+            cls, user, context=None):  # pylint: disable=unused-argument
         '''
         Human-readable string for user's ranking in department (by total
         training hours).
@@ -77,7 +77,8 @@ class UserRankingService:
         return res
 
     @classmethod
-    def get_total_training_hours_ranking_in_school(cls, user, context=None):
+    def get_total_training_hours_ranking_in_school(
+            cls, user, context=None):  # pylint: disable=unused-argument
         '''
         Human-readable string for user's ranking in school (by total
         training hours).
