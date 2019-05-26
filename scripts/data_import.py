@@ -17,9 +17,11 @@ django.setup()
 import xlrd
 
 from faker import Faker
+from tqdm import tqdm
 from django.db import transaction
 from django.contrib.auth.models import Group
 from django.utils.timezone import make_aware, now
+from django.contrib.sites.models import Site
 
 from infra.utils import prod_logger
 from infra.models import Notification
@@ -43,19 +45,6 @@ faker = Faker('zh_CN')
 faker.seed(0)
 prod_logger.setLevel(logging.WARNING)
 
-
-class ProgressBar:
-    def __init__(self, max_cnt, start=0):
-        self.max_cnt = max_cnt - start
-        self.cnt = 0
-
-    def step(self):
-        self.cnt += 1
-        sys.stdout.flush()
-        sys.stdout.write(f'{self.cnt:5d} / {self.max_cnt:5d} \r')
-
-    def finish(self):
-        print()
 
 
 cached_groups = {}
@@ -178,12 +167,10 @@ def read_workload_content(
     coefficients = {}
     dlut_admin = get_dlut_admin()
     users = {x.username: x for x in User.objects.all()}
-    pb = ProgressBar(num_rows, start_row)
     event_time = now().replace(year=year, month=1, day=1,
                                hour=0, minute=0, second=0)
-    for idx, row in enumerate((sheet.row_values(i)
-                               for i in range(start_row, num_rows))):
-        pb.step()
+    for idx in tqdm(range(start_row, num_rows)):
+        row = sheet.row_values(idx)
         try:
             (event_name, department_name, user_name, username,
              role, num_hours, coef, workload) = row_parser(row)
@@ -250,7 +237,6 @@ def read_workload_content(
             event_coefficient=event_coef,
         )
         PermissionService.assign_object_permissions(user, record)
-    pb.finish()
 
 
 def converter_get_or_default(converter, key, default=None):
@@ -271,8 +257,7 @@ def read_departments_information(
     }
     rows = [sheet.row_values(i) for i in range(2, num_rows)]
     rows.sort(key=lambda x: 0 if x[8] == '10141' else int(x[8]))
-    pb = ProgressBar(len(rows))
-    for row in rows:
+    for row in tqdm(rows):
         dwid, dwmc, department_type, super_department_id = row[5:9]
         department, _ = Department.objects.get_or_create(
             raw_department_id=dwid,
@@ -285,8 +270,6 @@ def read_departments_information(
         id_to_departments[dwid] = department
         get_or_create_group(department, '管理员')
         get_or_create_group(department, '专任教师')
-        pb.step()
-    pb.finish()
 
 
 def extract_teacher_information(row):
@@ -316,7 +299,6 @@ def read_teachers_information(
     sheet = workbook.sheet_by_name('教师基本信息')
     num_rows = sheet.nrows
     users = {}
-    pb = ProgressBar(num_rows, 2)
     personal_permissions_group = get_personal_permissions_group()
 
     def update_user_groups(user, handler):
@@ -330,8 +312,8 @@ def read_teachers_information(
         handler(Group.objects.get(
             name=f'{department.name}-专任教师'))
 
-    for idx, row in enumerate((sheet.row_values(i) for i in range(2, num_rows)), 2):
-        pb.step()
+    for idx in tqdm(range(2, num_rows)):
+        row = sheet.row_values(idx)
         if row[0] in users:
             continue
         (zgh, jsxm, nl, xb, department_id, rxsj,
@@ -358,7 +340,6 @@ def read_teachers_information(
             update_user_groups(user, user.groups.add)
             user.groups.add(personal_permissions_group)
         users[zgh] = user
-    pb.finish()
     return users
 
 
@@ -423,7 +404,6 @@ def assign_model_perms_for_special_groups():
     dlut_department = get_dlut_department()
     dlut_admin_group = get_dlut_admin_group()
     personal_permissions_group = get_personal_permissions_group()
-    pb = ProgressBar(len(departments))
     for model_class, perm_pairs in model_perms.items():
         for role, perms in perm_pairs.items():
             if role == '个人权限':
@@ -438,8 +418,6 @@ def assign_model_perms_for_special_groups():
                     f'{perm}_{model_class._meta.model_name}'
                 )
                 assign_perm(perm_name, group)
-        pb.step()
-    pb.finish()
 
 
 def assign_model_perms():
@@ -447,14 +425,24 @@ def assign_model_perms():
         x.raw_department_id: x
         for x in Department.objects.all().exclude(name='大连理工大学')
     }
-    pb = ProgressBar(len(departments))
-    for department in departments.values():
+    assign_model_perms_for_special_groups()
+    for department in tqdm(departments.values()):
         assign_model_perms_for_department(department)
-        pb.step()
-    pb.finish()
 
 
 def populate_initial_data():
+    site_data = {
+        'domain': 'tmsftt.local',
+        'name': '大连理工大学专任教师教学培训管理系统'
+    }
+    site, created = Site.objects.get_or_create(
+        id=1,
+        defaults=site_data,
+    )
+    if not created:
+        for attr, value in site_data.items():
+            setattr(site, attr, value)
+        site.save()
     get_dlut_admin()
     user, _ = User.objects.get_or_create(
         username='notification-robot',

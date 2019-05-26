@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'rest_framework',
     'rest_framework_bulk',
     'django_filters',
@@ -151,3 +152,7 @@ SOAP_AUTH_SYS_ID = 'unknown'
 SOAP_AUTH_MODULE_ID = 'unknown'
 SOAP_AUTH_SECRET_KEY = 'unknown'
 SOAP_AUTH_INTERFACE_METHOD = 'unknown'
+
+
+# Site settings
+SITE_ID = 1
