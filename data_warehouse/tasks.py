@@ -74,9 +74,9 @@ def send_mail_to_inactive_users(skip_users=None):
         if not is_active:
             if user.id in skip_users:
                 msg = (
-                     f'{user.first_name}({user.username}, {user.email})'
-                     f'未满足活跃用户条件，但由于其id出现在忽略用户列表中，'
-                     f'将不会向其发送年度报告邮件'
+                    f'{user.first_name}({user.username}, {user.email})'
+                    f'未满足活跃用户条件，但由于其id出现在忽略用户列表中，'
+                    f'将不会向其发送年度报告邮件'
                 )
                 prod_logger.info(msg)
                 continue
@@ -98,9 +98,9 @@ def send_mail_to_inactive_users(skip_users=None):
             mails.append(mail)
     try:
         send_mass_mail(mails, fail_silently=False)
-    except smtplib.SMTPException as e:
+    except smtplib.SMTPException as exc:
         msg = (
             '系统在为每位教师发送年度报告邮件时发生错误，'
-            f'部分邮件可能未成功发送，错误信息为：{e}'
+            f'部分邮件可能未成功发送，错误信息为：{exc}'
         )
         prod_logger.error(msg)

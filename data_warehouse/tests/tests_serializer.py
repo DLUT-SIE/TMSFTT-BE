@@ -1,9 +1,12 @@
 '''序列化器测试模块'''
 from django.test import TestCase
+from django.utils.timezone import now
 from rest_framework.exceptions import ValidationError
+
 from data_warehouse.serializers import (
     CoverageStatisticsSerializer,
-    TrainingFeedbackSerializer
+    TrainingFeedbackSerializer,
+    SummaryParametersSerializer
 )
 
 
@@ -45,3 +48,38 @@ class TestSerializer(TestCase):
         serializer = TrainingFeedbackSerializer(data=data)
         with self.assertRaises(ValidationError):
             serializer.is_valid(raise_exception=True)
+
+
+class TestSummaryParametersSerializer(TestCase):
+    '''Unit tests for SummaryParamtersSerializer.'''
+    def test_validate_start_time(self):
+        '''Should round to nearest hour.'''
+        current_time = now()
+        serializer = SummaryParametersSerializer()
+
+        validated = serializer.validate_start_time(current_time)
+
+        self.assertEqual(validated.minute, 0)
+        self.assertEqual(validated.second, 0)
+        self.assertEqual(validated.microsecond, 0)
+
+    def test_validate_end_time(self):
+        '''Should round to nearest hour.'''
+        current_time = now()
+        serializer = SummaryParametersSerializer()
+
+        validated = serializer.validate_end_time(current_time)
+
+        self.assertEqual(validated.minute, 0)
+        self.assertEqual(validated.second, 0)
+        self.assertEqual(validated.microsecond, 0)
+
+    def test_validate(self):
+        '''Should raise error if end_time is before start_time.'''
+        end_time = now()
+        start_time = end_time.replace(year=end_time.year+1)
+        serializer = SummaryParametersSerializer()
+
+        with self.assertRaises(ValidationError):
+            serializer.validate(
+                {'start_time': start_time, 'end_time': end_time})

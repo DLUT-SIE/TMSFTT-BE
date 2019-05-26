@@ -11,7 +11,7 @@ from datetime import datetime
 import django
 
 sys.path.insert(0, os.path.abspath('.'))
-os.environ['DJANGO_SETTINGS_MODULE'] = 'TMSFTT.settings_dev'
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'TMSFTT.settings_dev')
 django.setup()
 
 import xlrd
