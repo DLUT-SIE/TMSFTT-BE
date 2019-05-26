@@ -41,6 +41,7 @@ class TestRecordViewSet(APITestCase):
     def setUp(self):
         self.client.force_authenticate(self.user)
 
+    @patch('os.path.splitext', lambda x: ('a', '.png'))
     def test_create_record(self):
         '''Record should be created by POST request.'''
         user = mommy.make(User)
