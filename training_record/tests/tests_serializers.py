@@ -18,6 +18,7 @@ from training_event.models import OffCampusEvent
 # pylint: disable=unused-variable
 class TestRecordCreateSerializer(TestCase):
     '''Unit tests for serializer of Record.'''
+    @patch('os.path.splitext', lambda x: ('abc', '.pdf'))
     def test_validate_attachments_too_much_attachments(self):
         '''Should raise ValidationError if there are too much attachments.'''
         serializer = RecordCreateSerializer()
@@ -37,6 +38,7 @@ class TestRecordCreateSerializer(TestCase):
                 serializers.ValidationError, '最多允许上传3个附件'):
             serializer.validate_attachments(data)
 
+    @patch('os.path.splitext', lambda x: ('abc', '.pdf'))
     @patch('training_record.serializers.format_file_size',
            return_value='100 MB')
     def test_validate_attachments_data_attachments_too_large(
@@ -45,7 +47,7 @@ class TestRecordCreateSerializer(TestCase):
         Should raise ValidationError if the size of attachments is too large.
         '''
         serializer = RecordCreateSerializer()
-        data = [Mock(size=100*1024*1024) for _ in range(2)]
+        data = [Mock(size=100*1024*1024, name='a.png') for _ in range(2)]
 
         with self.assertRaisesMessage(
                 serializers.ValidationError,

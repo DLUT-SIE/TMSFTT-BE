@@ -1,4 +1,6 @@
 '''Define how to serialize our models.'''
+import os.path as osp
+
 from rest_framework import serializers
 from rest_framework_bulk import (
     BulkListSerializer,
@@ -118,6 +120,12 @@ class RecordCreateSerializer(serializers.ModelSerializer):
             max_count -= len(self.instance.attachments.all())
             max_size -= sum(x.path.size
                             for x in self.instance.attachments.all())
+        valid_extensions = {'.pdf', '.png', '.jpg', '.jpeg', '.doc', '.docx'}
+        for x in data:
+            ext = osp.splitext(x.name)[-1].lower()
+            if ext not in valid_extensions:
+                raise serializers.ValidationError(
+                    f'不被支持的文件类型: {x.name}')
         # TODO(youchen): Use global configs
         if len(data) > max_count:
             raise serializers.ValidationError('最多允许上传3个附件')
