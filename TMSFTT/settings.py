@@ -68,7 +68,8 @@ AUTH_USER_MODEL = 'tmsftt_auth.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'secure_file.authentication.SecureFileCookieAuthentication',
+        'auth.authentication.JSONWebTokenAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
@@ -140,6 +141,10 @@ JWT_AUTH = {
     'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=12),
     'JWT_RESPONSE_PAYLOAD_HANDLER': 'auth.utils.jwt_response_payload_handler',
 }
+JWT_AUTH_COOKIE = JWT_AUTH['JWT_AUTH_COOKIE']
+JWT_AUTH_COOKIE_WHITELIST = (
+    '/media/',
+)
 
 # Email settings
 
