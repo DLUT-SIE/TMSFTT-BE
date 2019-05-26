@@ -28,6 +28,10 @@ class TestSchoolCoreStatisticsService(TestCase):
         self.assertIsInstance(data, dict)
         self.assertEqual(data['available_to_enroll'], num_events)
 
+        new_data = SchoolCoreStatisticsService.get_events_statistics()
+        self.assertIsInstance(new_data, dict)
+        self.assertEqual(data['timestamp'], new_data['timestamp'])
+
     @patch('django.utils.timezone.now')
     @patch(
         'data_warehouse.services.school_core_statistics_service'
@@ -75,6 +79,10 @@ class TestSchoolCoreStatisticsService(TestCase):
         self.assertAlmostEqual(
             data['num_average_records'], num_average_records)
 
+        new_data = SchoolCoreStatisticsService.get_records_statistics()
+        self.assertIsInstance(new_data, dict)
+        self.assertEqual(data['timestamp'], new_data['timestamp'])
+
     @patch('django.utils.timezone.now')
     def test_get_department_records_statistics(self, mocked_now):
         '''Should return records statistics w.r.t departments.'''
@@ -116,13 +124,19 @@ class TestSchoolCoreStatisticsService(TestCase):
                 user__administrative_department=department,
                 _quantity=num_campus_records)
 
-        res = SchoolCoreStatisticsService.get_department_records_statistics()
+        data = SchoolCoreStatisticsService.get_department_records_statistics()
 
-        self.assertIsInstance(res, dict)
-        for item, expected_item in zip(res['data'], department_details):
+        self.assertIsInstance(data, dict)
+        for item, expected_item in zip(data['data'], department_details):
             self.assertEqual(item['department'], expected_item[0])
             self.assertEqual(item['num_users'], expected_item[1])
             self.assertEqual(item['num_records'], expected_item[2])
+
+        new_data = (
+            SchoolCoreStatisticsService.get_department_records_statistics()
+        )
+        self.assertIsInstance(new_data, dict)
+        self.assertEqual(data['timestamp'], new_data['timestamp'])
 
     @patch('django.utils.timezone.now')
     def test_get_monthly_added_records_statistics(self, mocked_now):
@@ -149,11 +163,17 @@ class TestSchoolCoreStatisticsService(TestCase):
                 _quantity=records[-1]
             )
 
-        res = (
+        data = (
             SchoolCoreStatisticsService
             .get_monthly_added_records_statistics()
         )
 
-        self.assertIsInstance(res, dict)
-        self.assertEqual(res['months'], months)
-        self.assertEqual(res['records'], records)
+        self.assertIsInstance(data, dict)
+        self.assertEqual(data['months'], months)
+        self.assertEqual(data['records'], records)
+
+        new_data = (
+            SchoolCoreStatisticsService.get_monthly_added_records_statistics()
+        )
+        self.assertIsInstance(new_data, dict)
+        self.assertEqual(data['timestamp'], new_data['timestamp'])

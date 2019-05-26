@@ -32,11 +32,17 @@ class TestUserCoreStatisticsService(TestCase):
             user=self.user,
             campus_event__name=award_info
         )
+        context = {
+            'start_time': now().replace(year=1970),
+            'end_time': now(),
+        }
 
-        res = UserCoreStatisticsService.get_competition_award_info(self.user)
+        res = UserCoreStatisticsService.get_competition_award_info(
+            self.user, context)
 
         self.assertIsInstance(res, dict)
-        self.assertEqual({'timestamp', 'data'}, set(res.keys()))
+        self.assertEqual({'timestamp', 'data', 'start_time', 'end_time'},
+                         set(res.keys()))
         self.assertDictEqual(res['data'], {
             'competition': competition,
             'level': level,
@@ -45,22 +51,28 @@ class TestUserCoreStatisticsService(TestCase):
 
         # Test cache
         new_res = UserCoreStatisticsService.get_competition_award_info(
-            self.user)
+            self.user, context)
 
         self.assertIn('timestamp', new_res)
         self.assertEqual(new_res['timestamp'], res['timestamp'])
 
     def test_get_competition_award_info_none(self):
         '''Should return None if there is no award info.'''
-        res = UserCoreStatisticsService.get_competition_award_info(self.user)
+        context = {
+            'start_time': now(),
+            'end_time': now(),
+        }
+        res = UserCoreStatisticsService.get_competition_award_info(
+            self.user, context)
 
         self.assertIsInstance(res, dict)
-        self.assertEqual({'timestamp', 'data'}, set(res.keys()))
+        self.assertEqual({'timestamp', 'data', 'start_time', 'end_time'},
+                         set(res.keys()))
         self.assertIsNone(res['data'])
 
         # Test cache
         new_res = UserCoreStatisticsService.get_competition_award_info(
-            self.user)
+            self.user, context)
 
         self.assertIn('timestamp', new_res)
         self.assertEqual(new_res['timestamp'], res['timestamp'])
@@ -152,13 +164,19 @@ class TestUserCoreStatisticsService(TestCase):
             _fill_optional=['off_campus_event'],
             _quantity=expected_num_off_campus_records
         )
+        context = {
+            'start_time': now().replace(year=1970),
+            'end_time': now(),
+        }
 
-        res = UserCoreStatisticsService.get_records_statistics(self.user)
+        res = UserCoreStatisticsService.get_records_statistics(
+            self.user, context)
 
         self.assertIsInstance(res, dict)
         self.assertEqual(
             {'timestamp', 'num_campus_records', 'num_off_campus_records',
-             'campus_records_ratio', 'off_campus_records_ratio'},
+             'campus_records_ratio', 'off_campus_records_ratio',
+             'start_time', 'end_time'},
             set(res.keys())
         )
         self.assertEqual(
@@ -171,7 +189,8 @@ class TestUserCoreStatisticsService(TestCase):
             res['off_campus_records_ratio'], expected_off_campus_records_ratio)
 
         # Test cache
-        new_res = UserCoreStatisticsService.get_records_statistics(self.user)
+        new_res = UserCoreStatisticsService.get_records_statistics(
+            self.user, context)
 
         self.assertIn('timestamp', new_res)
         self.assertEqual(new_res['timestamp'], res['timestamp'])
@@ -209,13 +228,18 @@ class TestUserCoreStatisticsService(TestCase):
             _fill_optional=['campus_event'],
             _quantity=expected_num_events_as_expert
         )
+        context = {
+            'start_time': now().replace(year=1970),
+            'end_time': now(),
+        }
 
-        res = UserCoreStatisticsService.get_events_statistics(self.user)
+        res = UserCoreStatisticsService.get_events_statistics(
+            self.user, context)
 
         self.assertIsInstance(res, dict)
         self.assertEqual(
             {'timestamp', 'num_enrolled_events', 'num_completed_events',
-             'num_events_as_expert'},
+             'num_events_as_expert', 'start_time', 'end_time'},
             set(res.keys())
         )
         self.assertEqual(
@@ -226,7 +250,8 @@ class TestUserCoreStatisticsService(TestCase):
             res['num_events_as_expert'], expected_num_events_as_expert)
 
         # Test cache
-        new_res = UserCoreStatisticsService.get_events_statistics(self.user)
+        new_res = UserCoreStatisticsService.get_events_statistics(
+            self.user, context)
 
         self.assertIn('timestamp', new_res)
         self.assertEqual(new_res['timestamp'], res['timestamp'])
@@ -245,12 +270,16 @@ class TestUserCoreStatisticsService(TestCase):
                 _quantity=count,
             )
             expected_data.append({'name': name, 'value': count})
-
-        res = UserCoreStatisticsService.get_programs_statistics(self.user)
+        context = {
+            'start_time': now().replace(year=1970),
+            'end_time': now(),
+        }
+        res = UserCoreStatisticsService.get_programs_statistics(
+            self.user, context)
 
         self.assertIsInstance(res, dict)
         self.assertEqual(
-            {'timestamp', 'data', 'programs'},
+            {'timestamp', 'data', 'programs', 'start_time', 'end_time'},
             set(res.keys())
         )
         self.assertEqual(
@@ -259,7 +288,8 @@ class TestUserCoreStatisticsService(TestCase):
             sorted(res['data'], key=lambda x: x['name']), expected_data)
 
         # Test cache
-        new_res = UserCoreStatisticsService.get_programs_statistics(self.user)
+        new_res = UserCoreStatisticsService.get_programs_statistics(
+            self.user, context)
 
         self.assertIn('timestamp', new_res)
         self.assertEqual(new_res['timestamp'], res['timestamp'])

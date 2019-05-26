@@ -157,6 +157,11 @@ CELERY_BEAT_SCHEDULE = {
     'generate_user_rankings': {
         'task': 'data_warehouse.tasks.generate_user_rankings',
         'schedule': crontab(minute=10, hour=0)  # Daily at midnight.
+    },
+    'send_mail_to_inactive_users': {
+        'task': 'data_warehouse.tasks.send_mail_to_inactive_users',
+        # Every year
+        'schedule': crontab(minute=0, hour=1, day_of_month=1, month_of_year=1)
     }
 }
 

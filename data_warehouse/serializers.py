@@ -1,11 +1,15 @@
 '''data warehouse序列化器模块'''
+from datetime import datetime
+
+import pytz
 from rest_framework import serializers
+from django.utils.timezone import now
 
 # pylint: disable=W0223
 
 
 class BaseTableExportSerializer(serializers.Serializer):
-    '''序列化器的基类'''
+    '''表格导出序列化器的基类'''
     table_type = serializers.IntegerField(required=True)
 
 
@@ -26,5 +30,30 @@ class TrainingFeedbackSerializer(BaseTableExportSerializer):
         '''program_id and department_id can not be None at the same time'''
         if data.get('program_id',
                     None) is None and data.get('department_id', None) is None:
-            raise serializers.ValidationError("必须指定program_id或department_id。")
+            raise serializers.ValidationError(
+                "必须指定program_id或department_id。")
+        return data
+
+
+class SummaryParametersSerializer(serializers.Serializer):
+    '''Serialize parameters for school summary and personal summary.'''
+    start_time = serializers.DateTimeField(
+        required=False, format=None,
+        default=lambda: datetime.fromtimestamp(0, pytz.utc))
+    end_time = serializers.DateTimeField(
+        required=False, format=None,
+        default=lambda: now())  # pylint: disable=unnecessary-lambda
+
+    def validate_start_time(self, data):
+        '''Round to nearest hour.'''
+        return data.replace(minute=0, second=0, microsecond=0)
+
+    def validate_end_time(self, data):
+        '''Round to nearest hour.'''
+        return data.replace(minute=0, second=0, microsecond=0)
+
+    def validate(self, data):
+        '''Validate serializer data.'''
+        if data['end_time'] <= data['start_time']:
+            raise serializers.ValidationError('截止时间应晚于起始时间')
         return data

@@ -13,12 +13,15 @@ from training_record.models import Record
 class UserCoreStatisticsService:
     '''Provide access to user' core statistics data.'''
     @staticmethod
-    def get_competition_award_info(user):
+    def get_competition_award_info(user, context=None):
         '''Latest competition award info.
 
         Parameters
         ----------
         user: User
+        context: dict
+            This context dictionary should have necessary keys specified in
+            SummaryParametersSerializer.
 
         Return
         ------
@@ -38,7 +41,15 @@ class UserCoreStatisticsService:
                     }
             }
         '''
-        cache_key = f'competition_award_info:{user.id}'
+        end_time = context['end_time']
+        start_time = context['start_time']
+        end_time_key = end_time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        start_time_key = start_time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        cache_key = (
+            f'competition_award_info:{user.id}'
+            f'_{start_time_key}_{end_time_key}'
+        )
+
         cached_value = cache.get(cache_key)
         if cached_value:
             return cached_value
@@ -46,6 +57,8 @@ class UserCoreStatisticsService:
             Record.objects
             .filter(user=user)
             .filter(campus_event__name__regex=r'(校|市|省|国家)级(.*奖)')
+            .filter(create_time__gte=start_time)
+            .filter(create_time__lte=end_time)
             .order_by('-campus_event__time')
             .values_list('campus_event__name', flat=True)
             .first()
@@ -60,18 +73,24 @@ class UserCoreStatisticsService:
             res = None
         res = {
             'timestamp': now(),
+            'start_time': start_time_key,
+            'end_time': end_time_key,
             'data': res,
         }
         cache.set(cache_key, res, 8 * 3600)  # Cache for 8 hours
         return res
 
     @staticmethod
-    def get_monthly_added_records_statistics(user):
+    def get_monthly_added_records_statistics(
+            user, context=None):  # pylint: disable=unused-argument
         '''Latest added records (last 12 months).
 
         Parameters
         ----------
         user: User
+        context: dict
+            This context dictionary should have necessary keys specified in
+            SummaryParametersSerializer.
 
         Return
         ------
@@ -116,12 +135,15 @@ class UserCoreStatisticsService:
         return res
 
     @staticmethod
-    def get_records_statistics(user):
+    def get_records_statistics(user, context=None):
         '''User's records statistics.
 
         Parameters
         ----------
         user: User
+        context: dict
+            This context dictionary should have necessary keys specified in
+            SummaryParametersSerializer.
 
         Return
         ------
@@ -139,18 +161,29 @@ class UserCoreStatisticsService:
                     The ratio of off-campus event records in all records.
             }
         '''
-        cache_key = f'records_statistics:{user.id}'
+        end_time = context['end_time']
+        start_time = context['start_time']
+        end_time_key = end_time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        start_time_key = start_time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        cache_key = (
+            f'records_statistics:{user.id}'
+            f'_{start_time_key}_{end_time_key}'
+        )
         cached_value = cache.get(cache_key)
         if cached_value:
             return cached_value
         num_campus_records = (
             Record.objects
             .filter(user=user, campus_event__isnull=False)
+            .filter(create_time__gte=start_time)
+            .filter(create_time__lte=end_time)
             .count()
         )
         num_off_campus_records = (
             Record.objects
             .filter(user=user, off_campus_event__isnull=False)
+            .filter(create_time__gte=start_time)
+            .filter(create_time__lte=end_time)
             .count()
         )
         total_records = num_campus_records + num_off_campus_records
@@ -164,21 +197,27 @@ class UserCoreStatisticsService:
         off_campus_records_ratio = f'{off_campus_records_ratio:.0%}'
         res = {
             'timestamp': now(),
+            'start_time': start_time_key,
+            'end_time': end_time_key,
             'num_campus_records': num_campus_records,
             'num_off_campus_records': num_off_campus_records,
             'campus_records_ratio': campus_records_ratio,
             'off_campus_records_ratio': off_campus_records_ratio,
         }
-        cache.set(cache_key, res, 8 * 3600)  # Cache for 8 hours
+        cache.set(cache_key, res, 3600)  # Cache for 8 hours
         return res
 
+    # pylint: disable=too-many-locals
     @staticmethod
-    def get_events_statistics(user):
+    def get_events_statistics(user, context=None):
         '''User's events statistics.
 
         Parameters
         ----------
         user: User
+        context: dict
+            This context dictionary should have necessary keys specified in
+            SummaryParametersSerializer.
 
         Return
         ------
@@ -194,13 +233,22 @@ class UserCoreStatisticsService:
                     The number of events participated as expert.
             }
         '''
-        cache_key = f'events_statistics:{user.id}'
+        end_time = context['end_time']
+        start_time = context['start_time']
+        end_time_key = end_time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        start_time_key = start_time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        cache_key = (
+            f'events_statistics:{user.id}'
+            f'_{start_time_key}_{end_time_key}'
+        )
         cached_value = cache.get(cache_key)
         if cached_value:
             return cached_value
         records = (
             Record.objects
             .filter(user=user, campus_event__isnull=False)
+            .filter(create_time__gte=start_time)
+            .filter(create_time__lte=end_time)
             .select_related('campus_event__program')
         )
         num_completed_events = len(records)
@@ -208,14 +256,21 @@ class UserCoreStatisticsService:
         #                       + not enrolled events (but completed)
 
         # Enrolled
-        enrolled_events = Enrollment.objects.filter(user=user).values_list(
-            'campus_event', flat=True)
+        enrolled_events = (
+            Enrollment.objects
+            .filter(user=user)
+            .filter(create_time__gte=start_time)
+            .filter(create_time__lte=end_time)
+            .values_list('campus_event', flat=True)
+        )
         num_enrolled_events = len(enrolled_events)
         # Not enrolled, but completed
         num_not_enrolled_events = (
             Record.objects
             .filter(user=user)
             .exclude(campus_event_id__in=enrolled_events)
+            .filter(create_time__gte=start_time)
+            .filter(create_time__lte=end_time)
             .count()
         )
         num_enrolled_events += num_not_enrolled_events
@@ -224,10 +279,14 @@ class UserCoreStatisticsService:
             Record.objects
             .filter(user=user)
             .filter(event_coefficient__role=EventCoefficient.ROLE_EXPERT)
+            .filter(create_time__gte=start_time)
+            .filter(create_time__lte=end_time)
             .count()
         )
         res = {
             'timestamp': now(),
+            'start_time': start_time_key,
+            'end_time': end_time_key,
             'num_enrolled_events': num_enrolled_events,
             'num_completed_events': num_completed_events,
             'num_events_as_expert': num_events_as_expert,
@@ -236,12 +295,15 @@ class UserCoreStatisticsService:
         return res
 
     @staticmethod
-    def get_programs_statistics(user):
+    def get_programs_statistics(user, context=None):
         '''User's programs statistics.
 
         Parameters
         ----------
         user: User
+        context: dict
+            This context dictionary should have necessary keys specified in
+            SummaryParametersSerializer.
 
         Return
         ------
@@ -255,7 +317,14 @@ class UserCoreStatisticsService:
                     The statistics to the participated programs.
             }
         '''
-        cache_key = f'programs_statistics:{user.id}'
+        end_time = context['end_time']
+        start_time = context['start_time']
+        end_time_key = end_time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        start_time_key = start_time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        cache_key = (
+            f'programs_statistics:{user.id}'
+            f'_{start_time_key}_{end_time_key}'
+        )
         cached_value = cache.get(cache_key)
         if cached_value:
             return cached_value
@@ -263,6 +332,8 @@ class UserCoreStatisticsService:
             Record.objects
             .filter(user=user, campus_event__isnull=False)
             .select_related('campus_event__program')
+            .filter(create_time__gte=start_time)
+            .filter(create_time__lte=end_time)
             .values_list('campus_event__program__name', flat=True)
         )
 
@@ -272,6 +343,8 @@ class UserCoreStatisticsService:
             programs[name] += 1
         res = {
             'timestamp': now(),
+            'start_time': start_time_key,
+            'end_time': end_time_key,
             'data': [{'name': key, 'value': value}
                      for key, value in programs.items()],
             'programs': list(programs.keys()),
