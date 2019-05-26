@@ -222,7 +222,7 @@ class AggregateDataService:
             cls.TABLE_NAME_TRAINING_SUMMARY: 'table_trainee_statistics',
             cls.TABLE_NAME_TRAINING_FEEDBACK: 'table_training_feedback',
             cls.TABLE_NAME_WORKLOAD_CALCULATION: 'table_workload_calculation',
-            cls.TABLE_NAME_TRAINING_RECORDS: 'training_record',
+            cls.TABLE_NAME_TRAINING_RECORDS: 'table_training_record',
         }
         table_type = context.get('table_type')
         handler = handlers.get(table_type, None)
@@ -393,7 +393,7 @@ class AggregateDataService:
         return file_path, '培训反馈表.xls'
 
     @classmethod
-    def training_record(cls, context):
+    def table_training_record(cls, context):
         '''个人培训记录导出'''
         request = context.get('request')
         event_name = request.query_params.get('event_name')

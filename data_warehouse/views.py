@@ -42,8 +42,8 @@ class AggregateDataViewSet(viewsets.ViewSet):
             url_name='table-export')
     def export(self, request):
         '''Return a xls file stream.'''
-        http_params = self.check_params(request.GET)
-        context = {key: val for (key, val) in http_params.items()}
+        context = {key: val for key, val in request.GET.items()}
+        context = self.check_params(context)
         context['request'] = request
         ret_file_path, file_name = AggregateDataService.dispatch(
             'table_export', context)
