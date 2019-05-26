@@ -31,6 +31,8 @@ COPY . /
 # Create touch-reload file
 RUN touch /uwsgi-touch-reload
 RUN touch /django-server.log
+RUN mkdir /protected-files
 RUN chown www-data /django-server.log
+RUN chown www-data /protected-files
 
 WORKDIR /
