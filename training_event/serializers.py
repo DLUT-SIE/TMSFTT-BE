@@ -103,7 +103,7 @@ class CampusEventSerializer(serializers.ModelSerializer):
         return data
 
     def validate_reviewed(self, data):
-        '''Forbib update event if reviewed is true.'''
+        '''Forbid update event if reviewed is true.'''
         if (self.instance and self.instance.reviewed):
             raise serializers.ValidationError(
                 '活动已被学校管理员审核，不可修改')

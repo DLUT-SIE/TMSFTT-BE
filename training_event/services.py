@@ -44,6 +44,7 @@ class CampusEventService:
             for coefficient in coefficients:
                 EventCoefficient.objects.create(campus_event=campus_event,
                                                 **coefficient)
+            # log the create
             user = context['request'].user
             msg = (f'用户{user}创建了名称为'
                    + f'{campus_event.name}的培训活动')
