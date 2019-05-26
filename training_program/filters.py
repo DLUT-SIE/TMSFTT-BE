@@ -9,6 +9,6 @@ class ProgramFilter(filters.FilterSet):
     class Meta:
         model = Program
         fields = {
-            'department': ['in'],
+            'department': ['exact'],
             'department__name': ['exact'],
         }
