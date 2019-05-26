@@ -158,6 +158,10 @@ class RecordAttachmentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
         auth.permissions.DjangoObjectPermissions,
     )
 
+    def perform_destroy(self, instance):
+        # TODO: Destroy is allowed only when user has change access to record 
+        instance.delete()
+
 
 class StatusChangeLogViewSet(viewsets.ModelViewSet):
     '''Create API views for StatusChangeLog.'''

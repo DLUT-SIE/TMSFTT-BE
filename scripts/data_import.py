@@ -382,7 +382,7 @@ def assign_model_perms_for_special_groups():
         RecordAttachment: {
             '管理员': ['view'],
             '专任教师': [],
-            '个人权限': ['view'],
+            '个人权限': ['view', 'delete'],
         },
         CampusEventFeedback: {
             '管理员': [],
