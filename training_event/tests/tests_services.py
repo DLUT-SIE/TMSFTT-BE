@@ -34,12 +34,14 @@ class TestCampusEventService(TestCase):
         }
         self.coefficients = [
             {
+                'id': 1,
                 'role': 0,
                 'hours_option': 1,
                 'workload_option': 3,
                 'coefficient': 1,
             },
             {
+                'id': 2,
                 'role': 1,
                 'hours_option': 1,
                 'workload_option': 3,
@@ -80,7 +82,8 @@ class TestCampusEventService(TestCase):
         self.coefficients[0]['coefficient'] = 123
         event1 = CampusEventService.update_campus_event(event,
                                                         self.data,
-                                                        self.coefficients)
+                                                        self.coefficients,
+                                                        self.context)
 
         self.assertEqual(event1.name, '2')
 

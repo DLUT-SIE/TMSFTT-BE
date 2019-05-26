@@ -102,6 +102,13 @@ class CampusEventSerializer(serializers.ModelSerializer):
                 '非校管理员无权修改已经审核通过的培训系数')
         return data
 
+    def validate_reviewed(self, data):
+        '''Forbib update event if reviewed is true.'''
+        if (self.instance and self.instance.reviewed):
+            raise serializers.ValidationError(
+                '活动已被学校管理员审核，不可修改')
+        return data
+
     def create(self, validated_data):
         '''Create event and event coefficient.'''
         coefficients = validated_data.pop('coefficients')
@@ -113,7 +120,8 @@ class CampusEventSerializer(serializers.ModelSerializer):
         coefficients = validated_data.pop('coefficients')
         return CampusEventService.update_campus_event(instance,
                                                       validated_data,
-                                                      coefficients)
+                                                      coefficients,
+                                                      self.context)
 
 
 class OffCampusEventSerializer(serializers.ModelSerializer):

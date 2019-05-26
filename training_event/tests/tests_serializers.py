@@ -83,6 +83,36 @@ class TestCampusEventSerializer(TestCase):
 
         self.assertIsInstance(data, dict)
 
+    def test_validate_reviewd(self):
+        '''
+        Should raise ValidationError if  user tries to
+        update reviewed event.
+        '''
+        event = mommy.make(CampusEvent, reviewed=True)
+        request = Mock()
+        user = Mock()
+        request.user = user
+        context = {
+            'request': request
+        }
+        serializer = CampusEventSerializer(event, context=context)
+        with self.assertRaises(serializers.ValidationError):
+            serializer.validate_reviewed({})
+
+    def test_validate_reviewed_update(self):
+        '''Should skip tests if event is not reviewed.'''
+        event = mommy.make(CampusEvent, reviewed=False)
+        request = Mock()
+        user = Mock()
+        request.user = user
+        context = {
+            'request': request
+        }
+        serializer = CampusEventSerializer(event, context=context)
+        data = serializer.validate_reviewed({})
+
+        self.assertIsInstance(data, dict)
+
     def test_get_enrollment_id(self):
         '''should get enrollments id when serialier events.'''
         event = mommy.make(CampusEvent)
