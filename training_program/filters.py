@@ -10,5 +10,5 @@ class ProgramFilter(filters.FilterSet):
         model = Program
         fields = {
             'department': ['in'],
-            'department__name': ['extract'],
+            'department__name': ['exact'],
         }

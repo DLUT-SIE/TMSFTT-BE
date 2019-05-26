@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework_guardian import filters
 
 import auth.permissions
+import training_program.filters
 import training_program.models
 import training_program.serializers
 from training_program.services import ProgramService
@@ -30,7 +31,7 @@ class ProgramViewSet(MultiSerializerActionClassMixin, viewsets.ModelViewSet):
     permission_classes = (
         auth.permissions.DjangoObjectPermissions,
     )
-    filter_fields = ('department',)
+    filter_class = training_program.filters.ProgramFilter
     perms_map = {
         'get_group_programs': ['%(app_label)s.view_%(model_name)s']
     }
