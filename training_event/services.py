@@ -42,38 +42,43 @@ class CampusEventService:
             PermissionService.assign_object_permissions(
                 context['request'].user, campus_event)
             for coefficient in coefficients:
-                a = EventCoefficient.objects.create(campus_event=campus_event,
+                EventCoefficient.objects.create(campus_event=campus_event,
                                                 **coefficient)
 
             return campus_event
-    
+
     @staticmethod
-    def update_campus_event(event, event_data, coefficient, context=None):
+    def update_campus_event(event, event_data, coefficient):
         '''Update campus event
 
         Parameters
         ----------
         event: CampusEvent
             The event we will update.
-        validated_data: dict
+        event_data: dict
             the event data torole-choices update
-        context: T dict
-            An optional dict to provide contextual information. Default: None
+        coefficient: list
+            the coefficient data for update coefficient
         Returns
         -------
-        event: Program
+        event: CampusEvent
         '''
         with transaction.atomic():
-            #update the event coefficient
+            # update the event coefficient
             for data in coefficient:
-                coefficient_instance = (
-                    EventCoefficient.objects.select_for_update().get(
-                        campus_event = event.id,
-                        role = data['role'])
+                try:
+                    coefficient_instance = (
+                        EventCoefficient.objects.select_for_update().get(
+                            campus_event=event.id,
+                            role=data['role'])
                         )
-            for attr, value in data.items():
-                setattr(coefficient_instance, attr, value)
-            coefficient_instance.save()
+                except Exception:
+                    raise BadRequest('不存在当前活动系数')
+
+                for attr, value in data.items():
+                    setattr(coefficient_instance, attr, value)
+                coefficient_instance.save()
+
             # update the campus event
             for attr, value in event_data.items():
                 setattr(event, attr, value)
