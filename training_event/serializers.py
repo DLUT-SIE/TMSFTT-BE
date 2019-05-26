@@ -104,7 +104,6 @@ class CampusEventSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         '''Create event and event coefficient.'''
-        print("create")
         coefficients = validated_data.pop('coefficients')
         return CampusEventService.create_campus_event(
             validated_data, coefficients, self.context)
