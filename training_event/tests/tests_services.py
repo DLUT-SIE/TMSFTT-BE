@@ -71,6 +71,19 @@ class TestCampusEventService(TestCase):
         self.assertEqual(count_program, 1)
         self.assertEqual(count_event_coefficient, 2)
 
+    def test_update_campus_event(self):
+        '''Should update campus event and coefficient.'''
+        event = CampusEventService.create_campus_event(self.data,
+                                                       self.coefficients,
+                                                       self.context)
+        self.data['name'] = '2'
+        self.coefficients[0]['coefficient'] = 123
+        event1 = CampusEventService.update_campus_event(event,
+                                                        self.data,
+                                                        self.coefficients)
+
+        self.assertEqual(event1.name, '2')
+
 
 class TestEnrollmentService(TestCase):
     '''Test services provided by EnrollmentService.'''
