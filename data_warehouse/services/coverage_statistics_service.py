@@ -220,9 +220,12 @@ class CoverageStatisticsService:
                 raise BadRequest('该培训项目不属于你管理的院系。')
             valid_program_ids = [program_id]
         else:
-            off_campus_event_records = Record.objects.filter(
-                off_campus_event__time__range=(start_time, end_time),
-                user__administrative_department_id__in=department_ids)
+            off_campus_event_records = (
+                Record.objects
+                .filter(off_campus_event__time__range=(start_time, end_time))
+                .filter(user__administrative_department_id__in=department_ids)
+                .select_related('user')
+            )
             valid_program_ids = list(
                 Program.objects.filter(
                     department_id__in=department_ids).values_list(
@@ -231,7 +234,9 @@ class CoverageStatisticsService:
             campus_event__isnull=False,
             campus_event__program_id__in=valid_program_ids,
             campus_event__time__range=(start_time, end_time)
-            )
+            ).select_related('user')
         records = campus_event_records.union(off_campus_event_records)
-        return records.filter(
-            user__teaching_type__in=('专任教师', '实验技术'))
+        return (
+            records
+            .filter(user__teaching_type__in=('专任教师', '实验技术'))
+        )

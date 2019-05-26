@@ -89,33 +89,33 @@ class TestAggregateDataService(TestCase):
         )
         (
             mocked_user_core_service
-            .get_programs_statistics.assert_called_with(self.user)
+            .get_programs_statistics.assert_called()
         )
         (
             mocked_user_core_service
-            .get_events_statistics.assert_called_with(self.user)
+            .get_events_statistics.assert_called()
         )
         (
             mocked_user_core_service
-            .get_records_statistics.assert_called_with(self.user)
+            .get_records_statistics.assert_called()
         )
         (
             mocked_user_core_service
-            .get_competition_award_info.assert_called_with(self.user)
+            .get_competition_award_info.assert_called()
         )
         (
             mocked_user_core_service
-            .get_monthly_added_records_statistics.assert_called_with(self.user)
+            .get_monthly_added_records_statistics.assert_called()
         )
         (
             mocked_user_ranking_service
             .get_total_training_hours_ranking_in_department
-            .assert_called_with(self.user)
+            .assert_called()
         )
         (
             mocked_user_ranking_service
             .get_total_training_hours_ranking_in_school
-            .assert_called_with(self.user)
+            .assert_called()
         )
 
     @patch(

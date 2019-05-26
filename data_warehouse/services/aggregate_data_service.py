@@ -2,43 +2,31 @@
 from django.utils.timezone import now
 from django.utils.timezone import datetime, make_aware
 
-from auth.models import (Department, User)
-from data_warehouse.services.user_core_statistics_service import (
-    UserCoreStatisticsService
-)
-from data_warehouse.services.teachers_statistics_service import (
-    TeachersStatisticsService
-)
-from data_warehouse.services.records_statistics_service import (
-    RecordsStatisticsService
-)
-from data_warehouse.services.canvas_data_formater_service import (
-    CanvasDataFormater
-)
-from data_warehouse.services.school_core_statistics_service import (
-    SchoolCoreStatisticsService
-)
-from data_warehouse.services.user_ranking_service import (
-    UserRankingService
-)
-from data_warehouse.services.workload_service import (
-    WorkloadCalculationService
-)
-from data_warehouse.services.coverage_statistics_service import (
-    CoverageStatisticsService)
-from data_warehouse.services.table_export_service import TableExportService
-from data_warehouse.services.campus_event_feedback_service import (
-    CampusEventFeedbackService
-)
-from data_warehouse.decorators.context_params_check_decorators import (
-    admin_required)
-from data_warehouse.serializers import (
-    CoverageStatisticsSerializer,
-    TrainingFeedbackSerializer
-)
-from data_warehouse.consts import EnumData
+from auth.models import Department, User
 from infra.exceptions import BadRequest
 from training_program.models import Program
+
+from data_warehouse.services import (
+    UserCoreStatisticsService,
+    TeachersStatisticsService,
+    RecordsStatisticsService,
+    CanvasDataFormater,
+    SchoolCoreStatisticsService,
+    UserRankingService,
+    WorkloadCalculationService,
+    CoverageStatisticsService,
+    TableExportService,
+    CampusEventFeedbackService,
+)
+from data_warehouse.decorators import (
+    admin_required,
+)
+from data_warehouse.serializers import (
+    CoverageStatisticsSerializer,
+    TrainingFeedbackSerializer,
+    SummaryParametersSerializer
+)
+from data_warehouse.consts import EnumData
 
 
 class AggregateDataService:
@@ -112,34 +100,42 @@ class AggregateDataService:
     def personal_summary(context):
         '''Populate an overview of training statistics for the user.'''
         request = context.get('request', None)
-        if request is None:
+        user = request.user if request else context.get('user', None)
+        if not user:
             raise BadRequest('参数错误')
-        user = request.user
+        serializer = SummaryParametersSerializer(data=context)
+        serializer.is_valid(raise_exception=True)
+        context = serializer.data
+        context['request'] = request
 
         res = {
             'programs_statistics': (
-                UserCoreStatisticsService.get_programs_statistics(user)
+                UserCoreStatisticsService.get_programs_statistics(
+                    user, context)
             ),
             'events_statistics': (
-                UserCoreStatisticsService.get_events_statistics(user)
+                UserCoreStatisticsService.get_events_statistics(
+                    user, context)
             ),
             'records_statistics': (
-                UserCoreStatisticsService.get_records_statistics(user)
+                UserCoreStatisticsService.get_records_statistics(
+                    user, context)
             ),
             'competition_award_info': (
-                UserCoreStatisticsService.get_competition_award_info(user)
+                UserCoreStatisticsService.get_competition_award_info(
+                    user, context)
             ),
             'monthly_added_records': (
                 UserCoreStatisticsService
-                .get_monthly_added_records_statistics(user)
+                .get_monthly_added_records_statistics(user, context)
             ),
             'ranking_in_department': (
                 UserRankingService
-                .get_total_training_hours_ranking_in_department(user)
+                .get_total_training_hours_ranking_in_department(user, context)
             ),
             'ranking_in_school': (
                 UserRankingService
-                .get_total_training_hours_ranking_in_school(user)
+                .get_total_training_hours_ranking_in_school(user, context)
             ),
         }
         return res

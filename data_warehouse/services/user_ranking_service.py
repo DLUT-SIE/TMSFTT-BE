@@ -37,7 +37,8 @@ class UserRankingService:
         return ranking
 
     @classmethod
-    def get_total_training_hours_ranking_in_department(cls, user):
+    def get_total_training_hours_ranking_in_department(cls, user,
+                                                       context=None):
         '''
         Human-readable string for user's ranking in department (by total
         training hours).
@@ -45,6 +46,9 @@ class UserRankingService:
         Parameters
         ----------
         user: User
+        context: dict
+            This context dictionary should have necessary keys specified in
+            SummaryParametersSerializer.
 
         Return
         ------
@@ -73,7 +77,7 @@ class UserRankingService:
         return res
 
     @classmethod
-    def get_total_training_hours_ranking_in_school(cls, user):
+    def get_total_training_hours_ranking_in_school(cls, user, context=None):
         '''
         Human-readable string for user's ranking in school (by total
         training hours).
@@ -81,6 +85,9 @@ class UserRankingService:
         Parameters
         ----------
         user: User
+        context: dict
+            This context dictionary should have necessary keys specified in
+            SummaryParametersSerializer.
 
         Return
         ------

@@ -1,0 +1,74 @@
+<style>
+    a {
+        text-decoration: none;
+    }
+    div {
+        width: 100%;
+    }
+    .ml2 {
+        margin-left: 2em;
+    }
+    .large {
+        font-size: 2em;
+    }
+    .text-important {
+        font-weight: bold;
+        color: rgb(99, 114, 191);
+    }
+</style>
+<div>
+<p>{{ user.first_name }}老师您好，</p>
+<p class="ml2">
+    根据<a href="https://{{ site.domain }}" class="text-important">{{ site.name }}</a>统计，
+    您<span class="text-important large">{{ year_of_the_data }}</span>年参与教师教学发展中心培训相关活动的数据如下：
+</p>
+<ul class="ml2">
+    <li>
+        报名校内培训活动次数：
+        <a href="https://{{ site.domain }}/users/statistics/summary-analysis">
+            <span class="text-important large">
+                {{ data.events_statistics.num_enrolled_events }}
+            </span>
+        </a> 次
+    </li>
+    <li>
+        完成校内培训活动次数：
+        <a href="https://{{ site.domain }}/users/statistics/summary-analysis">
+            <span class="text-important large">
+                {{ data.events_statistics.num_completed_events }}
+            </span>
+        </a> 次
+    </li>
+    <li>
+        以专家身份参与校内培训活动次数：
+        <a href="https://{{ site.domain }}/users/statistics/summary-analysis">
+            <span class="text-important large">
+                {{ data.events_statistics.num_events_as_expert }}
+            </span>
+        </a> 次
+    </li>
+    <li>
+        参加校内培训次数（占比）：
+        <a href="https://{{ site.domain }}/users/statistics/summary-analysis">
+            <span class="text-important large">
+                {{ data.records_statistics.num_campus_records }}
+            </span>
+        </a> 次
+        <span>
+            ({{ data.records_statistics.campus_records_ratio }})
+        </span>
+    </li>
+    <li>
+        参加校外培训次数（占比）：
+        <a href="https://{{ site.domain }}/users/statistics/summary-analysis">
+            <span class="text-important large">
+                {{ data.records_statistics.num_off_campus_records }}
+            </span>
+        </a> 次
+        <span>
+            ({{ data.records_statistics.off_campus_records_ratio }})
+        </span>
+</ul>
+<p>该数据<span class="text-important large">低于</span>全校平均水平，希望您今年能够多多参与我们的活动。</p>
+<p style="text-align: right">教师教学发展中心</p>
+</div>
