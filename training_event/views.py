@@ -9,8 +9,8 @@ import django_filters
 import auth.permissions
 from training_event.services import EnrollmentService, CampusEventService
 import training_event.models
-from training_event.serializers import (CampusEventSerializer,
-                                        CampusEventCreateSerializer,
+from training_event.serializers import (ReadOnlyCampusEventSerializer,
+                                        CampusEventSerializer,
                                         OffCampusEventSerializer,
                                         EnrollmentSerailizer)
 import training_event.serializers 
@@ -29,12 +29,12 @@ class CampusEventViewSet(MultiSerializerActionClassMixin,
         .order_by('-time')
     )
     serializer_action_classes = {
-        'create': CampusEventCreateSerializer,
-        'update': CampusEventCreateSerializer,
-        'delete': CampusEventCreateSerializer,
-        'partial_update': CampusEventCreateSerializer,
+        'create': CampusEventSerializer,
+        'update': CampusEventSerializer,
+        'delete': CampusEventSerializer,
+        'partial_update': CampusEventSerializer,
     }
-    serializer_class = CampusEventSerializer
+    serializer_class = ReadOnlyCampusEventSerializer
     filter_class = training_event.filters.CampusEventFilter
     filter_backends = (filters.DjangoObjectPermissionsFilter,
                        django_filters.rest_framework.DjangoFilterBackend,)
