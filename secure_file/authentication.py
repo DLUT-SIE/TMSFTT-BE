@@ -1,3 +1,4 @@
+'''Authentication class to allow cookie authentication.'''
 from django.conf import settings
 from rest_framework_jwt.authentication import BaseJSONWebTokenAuthentication
 
