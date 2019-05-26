@@ -159,7 +159,7 @@ class RecordAttachmentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
     )
 
     def perform_destroy(self, instance):
-        # TODO: Destroy is allowed only when user has change access to record 
+        # TODO: Destroy is allowed only when user has change access to record
         instance.delete()
 
 
