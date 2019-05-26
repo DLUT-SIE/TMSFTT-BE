@@ -133,6 +133,7 @@ class RecordAttachment(models.Model):
         default_permissions = ()
         permissions = (
             ('view_recordattachment', '允许查看培训记录附件'),
+            ('delete_recordattachment', '允许删除培训记录附件'),
         )
 
     create_time = models.DateTimeField(verbose_name='创建时间',

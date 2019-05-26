@@ -125,6 +125,21 @@ class TestRecordViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 10)
 
+    def test_search_record_with_no_query_params(self):
+        '''should return matched records'''
+        url = reverse('record-list') + '?start_time=2013-09-09&'\
+            'end_time=2014-08-08&event_name=a&event_location=a'
+        for _ in range(10):
+            off_campus_event = mommy.make(training_event.models.OffCampusEvent)
+            record = mommy.make(Record,
+                                user=self.user,
+                                off_campus_event=off_campus_event,)
+            PermissionService.assign_object_permissions(self.user, record)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 0)
+
     def test_get_record(self):
         '''Record should be accessed by GET request.'''
         campus_event = mommy.make(training_event.models.CampusEvent)

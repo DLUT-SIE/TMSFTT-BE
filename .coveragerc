@@ -8,3 +8,5 @@ omit =
     TMSFTT/urls.py,
     mock_cas/*,
     data_migration/*,
+    auth/authentication.py,
+    secure_file/authentication.py,
