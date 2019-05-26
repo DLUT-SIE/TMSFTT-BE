@@ -44,11 +44,14 @@ class CampusEventService:
             for coefficient in coefficients:
                 EventCoefficient.objects.create(campus_event=campus_event,
                                                 **coefficient)
-
+            user = context['request'].user
+            msg = (f'用户{user}创建了名称为'
+                   + f'{campus_event.name}的培训活动')
+            prod_logger.info(msg)
             return campus_event
 
     @staticmethod
-    def update_campus_event(event, event_data, coefficient):
+    def update_campus_event(event, event_data, coefficients, context=None):
         '''Update campus event
 
         Parameters
@@ -56,16 +59,20 @@ class CampusEventService:
         event: CampusEvent
             The event we will update.
         event_data: dict
-            the event data torole-choices update
-        coefficient: list
+            the event data dict to role-choices update event
+        coefficients: list
             the coefficient data for update coefficient
+        context: dict
+            An optional dict to provide contextual information. Default: None
         Returns
         -------
         event: CampusEvent
         '''
         with transaction.atomic():
             # update the event coefficient
-            for data in coefficient:
+            for data in coefficients:
+                if 'id' in data:
+                    data.pop('id')
                 try:
                     coefficient_instance = (
                         EventCoefficient.objects.select_for_update().get(
@@ -82,7 +89,12 @@ class CampusEventService:
             # update the campus event
             for attr, value in event_data.items():
                 setattr(event, attr, value)
+            # log the update
+            user = context['request'].user
             event.save()
+            msg = (f'用户{user}修改了名称为'
+                   + f'{event.name}的培训活动')
+            prod_logger.info(msg)
             return event
 
 
