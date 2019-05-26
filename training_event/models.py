@@ -124,6 +124,10 @@ class EventCoefficient(models.Model):
         verbose_name = '培训活动系数'
         verbose_name_plural = '培训活动系数'
         default_permissions = ()
+        unique_together = (
+            ('campus_event', 'role'),
+            ('off_campus_event', 'role'),
+        )
 
     campus_event = models.ForeignKey(CampusEvent, verbose_name='校内培训活动',
                                      blank=True, null=True,
