@@ -86,6 +86,7 @@ class ReadOnlyRecordSerializer(serializers.ModelSerializer):
         '''Get status of whether ordinary user can edit record or not.'''
         allow_user_action_status = (
             Record.STATUS_SUBMITTED,
+            Record.STATUS_DEPARTMENT_ADMIN_APPROVED,
             Record.STATUS_DEPARTMENT_ADMIN_REJECTED,
             Record.STATUS_SCHOOL_ADMIN_REJECTED
         )
