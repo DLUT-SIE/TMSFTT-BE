@@ -47,7 +47,7 @@ class CampusEventService:
             # log the create
             user = context['request'].user
             msg = (f'用户{user}创建了名称为'
-                   + f'{campus_event.name}的培训活动')
+                   + f'{campus_event.name}({campus_event.id})的培训活动')
             prod_logger.info(msg)
             return campus_event
 
@@ -94,7 +94,7 @@ class CampusEventService:
             user = context['request'].user
             event.save()
             msg = (f'用户{user}修改了名称为'
-                   + f'{event.name}的培训活动')
+                   + f'{event.name}({event.id})的培训活动')
             prod_logger.info(msg)
             return event
 
