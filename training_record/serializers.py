@@ -64,8 +64,8 @@ class ReadOnlyRecordSerializer(serializers.ModelSerializer):
     role = serializers.IntegerField(
         source='event_coefficient.role',
         read_only=True)
-    allow_actions_from_user = serializers.BooleanField(read_only=True,
-                                                       default=False)
+    allow_actions_from_user = (
+        serializers.SerializerMethodField(read_only=True))
     allow_actions_from_department_admin = (
         serializers.SerializerMethodField(read_only=True))
     allow_actions_from_school_admin = (
@@ -81,6 +81,15 @@ class ReadOnlyRecordSerializer(serializers.ModelSerializer):
                   'allow_actions_from_user',
                   'allow_actions_from_department_admin',
                   'allow_actions_from_school_admin')
+
+    def get_allow_actions_from_user(self, obj):
+        '''Get status of whether ordinary user can edit record or not.'''
+        allow_user_action_status = (
+            Record.STATUS_SUBMITTED,
+            Record.STATUS_DEPARTMENT_ADMIN_REJECTED,
+            Record.STATUS_SCHOOL_ADMIN_REJECTED
+        )
+        return obj.status in allow_user_action_status
 
     def get_allow_actions_from_department_admin(self, obj):
         '''Get status of whether department admin can review or not.'''
