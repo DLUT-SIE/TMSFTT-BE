@@ -39,7 +39,7 @@ class TrainingHoursStatisticsService:
         department_id = None
         if user.is_department_admin:
             department_id = user.administrative_department.id
-        tmp_records = CoverageStatisticsService.get_traning_records(
+        tmp_records = CoverageStatisticsService.get_training_records(
             user, department_id=department_id,
             start_time=start_time, end_time=end_time)
         # filter departments with T3 type.
