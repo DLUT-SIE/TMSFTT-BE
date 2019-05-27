@@ -1,11 +1,11 @@
 '''培训学时与工作量测试模块'''
+from unittest.mock import (MagicMock, PropertyMock, patch)
 from django.test import TestCase
 from django.utils.timezone import now
-from unittest.mock import (MagicMock, PropertyMock, patch)
+from model_mommy import mommy
 from data_warehouse.services.training_hours_statistics_service import (
     TrainingHoursStatisticsService
 )
-from model_mommy import mommy
 from auth.models import (User, Department)
 from training_record.models import Record
 
@@ -54,14 +54,14 @@ class TestTrainingHoursStatisticsService(TestCase):
         mock_get_training_records.return_value = Record.objects.filter(
             id__in=[item.id for item in self.mock_records]
         )
-        self.mock_user = MagicMock()
-        type(self.mock_user).is_school_admin = PropertyMock(return_value=True)
-        type(self.mock_user).is_department_admin = PropertyMock(
+        mock_user = MagicMock()
+        type(mock_user).is_school_admin = PropertyMock(return_value=True)
+        type(mock_user).is_department_admin = PropertyMock(
             return_value=False)
         start_time = now().replace(year=self.mock_time.year-1)
         end_time = now().replace(year=self.mock_time.year+1)
         data = TrainingHoursStatisticsService.get_training_hours_data(
-            self.mock_user, start_time, end_time)
+            mock_user, start_time, end_time)
         mock_get_training_records.assert_called()
         self.assertNotEqual(0, len(data))
         expected_keys = {'department', 'total_hours',
@@ -75,16 +75,16 @@ class TestTrainingHoursStatisticsService(TestCase):
             id__in=[item.id for item in self.mock_records],
             user__administrative_department=self.mock_departments[0]
         )
-        self.mock_user = MagicMock()
-        type(self.mock_user).is_school_admin = PropertyMock(return_value=False)
-        type(self.mock_user).is_department_admin = PropertyMock(
+        mock_user = MagicMock()
+        type(mock_user).is_school_admin = PropertyMock(return_value=False)
+        type(mock_user).is_department_admin = PropertyMock(
             return_value=True)
-        type(self.mock_user.administrative_department).id = PropertyMock(
+        type(mock_user.administrative_department).id = PropertyMock(
             return_value=self.mock_departments[0].id)
         start_time = now().replace(year=self.mock_time.year-1)
         end_time = now().replace(year=self.mock_time.year+1)
         data = TrainingHoursStatisticsService.get_training_hours_data(
-            self.mock_user, start_time, end_time)
+            mock_user, start_time, end_time)
         mock_get_training_records.assert_called()
         self.assertEqual(1, len(data))
         expected_keys = {'department', 'total_hours',
