@@ -40,9 +40,9 @@ class ReadOnlyCampusEventSerializer(serializers.ModelSerializer):
         model = training_event.models.CampusEvent
         fields = ('id', 'name', 'time', 'location', 'create_time',
                   'update_time', 'reviewed', 'expired', 'enrolled',
-                  'enrollment_id', 'num_hours', 'num_participants',
-                  'program', 'program_detail', 'coefficients',
-                  'deadline', 'description')
+                  'enrollment_id', 'num_hours', 'num_enrolled',
+                  'num_participants', 'program', 'program_detail',
+                  'coefficients', 'deadline', 'description')
 
     def get_expired(self, obj):
         '''Get event expired status.'''
