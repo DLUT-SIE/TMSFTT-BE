@@ -30,8 +30,9 @@ class ProgramService:
         with transaction.atomic():
             program = Program.objects.create(**program_data)
             user = context['request'].user
-            msg = (f'用户{user}创建了培训机构为'
-                   + f'{program.department}的培训项目{program.name}')
+            msg = (
+                f'用户{user}创建了培训项目{program}({program.department})'
+            )
             prod_logger.info(msg)
             PermissionService.assign_object_permissions(
                 context['request'].user, program)
@@ -43,11 +44,13 @@ class ProgramService:
 
         Parameters
         ----------
-        program: Program
+        program: dict
             The program we will update.
-        category: Categoty
-            The categoty of which the program is related to.
-        name: The program's name
+        validated_data: Categoty
+            This dict should have full information needed to
+            update an Program.
+        context: dict
+            An optional dict to provide contextual information. Default: None
 
         Returns
         -------
@@ -61,8 +64,9 @@ class ProgramService:
 
         # log the update
         user = context['request'].user
-        msg = (f'用户{user}修改了培训机构为'
-               + f'{program.department}的培训项目{program.name}')
+        msg = (
+            f'用户{user}更新了培训项目 {program}({program.department})'
+        )
         prod_logger.info(msg)
         return program
 
