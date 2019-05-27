@@ -231,8 +231,12 @@ class AggregateDataService:
         '''to get training hours statistics data'''
 
     @classmethod
+    @admin_required()
     def table_trainee_statistics(cls, context):
         '''培训学时与工作量'''
+        request = context.get('request')
+        start_time = context.get('start_time')
+        end_time = context.get('end_time')
 
     @classmethod
     def coverage_statistics(cls, context):
@@ -261,7 +265,7 @@ class AggregateDataService:
         end_time = make_aware(
             datetime.strptime(end_year + '-1-1', '%Y-%m-%d'))
         group_by = int(group_by)
-        records = CoverageStatisticsService.get_traning_records(
+        records = CoverageStatisticsService.get_training_records(
             context['request'].user, program_id, department_id,
             start_time, end_time)
         users_qs = User.objects.filter(id__in=records.values_list(
@@ -325,7 +329,7 @@ class AggregateDataService:
         end_time = context.get('end_time', None)
         department_id = context.get('department_id', None)
 
-        records = CoverageStatisticsService.get_traning_records(
+        records = CoverageStatisticsService.get_training_records(
             request.user, program_id, department_id, start_time, end_time)
         users_qs = User.objects.filter(id__in=records.values_list(
             'user', flat=True).distinct())

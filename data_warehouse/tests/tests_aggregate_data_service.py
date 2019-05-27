@@ -217,7 +217,7 @@ class TestAggregateDataService(TestCase):
         AggregateDataService.table_coverage_statistics(context)
         (
             mock_coverage_statistics_service
-            .get_traning_records.assert_called_with(
+            .get_training_records.assert_called_with(
                 request.user,
                 None,
                 None,

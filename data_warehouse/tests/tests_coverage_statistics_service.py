@@ -237,7 +237,7 @@ class TestCoverageStatisticsService(TestCase):
         end_time = now()
         start_time = end_time.replace(month=1, day=1)
         with self.assertRaisesMessage(BadRequest, '你不是管理员，无权操作。'):
-            CoverageStatisticsService.get_traning_records(
+            CoverageStatisticsService.get_training_records(
                 None,
                 program_id,
                 None,
@@ -245,7 +245,7 @@ class TestCoverageStatisticsService(TestCase):
                 end_time,
             )
         with self.assertRaisesMessage(BadRequest, '你不是管理员，无权操作。'):
-            CoverageStatisticsService.get_traning_records(
+            CoverageStatisticsService.get_training_records(
                 self.mock_normal_user,
                 program_id,
                 None,
@@ -255,7 +255,7 @@ class TestCoverageStatisticsService(TestCase):
         assert not self.sie_admin.check_department_admin(
             Department.objects.get(name='管理学院'))
         with self.assertRaisesMessage(BadRequest, '你不是该院系的管理员，无权操作。'):
-            CoverageStatisticsService.get_traning_records(
+            CoverageStatisticsService.get_training_records(
                 self.sie_admin,
                 program_id,
                 Department.objects.get(name='管理学院').id,
@@ -263,7 +263,7 @@ class TestCoverageStatisticsService(TestCase):
                 end_time,
             )
         with self.assertRaisesMessage(BadRequest, '培训项目不存在。'):
-            CoverageStatisticsService.get_traning_records(
+            CoverageStatisticsService.get_training_records(
                 self.sie_admin,
                 -1,
                 Department.objects.get(name='创新创业学院').id,
@@ -271,7 +271,7 @@ class TestCoverageStatisticsService(TestCase):
                 end_time,
             )
         with self.assertRaisesMessage(BadRequest, '你不是校级管理员，必须指定部门ID。'):
-            CoverageStatisticsService.get_traning_records(
+            CoverageStatisticsService.get_training_records(
                 self.sie_admin,
                 None,
                 department_id=None,
@@ -279,7 +279,7 @@ class TestCoverageStatisticsService(TestCase):
                 end_time=end_time,
             )
         with self.assertRaisesMessage(BadRequest, '该培训项目不属于你管理的院系。'):
-            CoverageStatisticsService.get_traning_records(
+            CoverageStatisticsService.get_training_records(
                 self.sie_admin,
                 self.mock_program_ms.id,
                 Department.objects.get(name='创新创业学院').id,
@@ -287,7 +287,7 @@ class TestCoverageStatisticsService(TestCase):
                 end_time,
             )
         with self.assertRaisesMessage(BadRequest, '部门不存在。'):
-            CoverageStatisticsService.get_traning_records(
+            CoverageStatisticsService.get_training_records(
                 self.sie_admin,
                 self.mock_program_ms.id,
                 -1,
@@ -299,7 +299,7 @@ class TestCoverageStatisticsService(TestCase):
         '''Should 根据项目ID和起始时间查询所有的培训记录（包含校内和校外活动)'''
         end_time = now()
         start_time = end_time.replace(month=1, day=1)
-        records = CoverageStatisticsService.get_traning_records(
+        records = CoverageStatisticsService.get_training_records(
             self.sie_admin,
             self.mock_program_sie.id,
             Department.objects.get(name='创新创业学院').id,
@@ -313,7 +313,7 @@ class TestCoverageStatisticsService(TestCase):
             self.assertIsInstance(user, User)
             self.assertIsInstance(user.department, Department)
 
-        records = CoverageStatisticsService.get_traning_records(
+        records = CoverageStatisticsService.get_training_records(
             self.sie_admin,
             None,
             Department.objects.get(name='创新创业学院').id,
@@ -332,7 +332,7 @@ class TestCoverageStatisticsService(TestCase):
             year=2007, month=12, day=31, hour=23, minute=59, second=59)
         start_time = now().replace(
             year=2003, month=12, day=31, hour=23, minute=59, second=59)
-        records = CoverageStatisticsService.get_traning_records(
+        records = CoverageStatisticsService.get_training_records(
             self.sie_admin,
             None,
             Department.objects.get(name='创新创业学院').id,
