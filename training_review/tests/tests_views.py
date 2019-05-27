@@ -7,7 +7,6 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from auth.utils import assign_perm
-from auth.services import PermissionService
 import training_review.models as treview
 import training_record.models as trecord
 import training_event.models as tevent

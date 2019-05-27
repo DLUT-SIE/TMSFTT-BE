@@ -8,7 +8,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.test import override_settings
 from django.urls import reverse
-from django.utils.timezone import now
 from model_mommy import mommy
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -18,8 +17,7 @@ from auth.services import PermissionService
 from auth.models import Department
 import training_record.models
 from training_record.models import (
-    Record, RecordContent, StatusChangeLog,
-    CampusEventFeedback)
+    Record, RecordContent, CampusEventFeedback)
 import training_event.models
 from training_event.models import EventCoefficient
 
