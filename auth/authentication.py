@@ -20,9 +20,11 @@ class JSONWebTokenAuthentication(BaseJSONWebTokenAuthentication):
         Authorization: JWT eyJhbGciOiAiSFMyNTYiLCAidHlwIj
 
     This version disables authentication with cookie by checking
-    settings.JWT_AUTH_COOKIE instead of api_settings.JWT_AUTH_COOKIE,
-    so the api_settings.JWT_AUTH_COOKIE will remains True so that our clients
-    can get cookies correctly.
+    `settings.JWT_AUTH_COOKIE` instead of `api_settings.JWT_AUTH_COOKIE`,
+    so the `api_settings.JWT_AUTH_COOKIE` will remains True so that our clients
+    can get cookies correctly. If `request.path` starts with any routes listed
+    in `settings.JWT_AUTH_COOKIE_WHITELIST` then cookie authentication will be
+    permitted.
     """
     www_authenticate_realm = 'api'
 
@@ -30,6 +32,14 @@ class JSONWebTokenAuthentication(BaseJSONWebTokenAuthentication):
         '''Try to authenticate user.'''
         auth = get_authorization_header(request).split()
         auth_header_prefix = api_settings.JWT_AUTH_HEADER_PREFIX.lower()
+
+        # If request.path matches any routes listed in
+        # settings.JWT_AUTH_COOKIE_WHITELIST, then cookie-based authentication
+        # will be permitted.
+        if not auth and any(
+                request.path.startswith(x)
+                for x in settings.JWT_AUTH_COOKIE_WHITELIST):
+            return request.COOKIES.get(api_settings.JWT_AUTH_COOKIE)
 
         if not auth:
             if settings.JWT_AUTH_COOKIE:
