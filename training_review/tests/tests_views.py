@@ -55,28 +55,3 @@ class TestReviewNoteViewSet(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_delete_review_note(self):
-        '''ReviewNote should be deleted by DELETE request.'''
-        off_campus_event = mommy.make(tevent.OffCampusEvent)
-        record = mommy.make(trecord.Record, off_campus_event=off_campus_event)
-        review_note = mommy.make(treview.ReviewNote, record=record)
-        url = reverse('reviewnote-detail', args=(review_note.pk,))
-
-        response = self.client.delete(url)
-
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_get_review_note(self):
-        '''ReviewNote should be accessed by GET request.'''
-        off_campus_event = mommy.make(tevent.OffCampusEvent)
-        record = mommy.make(trecord.Record, off_campus_event=off_campus_event)
-        review_note = mommy.make(treview.ReviewNote, record=record)
-        PermissionService.assign_object_permissions(self.user, review_note)
-        url = reverse('reviewnote-detail', args=(review_note.pk,))
-
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('id', response.data)
-        self.assertEqual(response.data['id'], review_note.id)

@@ -95,7 +95,7 @@ class DepartmentService:
         '''
         departments = Department.objects.filter(name='大连理工大学')
         top_department = []
-        if departments.exists():
+        if departments:
             dlut_department = departments[0]
             top_department = dlut_department.child_departments.all()
         return Department.objects.all().filter(

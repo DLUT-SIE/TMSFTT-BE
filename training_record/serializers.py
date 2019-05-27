@@ -19,7 +19,7 @@ from training_record.services import RecordService, CampusEventFeedbackService
 from secure_file.fields import SecureFileField
 from training_event.models import EventCoefficient
 from training_event.serializers import (
-    ReadOnlyCampusEventSerializer, OffCampusEventSerializer
+    BasicReadOnlyCampusEventSerializer, OffCampusEventSerializer
 )
 
 
@@ -65,7 +65,7 @@ class ReadOnlyRecordSerializer(serializers.ModelSerializer):
         source='event_coefficient.role',
         read_only=True)
     off_campus_event = OffCampusEventSerializer(read_only=True)
-    campus_event = ReadOnlyCampusEventSerializer(read_only=True)
+    campus_event = BasicReadOnlyCampusEventSerializer(read_only=True)
 
     class Meta:
         model = Record

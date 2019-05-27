@@ -49,6 +49,9 @@ class BrowsableAPIRendererWithoutForms(
         """We never want to do this! So just return False."""
         return False
 
+    def get_filter_form(self, data, view, request):
+        return
+
     def get_rendered_html_form(self, data, view, method, request):
         """Why render _any_ forms at all. This method should return
         rendered HTML, so let's simply return an empty string.

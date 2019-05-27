@@ -1,5 +1,6 @@
 '''Define ORM models for auth module.'''
 from django.contrib.auth.models import Permission, AbstractUser, Group
+from django.core.cache import cache
 from django.db import models
 
 from auth.utils import (
@@ -114,18 +115,36 @@ class User(AbstractUser):
     @property
     def is_teacher(self):
         '''Field to indicate whether the user is a teacher.'''
-        return self.groups.filter(name__endswith='专任教师').exists()
+        cache_key = f'is_teacher:{self.id}'
+        cached_result = cache.get(cache_key)
+        if cached_result is not None:
+            return cached_result
+        res = self.groups.filter(name__endswith='专任教师').exists()
+        cache.set(cache_key, res, 10 * 60)
+        return res
 
     @property
     def is_department_admin(self):
         '''Field to indicate whether the user is a department admin.'''
-        return self.groups.filter(name__endswith='管理员').exists()
+        cache_key = f'is_department_admin:{self.id}'
+        cached_result = cache.get(cache_key)
+        if cached_result is not None:
+            return cached_result
+        res = self.groups.filter(name__endswith='管理员').exists()
+        cache.set(cache_key, res, 10 * 60)
+        return res
 
     @property
     def is_school_admin(self):
         '''Field to indicate whether the user is a superadmin.'''
-        return self.is_staff or self.is_superuser or self.groups.filter(
+        cache_key = f'is_school_admin:{self.id}'
+        cached_result = cache.get(cache_key)
+        if cached_result is not None:
+            return cached_result
+        res = self.is_staff or self.is_superuser or self.groups.filter(
             name='大连理工大学-管理员').exists()
+        cache.set(cache_key, res, 10 * 60)
+        return res
 
     def check_department_admin(self, department):
         '''check department admin.'''

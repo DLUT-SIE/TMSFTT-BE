@@ -209,30 +209,6 @@ class TestOffCampusEventViewSet(APITestCase):
     def setUp(self):
         self.client.force_authenticate(self.user)
 
-    def test_create_off_campus_event(self):
-        '''OffCampusEvent should be created by POST request.'''
-        url = reverse('offcampusevent-list')
-        name = 'event'
-        time = now()
-        location = 'location'
-        num_hours = 10
-        num_participants = 100
-        data = {
-            'name': name,
-            'time': time,
-            'location': location,
-            'num_hours': num_hours,
-            'num_participants': num_participants,
-        }
-
-        response = self.client.post(url, data, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(
-            training_event.models.OffCampusEvent.objects.count(), 1)
-        self.assertEqual(
-            training_event.models.OffCampusEvent.objects.get().name, name)
-
     def test_list_off_campus_event(self):
         '''OffCampusEvents list should be accessed by GET request.'''
         url = reverse('offcampusevent-list')
@@ -240,43 +216,6 @@ class TestOffCampusEventViewSet(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_delete_off_campus_event(self):
-        '''OffCampusEvent should be deleted by DELETE request.'''
-        off_campus_event = mommy.make(training_event.models.OffCampusEvent)
-        url = reverse('offcampusevent-detail', args=(off_campus_event.pk,))
-
-        response = self.client.delete(url)
-
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(
-            training_event.models.OffCampusEvent.objects.count(), 0)
-
-    def test_get_off_campus_event(self):
-        '''OffCampusEvent should be accessed by GET request.'''
-        off_campus_event = mommy.make(training_event.models.OffCampusEvent)
-        url = reverse('offcampusevent-detail', args=(off_campus_event.pk,))
-
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('id', response.data)
-        self.assertEqual(response.data['id'], off_campus_event.id)
-
-    def test_update_off_campus_event(self):
-        '''OffCampusEvent should be updated by PATCH request.'''
-        name0 = 'off_campus_event0'
-        name1 = 'off_campus_event1'
-        off_campus_event = mommy.make(training_event.models.OffCampusEvent,
-                                      name=name0)
-        url = reverse('offcampusevent-detail', args=(off_campus_event.pk,))
-        data = {'name': name1}
-
-        response = self.client.patch(url, data, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('name', response.data)
-        self.assertEqual(response.data['name'], name1)
 
 
 class TestEnrollmentViewSet(APITestCase):
@@ -308,13 +247,6 @@ class TestEnrollmentViewSet(APITestCase):
         obj = training_event.models.Enrollment.objects.get()
         self.assertEqual(obj.campus_event.pk, campus_event.pk)
 
-    def test_list_enrollment(self):
-        '''Enrollments list should be accessed by GET request.'''
-        url = reverse('enrollment-list')
-
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
     def test_delete_enrollment(self):
         '''Enrollment should be deleted by DELETE request.'''
         user = mommy.make(User)
@@ -330,15 +262,6 @@ class TestEnrollmentViewSet(APITestCase):
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
-    def test_get_enrollment(self):
-        '''Enrollment should be accessed by GET request.'''
-        enrollment = mommy.make(training_event.models.Enrollment)
-        url = reverse('enrollment-detail', args=(enrollment.pk,))
-        PermissionService.assign_object_permissions(self.user, enrollment)
-
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_update_enrollment(self):
         '''Enrollment should NOT be updated by PATCH request.'''

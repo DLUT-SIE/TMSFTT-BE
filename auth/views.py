@@ -36,10 +36,13 @@ class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     '''Create API views for User.'''
-    queryset = (User.objects
-                .select_related('department')
-                .prefetch_related('user_permissions')
-                .all())
+    queryset = (
+        User.objects
+        .select_related('department', 'administrative_department')
+        .prefetch_related('groups')
+        .all()
+        .order_by('id')
+    )
     serializer_class = auth.serializers.UserSerializer
     permission_classes = (
         auth.permissions.SchoolAdminOnlyPermission,
@@ -88,7 +91,9 @@ class UserGroupViewSet(mixins.CreateModelMixin,
 class GroupPermissionViewSet(BulkCreateModelMixin,
                              viewsets.ModelViewSet):
     '''Create API views for GroupPermission.'''
-    queryset = (auth.models.GroupPermission.objects.all())
+    queryset = (
+        auth.models.GroupPermission.objects.all()
+    )
     serializer_class = auth.serializers.GroupPermissionSerializer
     permission_classes = (
         auth.permissions.SchoolAdminOnlyPermission,

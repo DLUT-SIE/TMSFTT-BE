@@ -1,5 +1,6 @@
 '''Provide API views for training_program module.'''
 import django_filters
+from django.core.cache import cache
 from rest_framework.decorators import action
 from rest_framework import views, viewsets, status
 from rest_framework.response import Response
@@ -48,11 +49,15 @@ class ProgramCategoryView(views.APIView):
     '''get program categories from background.'''
     def get(self, request, format=None):  # pylint: disable=redefined-builtin
         '''define how to get program categories'''
-        program_categories = [
-            {
-                'type': program_type,
-                'name': program_type_name,
-            } for program_type, program_type_name in (
-                training_program.models.Program.PROGRAM_CATEGORY_CHOICES)
-        ]
+        cache_key = 'program-categories'
+        program_categories = cache.get(cache_key)
+        if program_categories is None:
+            program_categories = [
+                {
+                    'type': program_type,
+                    'name': program_type_name,
+                } for program_type, program_type_name in (
+                    training_program.models.Program.PROGRAM_CATEGORY_CHOICES)
+            ]
+            cache.set(cache_key, program_categories, 10 * 60)
         return Response(program_categories, status=status.HTTP_200_OK)

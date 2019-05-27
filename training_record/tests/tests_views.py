@@ -362,25 +362,6 @@ class TestStatusChangeLogViewSet(APITestCase):
     def setUp(self):
         self.client.force_authenticate(self.user)
 
-    def test_create_status_change_log(self):
-        '''StatusChangeLog should be created by POST request.'''
-        url = reverse('statuschangelog-list')
-
-        campus_event = mommy.make(training_event.models.CampusEvent)
-        record = mommy.make(training_record.models.Record,
-                            campus_event=campus_event)
-        user = mommy.make(User)
-        time = now()
-        data = {'user': user.id, 'time': time, 'record': record.id}
-
-        response = self.client.post(url, data, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(StatusChangeLog.objects.count(), 1)
-        self.assertEqual(StatusChangeLog.objects.get().user.id, user.id)
-        self.assertEqual(StatusChangeLog.objects.get().record.id, record.id)
-        self.assertEqual(StatusChangeLog.objects.get().time, time)
-
     def test_list_status_change_log(self):
         '''StatusChangeLog list should be accessed by GET request.'''
         url = reverse('statuschangelog-list')
@@ -388,20 +369,6 @@ class TestStatusChangeLogViewSet(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_delete_status_change_log(self):
-        '''StatusChangeLog should be deleted by DELETE request.'''
-        campus_event = mommy.make(training_event.models.CampusEvent)
-        record = mommy.make(training_record.models.Record,
-                            campus_event=campus_event)
-        log = mommy.make(training_record.models.StatusChangeLog,
-                         record=record)
-        url = reverse('statuschangelog-detail', args=(log.pk,))
-
-        response = self.client.delete(url)
-
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(StatusChangeLog.objects.count(), 0)
 
     def test_get_status_change_log(self):
         '''StatusChangeLog should be accessed by GET request.'''
@@ -418,24 +385,6 @@ class TestStatusChangeLogViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(set(response.data.keys()), expected_keys)
-
-    def test_update_status_change_log(self):
-        '''StatusChangeLog should be updated by PATCH request.'''
-        pre_status0 = Record.STATUS_SUBMITTED
-        pre_status1 = Record.STATUS_DEPARTMENT_ADMIN_APPROVED
-        campus_event = mommy.make(training_event.models.CampusEvent)
-        record = mommy.make(training_record.models.Record,
-                            campus_event=campus_event)
-        log = mommy.make(training_record.models.StatusChangeLog,
-                         record=record, pre_status=pre_status0)
-        url = reverse('statuschangelog-detail', args=(log.pk,))
-        data = {'pre_status': pre_status1}
-
-        response = self.client.patch(url, data, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('pre_status', response.data)
-        self.assertEqual(response.data['pre_status'], pre_status1)
 
 
 class TestCampusEventFeedbackViewSet(APITestCase):

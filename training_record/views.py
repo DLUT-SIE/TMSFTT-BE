@@ -1,7 +1,7 @@
 '''Provide API views for training_record module.'''
 import django_filters
 from django.db.models import Q
-from rest_framework import viewsets, status, decorators
+from rest_framework import viewsets, status, decorators, mixins
 from rest_framework.response import Response
 from rest_framework_bulk.mixins import (
     BulkCreateModelMixin,
@@ -25,7 +25,11 @@ class RecordViewSet(MultiSerializerActionClassMixin,
     '''Create API views for Record.'''
     queryset = (
         training_record.models.Record.objects.all()
-        .select_related('feedback', 'campus_event', 'off_campus_event')
+        .select_related('campus_event__program__department')
+        .select_related('off_campus_event')
+        .select_related('event_coefficient')
+        .select_related('feedback')
+        .prefetch_related('contents', 'attachments')
         .extra(select={
             'is_status_feedback_required':
             f'status={Record.STATUS_FEEDBACK_REQUIRED}'})
@@ -163,13 +167,14 @@ class RecordAttachmentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
         instance.delete()
 
 
-class StatusChangeLogViewSet(viewsets.ModelViewSet):
+class StatusChangeLogViewSet(viewsets.ReadOnlyModelViewSet):
     '''Create API views for StatusChangeLog.'''
     queryset = training_record.models.StatusChangeLog.objects.all()
     serializer_class = training_record.serializers.StatusChangeLogSerializer
 
 
-class CampusEventFeedbackViewSet(viewsets.ModelViewSet):
+class CampusEventFeedbackViewSet(mixins.CreateModelMixin,
+                                 viewsets.GenericViewSet):
     '''Create API views for CampusEventFeedback.'''
     queryset = training_record.models.CampusEventFeedback.objects.all()
     serializer_class = CampusEventFeedbackSerializer
