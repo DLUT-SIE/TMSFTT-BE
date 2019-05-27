@@ -398,10 +398,10 @@ class AggregateDataService:
     def table_training_records(cls, context):
         '''个人培训记录导出'''
         request = context.get('request')
-        event_name = context.get('event_name', None)
-        event_location = context.get('event_location', None)
-        start_time = context.get('start_time', None)
-        end_time = context.get('end_time', None)
+        event_name = context['event_name']
+        event_location = context['event_location']
+        start_time = context['start_time']
+        end_time = context['end_time']
         matched_records = TrainingRecordService.get_records(
             request.user, event_name, event_location, start_time, end_time)
         matched_records = matched_records.select_related(
