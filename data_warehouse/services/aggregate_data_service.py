@@ -217,10 +217,8 @@ class AggregateDataService:
             cls.TABLE_NAME_TRAINING_FEEDBACK: 'table_training_feedback',
             cls.TABLE_NAME_WORKLOAD_CALCULATION: 'table_workload_calculation'
         }
-        request = context.get('request', None)
-        if request is None:
-            raise BadRequest('错误的参数。')
-        table_type = int(request.GET.get('table_type'))
+        request = context.get('request')
+        table_type = request.GET.get('table_type')
         handler = handlers.get(table_type, None)
         if handler is None:
             raise BadRequest('未定义的表类型。')
@@ -361,9 +359,7 @@ class AggregateDataService:
         request = context.get('request')
         program_id = context.get('program_id', None)
         deparment_id = context.get('department_id', None)
-        if not (program_id or deparment_id):
-            raise BadRequest('必须给定部门ID或者项目ID')
-        elif not deparment_id:
+        if not deparment_id:
             program_ids = [program_id]
         else:
             program_ids = Program.objects.filter(

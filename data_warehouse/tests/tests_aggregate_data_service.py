@@ -248,16 +248,6 @@ class TestAggregateDataService(TestCase):
     def test_table_export(self, mocked_coverage_statistics):
         '''Should 应该正确的分发表格导出请求'''
         request = MagicMock()
-        get_mock = PropertyMock(return_value={'table_type': 9})
-        type(request).GET = get_mock
-        context = {}
-        context['request'] = request
-        with self.assertRaisesMessage(BadRequest, '未定义的表类型。'):
-            AggregateDataService.table_export(context)
-        with self.assertRaisesMessage(BadRequest, '错误的参数。'):
-            AggregateDataService.table_export({})
-
-        request = MagicMock()
         get_mock = PropertyMock(return_value={'table_type': 4})
         type(request).GET = get_mock
         context = {}
