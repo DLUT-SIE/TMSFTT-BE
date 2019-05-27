@@ -159,7 +159,7 @@ class CoverageStatisticsService:
 
     @staticmethod
     def get_training_records(user, program_id=None, department_id=None,
-                            start_time=None, end_time=None):
+                             start_time=None, end_time=None):
         '''根据项目ID和起始时间查询所有的培训活动的所有的培训记录（包含校内和校外活动)
 
         Parameters
@@ -212,7 +212,7 @@ class CoverageStatisticsService:
                                           second=0)
 
         if program_id is not None:
-            off_campus_event_records = Record.objects.none()
+            off_campus_event_record_ids = Record.objects.none()
             program = Program.objects.filter(id=program_id)
             if not program:
                 raise BadRequest('培训项目不存在。')
@@ -220,23 +220,27 @@ class CoverageStatisticsService:
                 raise BadRequest('该培训项目不属于你管理的院系。')
             valid_program_ids = [program_id]
         else:
-            off_campus_event_records = (
+            off_campus_event_record_ids = (
                 Record.objects
                 .filter(off_campus_event__time__range=(start_time, end_time))
                 .filter(user__administrative_department_id__in=department_ids)
-                .select_related('user')
+                .values_list('id', flat=True)
             )
             valid_program_ids = list(
                 Program.objects.filter(
                     department_id__in=department_ids).values_list(
                         'id', flat=True))
-        campus_event_records = Record.objects.filter(
+        campus_event_record_ids = Record.objects.filter(
             campus_event__isnull=False,
             campus_event__program_id__in=valid_program_ids,
             campus_event__time__range=(start_time, end_time)
-            ).select_related('user')
-        records = campus_event_records.union(off_campus_event_records)
-        return (
-            records
-            .filter(user__teaching_type__in=('专任教师', '实验技术'))
-        )
+            ).values_list('id', flat=True)
+        record_ids = campus_event_record_ids.union(off_campus_event_record_ids)
+        # Because QuerySet after union only supports limit operations such as
+        # count(), order_by(), etc. here we will return original QuerySet.
+        # See also
+        # https://docs.djangoproject.com/en/2.0/ref/models/querysets/#union
+        records = Record.objects.filter(
+            id__in=record_ids, user__teaching_type__in=(
+                '专任教师', '实验技术')).select_related('user')
+        return records
