@@ -4,7 +4,6 @@ from data_warehouse.services.coverage_statistics_service import (
     CoverageStatisticsService
 )
 from auth.services import UserService
-from training_record.models import Record
 
 
 class TrainingHoursStatisticsService:
@@ -39,16 +38,12 @@ class TrainingHoursStatisticsService:
         department_id = None
         if user.is_department_admin:
             department_id = user.administrative_department.id
-        tmp_records = CoverageStatisticsService.get_training_records(
+        records = CoverageStatisticsService.get_training_records(
             user, department_id=department_id,
             start_time=start_time, end_time=end_time)
         # filter departments with T3 type.
-        tmp_records = tmp_records.filter(
+        records = records.filter(
             user__administrative_department__department_type='T3')
-        record_ids = tmp_records.values_list('id', flat=True)
-        # Because tmp_records do not support following operations,
-        # we need to fetch all records from Record.objects again.
-        records = Record.objects.filter(id__in=record_ids)
         records_groupby_department = (
             records.values('user__administrative_department__name')
             .annotate(
