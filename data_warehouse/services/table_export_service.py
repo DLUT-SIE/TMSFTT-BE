@@ -10,6 +10,7 @@ class TableExportService:
     '''TableExportService'''
     COVERAGE_SHEET_NAME = '专任教师培训覆盖率'
     FEEDBACK_SHEET_NAME = '培训反馈表'
+    TRAINING_HOURS_SHEET_NAME = '培训学时统计'
 
     @staticmethod
     def export_staff_basic_info():
@@ -270,28 +271,47 @@ class TableExportService:
 
     @staticmethod
     def export_training_hours(data):
-        '''导出培训时长和工作量表'''
+        '''导出培训时长和工作量表
+        Parameters
+        ------
+            data: list of dict {
+                department,
+                total_users,
+                total_coveraged_users,
+                total_hours
+            }
+
+        Returns
+        ------
+        string:
+            excel file path.
+        '''
+        if not data:
+            raise BadRequest('导出内容不存在。')
         # 初始化excel
         workbook = xlwt.Workbook()
-        worksheet = workbook.add_sheet('培训时长和工作量')
+        worksheet = workbook.add_sheet(
+            TableExportService.TRAINING_HOURS_SHEET_NAME)
         style = xlwt.easyxf(('font: bold on; '
                              'align: wrap on, vert centre, horiz center'))
         # 生成表头
         worksheet.write(0, 0, '单位', style)
-        worksheet.write(0, 1, '总人数', style)
-        worksheet.write(0, 2, '总培训学时', style)
-        worksheet.write(0, 3, '总工作量', style)
-        worksheet.write(0, 4, '人均培训工作量', style)
-        # 单位数据
-        departments_qs = Department.objects.all()
-        deparment_filter_dict = {}
-        ptr = 1
-        for dept in departments_qs:
-            deparment_filter_dict[dept.name] = dept.raw_department_id
-        for idx, dept_name in enumerate(deparment_filter_dict.keys()):
-            worksheet.write(ptr + idx, 0, dept_name, style)
-        ptr = 1 + len(departments_qs)
-        worksheet.write(ptr, 0, '总计', style)
+        worksheet.write(0, 1, '学院总人数', style)
+        worksheet.write(0, 2, '覆盖总人数', style)
+        worksheet.write(0, 3, '总培训学时', style)
+        worksheet.write(0, 4, '人均培训学时（学院）', style)
+        worksheet.write(0, 5, '人均培训学时（覆盖人群）', style)
+        ptr_r = 1
+        for item in data:
+            worksheet.write(ptr_r, 0, item['department'])
+            worksheet.write(ptr_r, 1, item['total_users'])
+            worksheet.write(ptr_r, 2, item['total_coveraged_users'])
+            worksheet.write(ptr_r, 3, item['total_hours'])
+            worksheet.write(ptr_r, 4, '%.02f' % (
+                item['total_hours']/item['total_users']))
+            worksheet.write(ptr_r, 5, '%.02f' % (
+                item['total_hours']/item['total_coveraged_users']))
+            ptr_r += 1
 
         # 写入数据
         _, file_path = tempfile.mkstemp()
