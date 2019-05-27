@@ -9,7 +9,7 @@ from django.contrib.auth.models import Group
 from model_mommy import mommy
 
 from auth.models import Department
-from data_warehouse.services.aggregate_data_service import (
+from data_warehouse.services import (
     AggregateDataService
 )
 from infra.exceptions import BadRequest
