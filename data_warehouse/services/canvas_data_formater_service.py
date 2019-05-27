@@ -138,7 +138,7 @@ class CanvasDataFormater:
             label_key = 'title'
             interest_label = EnumData.TITLE_LABEL
         data['label'] = interest_label
-        for item in interest_label:
+        for _ in interest_label:
             data['group_by_data'][0]['data'].append(0)
             data['group_by_data'][1]['data'].append(0)
         for user in group_users:

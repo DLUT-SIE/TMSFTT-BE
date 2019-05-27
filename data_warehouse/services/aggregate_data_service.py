@@ -260,16 +260,12 @@ class AggregateDataService:
         end_year = context.get('end_year', str(datetime.now().year))
         if not (start_year.isdigit() and end_year.isdigit()):
             raise BadRequest("错误的参数")
-        """
-        start_time = make_aware(
-            datetime.strptime(start_year + '-1-1', '%Y-%m-%d'))
-        end_year = str(int(end_year) + 1)
-        end_time = make_aware(
-            datetime.strptime(end_year + '-1-1', '%Y-%m-%d'))
-        group_data = TrainingHourStatisticsService.get_training_hours_data(
-            context['requset'].user, start_time, end_time)
-        return group_data
-        """
+        # start_time = make_aware(datetime.strptime(start_year + '-1-1', '%Y-%m-%d'))
+        # end_year = str(int(end_year) + 1)
+        # end_time = make_aware(datetime.strptime(end_year + '-1-1', '%Y-%m-%d'))
+        # group_data = TrainingHourStatisticsService.get_training_hours_data(
+        # context['requset'].user, start_time, end_time)
+        # return group_data
         return []
 
     @classmethod
