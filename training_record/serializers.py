@@ -121,11 +121,11 @@ class RecordCreateSerializer(serializers.ModelSerializer):
             max_size -= sum(x.path.size
                             for x in self.instance.attachments.all())
         valid_extensions = {'.pdf', '.png', '.jpg', '.jpeg', '.doc', '.docx'}
-        for x in data:
-            ext = osp.splitext(x.name)[-1].lower()
+        for inmemory_file in data:
+            ext = osp.splitext(inmemory_file.name)[-1].lower()
             if ext not in valid_extensions:
                 raise serializers.ValidationError(
-                    f'不被支持的文件类型: {x.name}')
+                    f'不被支持的文件类型: {inmemory_file.name}')
         # TODO(youchen): Use global configs
         if len(data) > max_count:
             raise serializers.ValidationError('最多允许上传3个附件')

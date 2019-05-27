@@ -1,6 +1,5 @@
 '''Provide API views for training_event module.'''
 import django_filters
-from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from rest_framework import mixins, viewsets, views, status, decorators
 from rest_framework.response import Response
@@ -8,7 +7,9 @@ from rest_framework_guardian import filters
 
 import auth.permissions
 from training_event.services import EnrollmentService, CampusEventService
-import training_event.models
+from training_event.models import (
+    CampusEvent, OffCampusEvent, Enrollment, EventCoefficient
+)
 from training_event.serializers import (ReadOnlyCampusEventSerializer,
                                         CampusEventSerializer,
                                         OffCampusEventSerializer,
@@ -22,7 +23,7 @@ class CampusEventViewSet(MultiSerializerActionClassMixin,
                          viewsets.ModelViewSet):
     '''Create API views for CampusEvent.'''
     queryset = (
-        training_event.models.CampusEvent.objects
+        CampusEvent.objects
         .all()
         .select_related('program', 'program__department')
         .prefetch_related('coefficients')
@@ -57,7 +58,7 @@ class CampusEventViewSet(MultiSerializerActionClassMixin,
 class OffCampusEventViewSet(mixins.ListModelMixin,
                             viewsets.GenericViewSet):
     '''Create API views for OffCampusEvent.'''
-    queryset = training_event.models.OffCampusEvent.objects.all()
+    queryset = OffCampusEvent.objects.all()
     serializer_class = OffCampusEventSerializer
     filter_class = training_event.filters.OffCampusEventFilter
 
@@ -70,7 +71,7 @@ class EnrollmentViewSet(mixins.CreateModelMixin,
     It allows users to create, list, retrieve, destroy their enrollments,
     but do not allow them to update.
     '''
-    queryset = training_event.models.Enrollment.objects.all()
+    queryset = Enrollment.objects.all()
     serializer_class = EnrollmentSerailizer
     permission_classes = (
         auth.permissions.DjangoObjectPermissions,
@@ -91,9 +92,8 @@ class RoundChoicesView(views.APIView):
             round_choices = [
                 {
                     'type': round_type,
-                    'name': round_type_name,
-                } for round_type, round_type_name in (
-                    training_event.models.EventCoefficient.ROUND_CHOICES)
+                    'name': name,
+                } for round_type, name in EventCoefficient.ROUND_CHOICES
             ]
             cache.set(cache_key, round_choices, 10 * 60)
         return Response(round_choices, status=status.HTTP_200_OK)
@@ -108,9 +108,9 @@ class RoleChoicesView(views.APIView):
         if role_choices is None:
             role_choices = [
                 {
-                    'role': item[0],
-                    'role_str': item[1],
-                } for item in training_event.models.EventCoefficient.ROLE_CHOICES
+                    'role': role,
+                    'role_str': role_str,
+                } for role, role_str in EventCoefficient.ROLE_CHOICES
             ]
             cache.set(cache_key, role_choices, 10 * 60)
         return Response(role_choices, status=status.HTTP_200_OK)
