@@ -269,7 +269,7 @@ class TableExportService:
         return file_path
 
     @staticmethod
-    def export_traninghours_and_workload():
+    def export_training_hours(data):
         '''导出培训时长和工作量表'''
         # 初始化excel
         workbook = xlwt.Workbook()
