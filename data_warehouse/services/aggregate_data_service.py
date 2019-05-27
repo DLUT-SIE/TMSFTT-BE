@@ -28,7 +28,8 @@ from data_warehouse.serializers import (
     CoverageStatisticsSerializer,
     TrainingFeedbackSerializer,
     SummaryParametersSerializer,
-    TrainingHoursSerializer
+    TrainingHoursSerializer,
+    TableTrainingRecordsSerializer,
 )
 from data_warehouse.consts import EnumData
 
@@ -60,7 +61,8 @@ class AggregateDataService:
     TABLE_SERIALIZERS_CHOICES = {
         TABLE_NAME_COVERAGE_SUMMARY: CoverageStatisticsSerializer,
         TABLE_NAME_TRAINING_FEEDBACK: TrainingFeedbackSerializer,
-        TABLE_NAME_TRAINING_HOURS_SUMMARY: TrainingHoursSerializer
+        TABLE_NAME_TRAINING_HOURS_SUMMARY: TrainingHoursSerializer,
+        TABLE_NAME_TRAINING_RECORDS: TableTrainingRecordsSerializer,
     }
 
     TITLES = (
@@ -222,7 +224,7 @@ class AggregateDataService:
             cls.TABLE_NAME_TRAINING_SUMMARY: 'table_trainee_statistics',
             cls.TABLE_NAME_TRAINING_FEEDBACK: 'table_training_feedback',
             cls.TABLE_NAME_WORKLOAD_CALCULATION: 'table_workload_calculation',
-            cls.TABLE_NAME_TRAINING_RECORDS: 'table_training_record',
+            cls.TABLE_NAME_TRAINING_RECORDS: 'table_training_records',
         }
         table_type = context.get('table_type')
         handler = handlers.get(table_type, None)
@@ -393,15 +395,17 @@ class AggregateDataService:
         return file_path, '培训反馈表.xls'
 
     @classmethod
-    def table_training_record(cls, context):
+    def table_training_records(cls, context):
         '''个人培训记录导出'''
         request = context.get('request')
-        event_name = request.query_params.get('event_name')
-        event_location = request.query_params.get('event_location')
-        start_time = request.query_params.get('start_time')
-        end_time = request.query_params.get('end_time')
+        event_name = context.get('event_name', None)
+        event_location = context.get('event_location', None)
+        start_time = context.get('start_time', None)
+        end_time = context.get('end_time', None)
         matched_records = TrainingRecordService.get_records(
             request.user, event_name, event_location, start_time, end_time)
+        matched_records = matched_records.select_related(
+            'campus_event', 'off_campus_event', 'event_coefficient')
         # prepare data to be written in excel.
         data = []
         for record in matched_records:

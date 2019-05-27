@@ -342,21 +342,19 @@ class TestAggregateDataService(TestCase):
            '.TrainingRecordService')
     @patch('data_warehouse.services.aggregate_data_service'
            '.TableExportService')
-    def test_table_training_record(self, mock_table_export_service,
-                                   mock_training_record_service,):
+    def test_table_training_records(self, mock_table_export_service,
+                                    mock_training_record_service,):
         '''Should 正确的处理个人培训记录'''
         request = MagicMock()
         type(request).user = PropertyMock(return_value=self.user)
-        type(request).query_params = PropertyMock(return_value={
+        context = {
+            'request': request,
             'event_name': '1',
             'event_location': '2',
             'start_time': '2019-01-01',
             'end_time': '2019-01-01',
-        })
-        context = {
-            'request': request,
         }
-        AggregateDataService.table_training_record(context)
+        AggregateDataService.table_training_records(context)
 
         mock_training_record_service.get_records.return_value = []
         mock_table_export_service.export_records_for_user.assert_called()

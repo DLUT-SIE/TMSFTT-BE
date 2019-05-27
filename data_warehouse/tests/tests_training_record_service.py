@@ -38,5 +38,5 @@ class TestTableExportServices(APITestCase):
                 user=self.user,
                 off_campus_event=off_campus_event,)
             PermissionService.assign_object_permissions(self.user, record)
-        records = TrainingRecordService.get_records(self.user)
+        records = TrainingRecordService.get_records(self.user, '', '', '2000-01-01', '2020-02-02')
         self.assertEqual(len(records), 10)
