@@ -358,3 +358,23 @@ class TestAggregateDataService(TestCase):
 
         mock_training_record_service.get_records.return_value = []
         mock_table_export_service.export_records_for_user.assert_called()
+
+    def test_get_group_hours_data(self):
+        '''test get group hours data'''
+        context = {}
+        context['start_year'] = 'qqq'
+        context['end_year'] = 'www'
+        with self.assertRaisesMessage(BadRequest, '错误的参数'):
+            AggregateDataService.get_group_hours_data(context)
+        context['start_year'] = '2016'
+        context['end_year'] = '2019'
+        group_data = AggregateDataService.get_group_hours_data(context)
+        self.assertIsNotNone(group_data)
+
+    def test_training_hours_statistics(self):
+        '''test function hours statistics'''
+        context = {}
+        context['start_year'] = '2016'
+        context['end_year'] = '2019'
+        data = AggregateDataService.training_hours_statistics(context)
+        self.assertIsNotNone(data)

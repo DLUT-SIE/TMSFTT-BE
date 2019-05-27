@@ -30,10 +30,9 @@ class CanvasOptionsService:
              'key': 'COVERAGE_STATISTICS',
              'subOption': cls.tuple_to_dict_list(
                  EnumData.TRAINEE_GROUPING_CHOICES)},
-            {'type': EnumData.TRAINING_HOURS_WORKLOAD_STATISTICS,
+            {'type': EnumData.TRAINING_HOURS_STATISTICS,
              'name': '培训学时与工作量统计',
-             'key': 'TRAINING_HOURS_WORKLOAD_STATISTICS',
-             'subOption': cls.tuple_to_dict_list(
-                 EnumData.TRAINING_HOURS_GROUPING_CHOICES)}
+             'key': 'TRAINING_HOURS_STATISTICS',
+             'subOption': []}
         ]
         return statistics_type
