@@ -78,6 +78,7 @@ class AggregateDataService:
             'coverage_statistics',
             'school_summary',
             'personal_summary',
+            'training_hours_statistics',
             'table_export'
         )
         handler = getattr(cls, method_name, None)
@@ -156,8 +157,8 @@ class AggregateDataService:
         data = CanvasDataFormater.format_teachers_statistics_data(group_users)
         return data
 
-    @classmethod
-    def get_group_users(cls, context):
+    @staticmethod
+    def get_group_users(context):
         '''get group users data'''
         group_by = context.get('group_by', '')
         department_id = context.get('department_id', '')
@@ -184,8 +185,8 @@ class AggregateDataService:
         data = CanvasDataFormater.format_records_statistics_data(group_records)
         return data
 
-    @classmethod
-    def get_group_records(cls, context):
+    @staticmethod
+    def get_group_records(context):
         '''get group records data'''
         group_by = context.get('group_by', '')
         start_year = context.get('start_year', str(datetime.now().year))
@@ -245,6 +246,32 @@ class AggregateDataService:
         file_path = TableExportService.export_training_hours(data)
         return file_path, '培训学时与工作量表.xls'
 
+    def training_hours_statistics(cls, context):
+        '''to get training hours statistics data'''
+        group_data = cls.get_group_hours_data(context)
+        data = CanvasDataFormater.format_hours_statistics_data(
+            group_data)
+        return data
+
+    @staticmethod
+    def get_group_hours_data(context):
+        '''get group training hours data'''
+        start_year = context.get('start_year', str(datetime.now().year))
+        end_year = context.get('end_year', str(datetime.now().year))
+        if not (start_year.isdigit() and end_year.isdigit()):
+            raise BadRequest("错误的参数")
+        """
+        start_time = make_aware(
+            datetime.strptime(start_year + '-1-1', '%Y-%m-%d'))
+        end_year = str(int(end_year) + 1)
+        end_time = make_aware(
+            datetime.strptime(end_year + '-1-1', '%Y-%m-%d'))
+        group_data = TrainingHourStatisticsService.get_training_hours_data(
+            context['requset'].user, start_time, end_time)
+        return group_data
+        """
+        return []
+
     @classmethod
     def table_trainee_statistics(cls, context):
         '''pass'''
@@ -256,8 +283,8 @@ class AggregateDataService:
         data = CanvasDataFormater.format_coverage_statistics_data(group_data)
         return data
 
-    @classmethod
-    def get_group_coverage_data(cls, context):
+    @staticmethod
+    def get_group_coverage_data(context):
         '''get group coverage data'''
         group_by = context.get('group_by', '')
         start_year = context.get('start_year', str(datetime.now().year))

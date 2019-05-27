@@ -137,11 +137,86 @@ class CanvasDataFormater:
         else:
             label_key = 'title'
             interest_label = EnumData.TITLE_LABEL
+        data['label'] = interest_label
+        for item in interest_label:
+            data['group_by_data'][0]['data'].append(0)
+            data['group_by_data'][1]['data'].append(0)
         for user in group_users:
             if interest_label and user[label_key] not in interest_label:
                 continue
-            data['label'].append(user[label_key])
-            data['group_by_data'][0]['data'].append(user['coverage_count'])
-            data['group_by_data'][1]['data'].append(
+            index = interest_label.index(user[label_key])
+            data['group_by_data'][0]['data'][index] = user['coverage_count']
+            data['group_by_data'][1]['data'][index] = (
                 user['total_count'] - user['coverage_count'])
+        return data
+
+    @staticmethod
+    def format_hours_statistics_data(group_data):
+        '''format coverage statistics data
+
+        Parameters:
+        ----------
+        group_data: list of dict
+            [
+                {
+                    "department": "建筑与艺术学院",
+                    "total_coveraged_users": int,
+                    "total_users": int,
+                    "total_hours": int
+                }
+            ]
+        '''
+        data = {
+            'label': [],
+            'group_by_data': [
+                {
+                    'seriesNum': 0,
+                    'seriesName': '总人数',
+                    'data': []
+                },
+                {
+                    'seriesNum': 1,
+                    'seriesName': '参加培训总人数',
+                    'data': []
+                },
+                {
+                    'seriesNum': 1,
+                    'seriesName': '总培训学时',
+                    'data': []
+                },
+                {
+                    'seriesNum': 1,
+                    'seriesName': '人均培训学时(按总人数计算)',
+                    'data': []
+                },
+                {
+                    'seriesNum': 1,
+                    'seriesName': '人均培训学时(按参加培训人数计算)',
+                    'data': []
+                }
+            ]
+        }
+        interest_label = list(
+            DepartmentService
+            .get_top_level_departments()
+            .values_list('name', flat=True))
+        data['label'] = interest_label
+        for item in interest_label:
+            data['group_by_data'][0]['data'].append(0)
+            data['group_by_data'][1]['data'].append(0)
+            data['group_by_data'][2]['data'].append(0)
+            data['group_by_data'][3]['data'].append(0)
+            data['group_by_data'][4]['data'].append(0)
+        for item in group_data:
+            if item['department'] not in interest_label:
+                continue
+            index = interest_label.index(item['department'])
+            data['group_by_data'][0]['data'][index] = item['total_users']
+            data['group_by_data'][1]['data'][index] = (
+                item['total_coveraged_users'])
+            data['group_by_data'][2]['data'][index] = item['total_hours']
+            data['group_by_data'][3]['data'][index] = (
+                round(item['total_hours']/item['total_users'], 2))
+            data['group_by_data'][4]['data'][index] = (
+                round(item['total_hours']/item['total_coveraged_users'], 2))
         return data
