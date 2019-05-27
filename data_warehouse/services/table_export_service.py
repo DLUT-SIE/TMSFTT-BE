@@ -396,7 +396,7 @@ class TableExportService:
         string
             导出的excel文件路径
         '''
-        if data is None:
+        if not data:
             raise BadRequest('导出内容不存在。')
         # 初始化excel
         workbook = xlwt.Workbook()

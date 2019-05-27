@@ -63,3 +63,29 @@ class TrainingHoursSerializer(BaseTableExportSerializer):
     '''培训学时导出用于处理http请求参数的序列化器'''
     start_time = serializers.DateTimeField(required=False)
     end_time = serializers.DateTimeField(required=False)
+
+
+class TableTrainingRecordsSerializer(serializers.Serializer):
+    '''Serialize parameters for training records.'''
+    event_name = serializers.CharField(required=False, default='')
+    event_location = serializers.CharField(required=False, default='')
+    start_time = serializers.DateTimeField(
+        required=False, format=None,
+        default=lambda: datetime.fromtimestamp(0, pytz.utc))
+    end_time = serializers.DateTimeField(
+        required=False, format=None,
+        default=lambda: now())  # pylint: disable=unnecessary-lambda
+
+    def validate_start_time(self, data):
+        '''Round to nearest hour.'''
+        return data.replace(minute=0, second=0, microsecond=0)
+
+    def validate_end_time(self, data):
+        '''Round to nearest hour.'''
+        return data.replace(minute=0, second=0, microsecond=0)
+
+    def validate(self, data):
+        '''Validate serializer data.'''
+        if data['end_time'] <= data['start_time']:
+            raise serializers.ValidationError('截止时间应晚于起始时间')
+        return data
