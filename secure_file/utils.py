@@ -149,7 +149,7 @@ def populate_file_content(resp, field_file):
             raise exceptions.NotFound()
     else:
         resp['X-Accel-Redirect'] = (
-            f'/protected-files/{field_file.name}'
+            f'/protected-files/{quote(field_file.name)}'
         )
 
 
