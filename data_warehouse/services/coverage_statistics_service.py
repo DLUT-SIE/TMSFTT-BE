@@ -157,6 +157,7 @@ class CoverageStatisticsService:
             )
         return data
 
+    # pylint: disable=R0914
     @staticmethod
     def get_training_records(user, program_id=None, department_id=None,
                              start_time=None, end_time=None):

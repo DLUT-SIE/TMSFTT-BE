@@ -240,7 +240,7 @@ class AggregateDataService:
 
     @classmethod
     def table_trainee_statistics(cls, context):
-        pass
+        '''pass'''
 
     @classmethod
     def coverage_statistics(cls, context):
