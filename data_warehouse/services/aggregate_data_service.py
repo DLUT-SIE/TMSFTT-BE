@@ -267,7 +267,7 @@ class AggregateDataService:
         end_time = make_aware(datetime.strptime(
             end_year + '-1-1', '%Y-%m-%d'))
         group_data = TrainingHoursStatisticsService.get_training_hours_data(
-            context['requset'].user, start_time, end_time)
+            context['request'].user, start_time, end_time)
         return group_data
 
     @classmethod
