@@ -22,9 +22,7 @@ def is_user_allowed_operating(request, obj):
         record_models.Record.STATUS_DEPARTMENT_ADMIN_REJECTED,
         record_models.Record.STATUS_SCHOOL_ADMIN_REJECTED
     )
-    if (request.user == obj.user) and (obj.status in user_action_status):
-        return True
-    return False
+    return request.user == obj.user and obj.status in user_action_status
 
 
 def is_admin_allowed_operating(request, obj):
@@ -48,6 +46,4 @@ def is_admin_allowed_operating(request, obj):
         request.user.is_school_admin
         and (obj.status in school_admin_action_status)
     )
-    if is_department_admin_allowed or is_school_admin_allowed:
-        return True
-    return False
+    return is_department_admin_allowed or is_school_admin_allowed
