@@ -158,7 +158,7 @@ class CoverageStatisticsService:
         return data
 
     @staticmethod
-    def get_traning_records(user, program_id=None, department_id=None,
+    def get_training_records(user, program_id=None, department_id=None,
                             start_time=None, end_time=None):
         '''根据项目ID和起始时间查询所有的培训活动的所有的培训记录（包含校内和校外活动)
 

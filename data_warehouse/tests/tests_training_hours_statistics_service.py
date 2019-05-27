@@ -48,7 +48,7 @@ class TestTrainingHoursStatisticsService(TestCase):
             ))
 
     @patch('data_warehouse.services.training_hours_statistics_service'
-           '.CoverageStatisticsService.get_traning_records')
+           '.CoverageStatisticsService.get_training_records')
     def test_get_training_hours_data(self, mock_get_training_records):
         '''Should 正确的获取培训工作量数据'''
         mock_get_training_records.return_value = Record.objects.filter(
