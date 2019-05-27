@@ -68,7 +68,6 @@ AUTH_USER_MODEL = 'tmsftt_auth.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'secure_file.authentication.SecureFileCookieAuthentication',
         'auth.authentication.JSONWebTokenAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': (
