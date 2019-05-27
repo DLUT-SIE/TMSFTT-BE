@@ -112,7 +112,6 @@ class RecordCreateSerializer(serializers.ModelSerializer):
         return RecordService.update_off_campus_record_from_raw_data(
             instance, **validated_data)
 
-    # pylint: disable=C0103
     def validate_attachments(self, data):
         '''Validate attachments data.'''
         max_count = 3
