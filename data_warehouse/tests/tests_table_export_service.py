@@ -151,3 +151,37 @@ class TestTableExportServices(TestCase):
         self.assertEqual(sheet.cell_value(1, 4), 'test_user')
         self.assertEqual(sheet.cell_value(1, 5), 'test_department')
         self.assertEqual(sheet.cell_value(1, 6), 'exmaple@test.com')
+
+    def test_export_training_hours(self):
+        '''Should 正确的导出培训学时与工作量表'''
+        mock_data = []
+        with self.assertRaisesMessage(BadRequest, '导出内容不存在。'):
+            TableExportService.export_training_hours(mock_data)
+
+        mock_data = [
+            {
+                'department': 'test_department',
+                'total_users': 10,
+                'total_coveraged_users': 9,
+                'total_hours': 100
+            }
+        ]
+        file_path = TableExportService.export_training_hours(mock_data)
+        self.assertIsNotNone(file_path)
+        workbook = xlrd.open_workbook(file_path)
+        sheet = workbook.sheet_by_name(
+            TableExportService.TRAINING_HOURS_SHEET_NAME)
+        self.assertIsNotNone(sheet)
+        self.assertEqual(sheet.cell_value(0, 0), '单位')
+        self.assertEqual(sheet.cell_value(0, 1), '学院总人数')
+        self.assertEqual(sheet.cell_value(0, 2), '覆盖总人数')
+        self.assertEqual(sheet.cell_value(0, 3), '总培训学时')
+        self.assertEqual(sheet.cell_value(0, 4), '人均培训学时（学院）')
+        self.assertEqual(sheet.cell_value(0, 5), '人均培训学时（覆盖人群）')
+
+        self.assertEqual(sheet.cell_value(1, 0), 'test_department')
+        self.assertEqual(sheet.cell_value(1, 1), 10)
+        self.assertEqual(sheet.cell_value(1, 2), 9)
+        self.assertEqual(sheet.cell_value(1, 3), 100)
+        self.assertEqual(sheet.cell_value(1, 4), '%.2f' % (100 / 10))
+        self.assertEqual(sheet.cell_value(1, 5), '%.2f' % (100 / 9))
