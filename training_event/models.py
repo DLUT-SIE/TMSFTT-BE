@@ -129,13 +129,16 @@ class EventCoefficient(models.Model):
             ('off_campus_event', 'role'),
         )
 
-    campus_event = models.ForeignKey(CampusEvent, verbose_name='校内培训活动',
-                                     blank=True, null=True,
-                                     on_delete=models.PROTECT)
-    off_campus_event = models.ForeignKey(OffCampusEvent,
-                                         verbose_name='校外培训活动',
-                                         blank=True, null=True,
-                                         on_delete=models.PROTECT)
+    campus_event = models.ForeignKey(
+        CampusEvent, verbose_name='校内培训活动',
+        blank=True, null=True,
+        related_name='coefficients',
+        on_delete=models.PROTECT)
+    off_campus_event = models.ForeignKey(
+        OffCampusEvent, verbose_name='校外培训活动',
+        blank=True, null=True,
+        related_name='coefficients',
+        on_delete=models.PROTECT)
     role = models.PositiveSmallIntegerField(verbose_name='参与角色',
                                             choices=ROLE_CHOICES,
                                             default=ROLE_PARTICIPATOR)

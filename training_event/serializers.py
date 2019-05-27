@@ -29,12 +29,11 @@ class ReadOnlyCampusEventSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize Campus Event instance for reading.'''
     expired = serializers.SerializerMethodField(read_only=True)
     enrolled = serializers.SerializerMethodField(read_only=True)
-    program_detail = ReadOnlyProgramSerializer(source='program',
-                                               read_only=True)
+    program_detail = ReadOnlyProgramSerializer(
+        source='program', read_only=True)
     enrollment_id = serializers.SerializerMethodField(read_only=True)
-    coefficients = EventCoefficientSerializer(source='eventcoefficient_set',
-                                              read_only=True,
-                                              many=True)
+    coefficients = EventCoefficientSerializer(
+        read_only=True, many=True)
 
     class Meta:
         model = training_event.models.CampusEvent
@@ -81,6 +80,15 @@ class ReadOnlyCampusEventSerializer(serializers.ModelSerializer):
         else:
             res = self.context[key]
         return res.get(obj.id, None)
+
+
+class BasicReadOnlyCampusEventSerializer(ReadOnlyCampusEventSerializer):
+    '''Serialize basic information for campus event.'''
+    class Meta(ReadOnlyCampusEventSerializer.Meta):
+        fields = ('id', 'name', 'time', 'location', 'create_time',
+                  'update_time', 'enrollment_id', 'num_hours', 'num_enrolled',
+                  'num_participants', 'program_detail',
+                  'deadline', 'description')
 
 
 class CampusEventSerializer(serializers.ModelSerializer):

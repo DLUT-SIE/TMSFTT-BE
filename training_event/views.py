@@ -1,10 +1,10 @@
 '''Provide API views for training_event module.'''
+import django_filters
+from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from rest_framework import mixins, viewsets, views, status, decorators
 from rest_framework.response import Response
 from rest_framework_guardian import filters
-
-from django.contrib.auth import get_user_model
-import django_filters
 
 import auth.permissions
 from training_event.services import EnrollmentService, CampusEventService
@@ -16,7 +16,6 @@ from training_event.serializers import (ReadOnlyCampusEventSerializer,
 import training_event.serializers
 import training_event.filters
 from infra.mixins import MultiSerializerActionClassMixin
-User = get_user_model()
 
 
 class CampusEventViewSet(MultiSerializerActionClassMixin,
@@ -26,6 +25,7 @@ class CampusEventViewSet(MultiSerializerActionClassMixin,
         training_event.models.CampusEvent.objects
         .all()
         .select_related('program', 'program__department')
+        .prefetch_related('coefficients')
         .order_by('-time')
     )
     serializer_action_classes = {
@@ -54,7 +54,8 @@ class CampusEventViewSet(MultiSerializerActionClassMixin,
         return Response(status=status.HTTP_201_CREATED)
 
 
-class OffCampusEventViewSet(viewsets.ModelViewSet):
+class OffCampusEventViewSet(mixins.ListModelMixin,
+                            viewsets.GenericViewSet):
     '''Create API views for OffCampusEvent.'''
     queryset = training_event.models.OffCampusEvent.objects.all()
     serializer_class = OffCampusEventSerializer
@@ -63,8 +64,6 @@ class OffCampusEventViewSet(viewsets.ModelViewSet):
 
 class EnrollmentViewSet(mixins.CreateModelMixin,
                         mixins.DestroyModelMixin,
-                        mixins.ListModelMixin,
-                        mixins.RetrieveModelMixin,
                         viewsets.GenericViewSet):
     '''Create API views for Enrollment.
 
@@ -86,13 +85,17 @@ class RoundChoicesView(views.APIView):
     '''Create API view for get round choices of event coefficient.'''
     def get(self, request, format=None):  # pylint: disable=redefined-builtin
         '''define how to get round choices.'''
-        round_choices = [
-            {
-                'type': round_type,
-                'name': round_type_name,
-            } for round_type, round_type_name in (
-                training_event.models.EventCoefficient.ROUND_CHOICES)
-        ]
+        cache_key = 'round-choices'
+        round_choices = cache.get(cache_key)
+        if round_choices is None:
+            round_choices = [
+                {
+                    'type': round_type,
+                    'name': round_type_name,
+                } for round_type, round_type_name in (
+                    training_event.models.EventCoefficient.ROUND_CHOICES)
+            ]
+            cache.set(cache_key, round_choices, 10 * 60)
         return Response(round_choices, status=status.HTTP_200_OK)
 
 
@@ -100,10 +103,14 @@ class RoleChoicesView(views.APIView):
     '''Create API view for get choices of roles.'''
     def get(self, request, format=None):  # pylint: disable=redefined-builtin
         '''define how to get role choices.'''
-        role_choices = [
-            {
-                'role': item[0],
-                'role_str': item[1],
-            } for item in training_event.models.EventCoefficient.ROLE_CHOICES
-        ]
+        cache_key = 'role-choices'
+        role_choices = cache.get(cache_key)
+        if role_choices is None:
+            role_choices = [
+                {
+                    'role': item[0],
+                    'role_str': item[1],
+                } for item in training_event.models.EventCoefficient.ROLE_CHOICES
+            ]
+            cache.set(cache_key, role_choices, 10 * 60)
         return Response(role_choices, status=status.HTTP_200_OK)

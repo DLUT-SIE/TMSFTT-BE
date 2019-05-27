@@ -1,5 +1,5 @@
 '''Provide API views for training_review module.'''
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 from rest_framework_guardian import filters
 import django_filters
 
@@ -9,7 +9,9 @@ import training_review.serializers
 import training_review.filters
 
 
-class ReviewNoteViewSet(viewsets.ModelViewSet):
+class ReviewNoteViewSet(mixins.CreateModelMixin,
+                        mixins.ListModelMixin,
+                        viewsets.GenericViewSet):
     '''Create API views for ReviewNote.'''
     queryset = (
         training_review.models.ReviewNote.objects.all()
