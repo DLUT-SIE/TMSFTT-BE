@@ -25,7 +25,8 @@ from data_warehouse.decorators import (
 from data_warehouse.serializers import (
     CoverageStatisticsSerializer,
     TrainingFeedbackSerializer,
-    SummaryParametersSerializer
+    SummaryParametersSerializer,
+    TrainingHoursSerializer
 )
 from data_warehouse.consts import EnumData
 
@@ -54,7 +55,8 @@ class AggregateDataService:
     # 校验http请求参数的序列化器配置
     TABLE_SERIALIZERS_CHOICES = {
         TABLE_NAME_COVERAGE_SUMMARY: CoverageStatisticsSerializer,
-        TABLE_NAME_TRAINING_FEEDBACK: TrainingFeedbackSerializer
+        TABLE_NAME_TRAINING_FEEDBACK: TrainingFeedbackSerializer,
+        TABLE_NAME_TRAINING_HOURS_SUMMARY: TrainingHoursSerializer
     }
 
     TITLES = (
@@ -210,15 +212,14 @@ class AggregateDataService:
     def table_export(cls, context):
         '''处理表格导出相关的请求'''
         handlers = {
-            cls.TABLE_NAME_TRAINING_HOURS_SUMMARY: (
-                'table_training_hours_statistics'),
+            cls.TABLE_NAME_TRAINING_HOURS_SUMMARY:
+            'table_training_hours_statistics',
             cls.TABLE_NAME_COVERAGE_SUMMARY: 'table_coverage_statistics',
             cls.TABLE_NAME_TRAINING_SUMMARY: 'table_trainee_statistics',
             cls.TABLE_NAME_TRAINING_FEEDBACK: 'table_training_feedback',
-            cls.TABLE_NAME_WORKLOAD_CALCULATION: 'table_workload_calculation'
+            cls.TABLE_NAME_WORKLOAD_CALCULATION: 'table_workload_calculation',
         }
-        request = context.get('request')
-        table_type = request.GET.get('table_type')
+        table_type = context.get('table_type')
         handler = handlers.get(table_type, None)
         if handler is None:
             raise BadRequest('未定义的表类型。')
