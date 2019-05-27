@@ -17,6 +17,7 @@ from data_warehouse.services import (
     CoverageStatisticsService,
     TableExportService,
     CampusEventFeedbackService,
+    TrainingHoursStatisticsService
 )
 from data_warehouse.decorators import (
     admin_required,
@@ -227,16 +228,20 @@ class AggregateDataService:
         return handler_method(context)
 
     @classmethod
-    def training_hours_statistics(cls, context):
-        '''to get training hours statistics data'''
-
-    @classmethod
     @admin_required()
-    def table_trainee_statistics(cls, context):
+    def table_training_hours_statistics(cls, context):
         '''培训学时与工作量'''
         request = context.get('request')
         start_time = context.get('start_time')
         end_time = context.get('end_time')
+        data = TrainingHoursStatisticsService.get_training_hours_data(
+            request.user, start_time, end_time)
+        file_path = TableExportService.export_training_hours(data)
+        return file_path, '培训学时与工作量表.xls'
+
+    @classmethod
+    def table_trainee_statistics(cls, context):
+        pass
 
     @classmethod
     def coverage_statistics(cls, context):
