@@ -307,10 +307,18 @@ class TableExportService:
             worksheet.write(ptr_r, 1, item['total_users'])
             worksheet.write(ptr_r, 2, item['total_coveraged_users'])
             worksheet.write(ptr_r, 3, item['total_hours'])
-            worksheet.write(ptr_r, 4, '%.02f' % (
-                item['total_hours']/item['total_users']))
-            worksheet.write(ptr_r, 5, '%.02f' % (
-                item['total_hours']/item['total_coveraged_users']))
+            worksheet.write(ptr_r, 4, (
+                '%.02f' % (
+                    (item['total_hours']/item['total_users']) if
+                    item['total_users'] > 0 else 0.0)
+                )
+            )
+            worksheet.write(ptr_r, 5, (
+                '%.02f' % (
+                    (item['total_hours']/item['total_coveraged_users']) if
+                    item['total_coveraged_users'] > 0 else 0.0)
+                )
+            )
             ptr_r += 1
 
         # 写入数据

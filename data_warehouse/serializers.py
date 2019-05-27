@@ -57,3 +57,9 @@ class SummaryParametersSerializer(serializers.Serializer):
         if data['end_time'] <= data['start_time']:
             raise serializers.ValidationError('截止时间应晚于起始时间')
         return data
+
+
+class TrainingHoursSerializer(BaseTableExportSerializer):
+    '''培训学时导出用于处理http请求参数的序列化器'''
+    start_time = serializers.DateTimeField(required=False)
+    end_time = serializers.DateTimeField(required=False)
