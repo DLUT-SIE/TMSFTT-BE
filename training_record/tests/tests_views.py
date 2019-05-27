@@ -150,8 +150,7 @@ class TestRecordViewSet(APITestCase):
                          'off_campus_event', 'user', 'status', 'contents',
                          'attachments', 'status_str', 'role', 'role_str',
                          'feedback', 'allow_actions_from_user',
-                         'allow_actions_from_department_admin',
-                         'allow_actions_from_school_admin'}
+                         'allow_actions_from_admin'}
         PermissionService.assign_object_permissions(self.user, record)
         response = self.client.get(url)
 

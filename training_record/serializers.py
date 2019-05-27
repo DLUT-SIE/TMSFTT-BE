@@ -15,6 +15,10 @@ from training_record.models import (
     StatusChangeLog,
     CampusEventFeedback,
 )
+from training_record.utils import (
+    is_user_allowed_operating,
+    is_admin_allowed_operating,
+)
 from training_record.services import RecordService, CampusEventFeedbackService
 from secure_file.fields import SecureFileField
 from training_event.models import EventCoefficient
@@ -66,9 +70,7 @@ class ReadOnlyRecordSerializer(serializers.ModelSerializer):
         read_only=True)
     allow_actions_from_user = (
         serializers.SerializerMethodField(read_only=True))
-    allow_actions_from_department_admin = (
-        serializers.SerializerMethodField(read_only=True))
-    allow_actions_from_school_admin = (
+    allow_actions_from_admin = (
         serializers.SerializerMethodField(read_only=True))
     off_campus_event = OffCampusEventSerializer(read_only=True)
     campus_event = BasicReadOnlyCampusEventSerializer(read_only=True)
@@ -78,37 +80,15 @@ class ReadOnlyRecordSerializer(serializers.ModelSerializer):
         fields = ('id', 'create_time', 'update_time', 'campus_event',
                   'off_campus_event', 'user', 'status', 'contents',
                   'attachments', 'status_str', 'feedback', 'role', 'role_str',
-                  'allow_actions_from_user',
-                  'allow_actions_from_department_admin',
-                  'allow_actions_from_school_admin')
+                  'allow_actions_from_user', 'allow_actions_from_admin')
 
     def get_allow_actions_from_user(self, obj):
         '''Get status of whether ordinary user can edit record or not.'''
-        allow_user_action_status = (
-            Record.STATUS_SUBMITTED,
-            Record.STATUS_DEPARTMENT_ADMIN_APPROVED,
-            Record.STATUS_DEPARTMENT_ADMIN_REJECTED,
-            Record.STATUS_SCHOOL_ADMIN_REJECTED
-        )
-        return obj.status in allow_user_action_status
+        return is_user_allowed_operating(self.context['request'], obj)
 
-    def get_allow_actions_from_department_admin(self, obj):
+    def get_allow_actions_from_admin(self, obj):
         '''Get status of whether department admin can review or not.'''
-        allow_department_action_status = (
-            Record.STATUS_SUBMITTED,
-            Record.STATUS_DEPARTMENT_ADMIN_APPROVED,
-            Record.STATUS_DEPARTMENT_ADMIN_REJECTED
-        )
-        return obj.status in allow_department_action_status
-
-    def get_allow_actions_from_school_admin(self, obj):
-        '''Get status of whether school admin can review or not.'''
-        allow_school_action_status = (
-            Record.STATUS_DEPARTMENT_ADMIN_APPROVED,
-            Record.STATUS_SCHOOL_ADMIN_APPROVED,
-            Record.STATUS_SCHOOL_ADMIN_REJECTED,
-        )
-        return obj.status in allow_school_action_status
+        return is_admin_allowed_operating(self.context['request'], obj)
 
 
 class RecordCreateSerializer(serializers.ModelSerializer):
