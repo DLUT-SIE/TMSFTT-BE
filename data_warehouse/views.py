@@ -43,10 +43,6 @@ class AggregateDataViewSet(viewsets.ViewSet):
     def export(self, request):
         '''Return a xls file stream.'''
         http_params = self.check_params(request.GET)
-        if 'table_type' not in request.GET:
-            raise BadRequest('请求的参数不正确。')
-        if not request.GET['table_type'].isdigit():
-            raise BadRequest('请求的table_type必须为整数。')
         context = {key: val for (key, val) in http_params.items()}
         context['request'] = request
         ret_file_path, file_name = AggregateDataService.dispatch(
