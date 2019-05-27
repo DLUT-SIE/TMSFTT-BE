@@ -9,13 +9,18 @@ import django_filters
 import auth.permissions
 from training_event.services import EnrollmentService, CampusEventService
 import training_event.models
+from training_event.serializers import (ReadOnlyCampusEventSerializer,
+                                        CampusEventSerializer,
+                                        OffCampusEventSerializer,
+                                        EnrollmentSerailizer)
 import training_event.serializers
 import training_event.filters
-
+from infra.mixins import MultiSerializerActionClassMixin
 User = get_user_model()
 
 
-class CampusEventViewSet(viewsets.ModelViewSet):
+class CampusEventViewSet(MultiSerializerActionClassMixin,
+                         viewsets.ModelViewSet):
     '''Create API views for CampusEvent.'''
     queryset = (
         training_event.models.CampusEvent.objects
@@ -23,7 +28,13 @@ class CampusEventViewSet(viewsets.ModelViewSet):
         .select_related('program', 'program__department')
         .order_by('-time')
     )
-    serializer_class = training_event.serializers.CampusEventSerializer
+    serializer_action_classes = {
+        'create': CampusEventSerializer,
+        'update': CampusEventSerializer,
+        'delete': CampusEventSerializer,
+        'partial_update': CampusEventSerializer,
+    }
+    serializer_class = ReadOnlyCampusEventSerializer
     filter_class = training_event.filters.CampusEventFilter
     filter_backends = (filters.DjangoObjectPermissionsFilter,
                        django_filters.rest_framework.DjangoFilterBackend,)
@@ -46,7 +57,7 @@ class CampusEventViewSet(viewsets.ModelViewSet):
 class OffCampusEventViewSet(viewsets.ModelViewSet):
     '''Create API views for OffCampusEvent.'''
     queryset = training_event.models.OffCampusEvent.objects.all()
-    serializer_class = training_event.serializers.OffCampusEventSerializer
+    serializer_class = OffCampusEventSerializer
     filter_class = training_event.filters.OffCampusEventFilter
 
 
@@ -61,7 +72,7 @@ class EnrollmentViewSet(mixins.CreateModelMixin,
     but do not allow them to update.
     '''
     queryset = training_event.models.Enrollment.objects.all()
-    serializer_class = training_event.serializers.EnrollmentSerailizer
+    serializer_class = EnrollmentSerailizer
     permission_classes = (
         auth.permissions.DjangoObjectPermissions,
     )

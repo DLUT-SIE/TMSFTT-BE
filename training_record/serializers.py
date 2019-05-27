@@ -1,4 +1,6 @@
 '''Define how to serialize our models.'''
+import os.path as osp
+
 from rest_framework import serializers
 from rest_framework_bulk import (
     BulkListSerializer,
@@ -17,7 +19,7 @@ from training_record.services import RecordService, CampusEventFeedbackService
 from secure_file.fields import SecureFileField
 from training_event.models import EventCoefficient
 from training_event.serializers import (
-    CampusEventSerializer, OffCampusEventSerializer
+    ReadOnlyCampusEventSerializer, OffCampusEventSerializer
 )
 
 
@@ -33,7 +35,7 @@ class RecordContentSerializer(BulkSerializerMixin,
 class RecordAttachmentSerializer(BulkSerializerMixin,
                                  serializers.ModelSerializer):
     '''Indicate how to serialize RecordAttachment instance.'''
-    path = SecureFileField()
+    path = SecureFileField(perm_name='view_recordattachment')
 
     class Meta:
         model = RecordAttachment
@@ -63,7 +65,7 @@ class ReadOnlyRecordSerializer(serializers.ModelSerializer):
         source='event_coefficient.role',
         read_only=True)
     off_campus_event = OffCampusEventSerializer(read_only=True)
-    campus_event = CampusEventSerializer(read_only=True)
+    campus_event = ReadOnlyCampusEventSerializer(read_only=True)
 
     class Meta:
         model = Record
@@ -118,6 +120,12 @@ class RecordCreateSerializer(serializers.ModelSerializer):
             max_count -= len(self.instance.attachments.all())
             max_size -= sum(x.path.size
                             for x in self.instance.attachments.all())
+        valid_extensions = {'.pdf', '.png', '.jpg', '.jpeg', '.doc', '.docx'}
+        for x in data:
+            ext = osp.splitext(x.name)[-1].lower()
+            if ext not in valid_extensions:
+                raise serializers.ValidationError(
+                    f'不被支持的文件类型: {x.name}')
         # TODO(youchen): Use global configs
         if len(data) > max_count:
             raise serializers.ValidationError('最多允许上传3个附件')

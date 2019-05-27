@@ -34,12 +34,14 @@ class TestCampusEventService(TestCase):
         }
         self.coefficients = [
             {
+                'id': 1,
                 'role': 0,
                 'hours_option': 1,
                 'workload_option': 3,
                 'coefficient': 1,
             },
             {
+                'id': 2,
                 'role': 1,
                 'hours_option': 1,
                 'workload_option': 3,
@@ -70,6 +72,20 @@ class TestCampusEventService(TestCase):
         count_event_coefficient = EventCoefficient.objects.all().count()
         self.assertEqual(count_program, 1)
         self.assertEqual(count_event_coefficient, 2)
+
+    def test_update_campus_event(self):
+        '''Should update campus event and coefficient.'''
+        event = CampusEventService.create_campus_event(self.data,
+                                                       self.coefficients,
+                                                       self.context)
+        self.data['name'] = '2'
+        self.coefficients[0]['coefficient'] = 123
+        event1 = CampusEventService.update_campus_event(event,
+                                                        self.data,
+                                                        self.coefficients,
+                                                        self.context)
+
+        self.assertEqual(event1.name, '2')
 
 
 class TestEnrollmentService(TestCase):

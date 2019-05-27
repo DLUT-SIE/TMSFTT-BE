@@ -8,7 +8,9 @@ from rest_framework import serializers
 from model_mommy import mommy
 
 from training_event.serializers import (
-    EnrollmentSerailizer, CampusEventSerializer)
+    EnrollmentSerailizer,
+    CampusEventSerializer,
+    ReadOnlyCampusEventSerializer)
 from training_event.models import CampusEvent
 
 
@@ -19,7 +21,7 @@ class TestCampusEventSerializer(TestCase):
         '''should get enrollments status when serializer events.'''
         event = mommy.make(CampusEvent)
         events = [event, event]
-        serializer = CampusEventSerializer(events, many=True)
+        serializer = ReadOnlyCampusEventSerializer(events, many=True)
         serializer.context['request'] = Mock()
         serializer.context['request'].user = 23
         data = serializer.data
@@ -33,7 +35,7 @@ class TestCampusEventSerializer(TestCase):
         context = {
             'request': request
         }
-        data = CampusEventSerializer(event, context=context).data
+        data = ReadOnlyCampusEventSerializer(event, context=context).data
 
         self.assertTrue(data['expired'], data)
 
@@ -45,7 +47,7 @@ class TestCampusEventSerializer(TestCase):
         context = {
             'request': request
         }
-        data = CampusEventSerializer(event, context=context).data
+        data = ReadOnlyCampusEventSerializer(event, context=context).data
 
         self.assertTrue(data['expired'], data)
 
@@ -81,15 +83,62 @@ class TestCampusEventSerializer(TestCase):
 
         self.assertIsInstance(data, dict)
 
+    def test_validate(self):
+        '''
+        Should raise ValidationError if  user tries to
+        update reviewed event.
+        '''
+        event = mommy.make(CampusEvent, reviewed=True)
+        request = Mock()
+        user = Mock()
+        request.user = user
+        context = {
+            'request': request
+        }
+        serializer = CampusEventSerializer(event, context=context)
+        with self.assertRaises(serializers.ValidationError):
+            serializer.validate({})
+
+    def test_validate_update(self):
+        '''Should skip tests if event is not reviewed.'''
+        event = mommy.make(CampusEvent, reviewed=False)
+        request = Mock()
+        user = Mock()
+        request.user = user
+        context = {
+            'request': request
+        }
+        serializer = CampusEventSerializer(event, context=context)
+        data = serializer.validate({})
+
+        self.assertIsInstance(data, dict)
+
     def test_get_enrollment_id(self):
         '''should get enrollments id when serialier events.'''
         event = mommy.make(CampusEvent)
         events = [event, event]
-        serializer = CampusEventSerializer(events, many=True)
+        serializer = ReadOnlyCampusEventSerializer(events, many=True)
         serializer.context['request'] = Mock()
         serializer.context['request'].user = 23
         data = serializer.data
         self.assertIn('enrollment_id', data[0])
+
+    @patch('training_event.serializers.CampusEventService')
+    def test_update(self, mocked_service):
+        '''should update event and coefficient.'''
+        serializer = CampusEventSerializer()
+        data = {
+            'coefficients': [
+                {
+                    'role': 0,
+                },
+                {
+                    'role': 1,
+                }
+            ]
+        }
+        serializer.update(1, data)
+        mocked_service.update_campus_event.assert_called()
 
 
 class TestEnrollmentSerializer(TestCase):
