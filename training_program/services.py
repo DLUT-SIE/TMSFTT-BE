@@ -75,7 +75,8 @@ class ProgramService:
             return []
         admin_departments = set(
             map(lambda x: x.replace('-管理员', ''), admin_departments))
-        top_departments = {x['id']: x['name'] for x in 
+        top_departments = {
+            x['id']: x['name'] for x in
             DepartmentService.get_top_level_departments()
             .union(Department.objects.filter(name='大连理工大学'))
             .values('id', 'name')
@@ -90,11 +91,11 @@ class ProgramService:
         group_programs = [
             {
                 'id': dep,
-                'name': top_department_dict[dep],
+                'name': top_departments[dep],
                 'programs': programs_dict[dep]
             } for dep in programs_dict if (
                 is_school_admin or
-                top_department_dict[dep] in admin_departments)
+                top_departments[dep] in admin_departments)
         ]
         group_programs.sort(key=lambda x: x['id'])
         return group_programs
