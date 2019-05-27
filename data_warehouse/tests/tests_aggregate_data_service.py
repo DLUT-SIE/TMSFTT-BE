@@ -314,3 +314,37 @@ class TestAggregateDataService(TestCase):
             [1]
         )
         mock_table_export_service.export_training_feedback.assert_called()
+
+    @patch('data_warehouse.services.aggregate_data_service'
+           '.TrainingHoursStatisticsService')
+    @patch('data_warehouse.services.aggregate_data_service'
+           '.TableExportService')
+    def test_table_training_hours(self, mock_table_export_service,
+                                  mock_training_hours_service):
+        '''Should 正确的处理培训学时统计'''
+        context = {}
+        with self.assertRaisesMessage(ValueError, '未在context参数中指定request，'
+                                      '或context类型不为dict。'):
+            AggregateDataService.table_training_hours_statistics(context)
+        request = MagicMock()
+        request.user = MagicMock()
+        type(request.user).is_department_admin = PropertyMock(
+            return_value=False)
+        type(request.user).is_school_admin = PropertyMock(return_value=False)
+        context = {'request': request}
+        with self.assertRaisesMessage(BadRequest, '你不是管理员。'):
+            AggregateDataService.table_training_hours_statistics(context)
+        request = Mock()
+        mock_start_time, mock_end_time = now(), now()
+        context = {
+            'request': request,
+            'start_time': mock_start_time,
+            'end_time': mock_end_time
+            }
+        AggregateDataService.table_training_hours_statistics(context)
+        mock_training_hours_service.get_training_hours_data.assert_called_with(
+            request.user,
+            mock_start_time,
+            mock_end_time
+        )
+        mock_table_export_service.export_training_hours.assert_called()

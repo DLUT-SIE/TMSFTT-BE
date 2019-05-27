@@ -9,6 +9,7 @@ from .teachers_statistics_service import TeachersStatisticsService
 from .records_statistics_service import RecordsStatisticsService
 from .canvas_data_formater_service import CanvasDataFormater
 from .campus_event_feedback_service import CampusEventFeedbackService
+from .training_hours_statistics_service import TrainingHoursStatisticsService
 
 from .aggregate_data_service import AggregateDataService
 
@@ -25,4 +26,5 @@ __all__ = [
     'CanvasDataFormater',
     'CampusEventFeedbackService',
     'AggregateDataService',
+    'TrainingHoursStatisticsService'
 ]
