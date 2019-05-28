@@ -219,3 +219,46 @@ class TestTableExportServices(TestCase):
         self.assertEqual(sheet.cell_value(1, 4), 1)
         self.assertEqual(sheet.cell_value(1, 5), '2014-08-23')
         self.assertEqual(sheet.cell_value(1, 6), 2)
+
+    def test_export_teacher_statistics(self):
+        '''Should 正确的导出专任教师表'''
+        mock_data = [
+            {
+                '测试学院1': 12,
+                '测试学院2': 15,
+                '测试学院3': 13
+            },
+            {
+                '教授': 10,
+                '副教授': 12,
+                '讲师': 18
+            },
+            {
+                '博士研究所学历': 10,
+                '硕士研究生学历': 10,
+                '本科学士学历': 10,
+                '大专学历': 10
+            },
+            {
+                '35岁以下': 40
+            }]
+
+        file_path = TableExportService.export_teacher_statistics(mock_data)
+        self.assertIsNotNone(file_path)
+        workbook = xlrd.open_workbook(file_path)
+        sheet = workbook.sheet_by_name(TableExportService.TEACHER_SHEET_NAME)
+        self.assertIsNotNone(sheet)
+
+        self.assertEqual(sheet.cell_value(0, 0), '项目')
+        self.assertEqual(sheet.cell_value(2, 0), '总计')
+        self.assertEqual(sheet.cell_value(0, 2), '专任教师')
+        self.assertEqual(sheet.cell_value(1, 2), '数量')
+        self.assertEqual(sheet.cell_value(1, 3), '比例（%）')
+
+        self.assertEqual(sheet.cell_value(2, 2), 40.0)
+        self.assertEqual(sheet.cell_value(2, 3), '100.00')
+
+        self.assertEqual(sheet.cell_value(3, 0), '院系')
+        self.assertEqual(sheet.cell_value(6, 0), '职称')
+        self.assertEqual(sheet.cell_value(9, 0), '年龄')
+        self.assertEqual(sheet.cell_value(13, 0), '最高学位')
