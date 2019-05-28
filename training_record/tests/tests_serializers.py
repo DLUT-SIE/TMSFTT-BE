@@ -7,7 +7,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework import serializers
 from model_mommy import mommy
 
-
+from infra.exceptions import BadRequest
 from training_record.models import Record, RecordAttachment
 from training_record.serializers import (
     RecordCreateSerializer, CampusEventFeedbackSerializer)
@@ -72,3 +72,18 @@ class TestCampusEventFeedbackSerializer(TestCase):
         serializer.create({})
 
         mocked_service.create_feedback.assert_called()
+
+    def test_validate_with_bad_permission(self):
+        '''should raise bad request when have no right'''
+        request = Mock()
+        user = Mock()
+        user.has_perm = Mock(return_value=False)
+        request.user = user
+        context = {
+            'request': request
+        }
+        serializer = CampusEventFeedbackSerializer(context=context)
+        with self.assertRaisesMessage(
+                BadRequest,
+                '您没有权限为此记录提交反馈'):
+            serializer.validate({'record': '1'})
