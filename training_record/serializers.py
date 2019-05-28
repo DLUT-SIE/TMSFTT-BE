@@ -8,7 +8,6 @@ from rest_framework_bulk import (
 )
 
 from infra.utils import format_file_size
-from infra.exceptions import BadRequest
 from training_record.models import (
     Record,
     RecordAttachment,
@@ -141,15 +140,11 @@ class RecordWriteSerializer(serializers.ModelSerializer):
         '''Ensure having rights to update records'''
         if not self.instance:
             return data
-        user = self.context['request'].user
-        if ((user.is_teacher and
-             is_user_allowed_operating(self.context['request'],
-                                       self.instance)) or
-                ((user.is_department_admin or user.is_school_admin) and
-                 is_admin_allowed_operating(self.context['request'],
-                                            self.instance))):
+        if (is_user_allowed_operating(self.context['request'], self.instance)
+                or is_admin_allowed_operating(
+                    self.context['request'], self.instance)):
             return data
-        raise BadRequest('在此状态下您无法更改。')
+        raise serializers.ValidationError('在此状态下您无法更改')
 
     def validate_attachments(self, data):
         '''Validate attachments data.'''

@@ -76,8 +76,8 @@ class TestRecordWriteSerializer(TestCase):
         serializer = RecordWriteSerializer(record, context=context)
         serializer.instance = Mock()
         with self.assertRaisesMessage(
-                BadRequest,
-                '在此状态下您无法更改。'):
+                serializers.ValidationError,
+                '在此状态下您无法更改'):
             serializer.validate('')
 
 
