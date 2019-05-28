@@ -11,7 +11,7 @@ import training_record.filters
 from training_record.models import Record
 from training_record.services import RecordService
 from training_record.serializers import (CampusEventFeedbackSerializer,
-                                         RecordCreateSerializer,
+                                         RecordWriteSerializer,
                                          ReadOnlyRecordSerializer)
 from infra.mixins import MultiSerializerActionClassMixin
 from drf_cache.mixins import DRFCacheMixin
@@ -36,9 +36,9 @@ class RecordViewSet(DRFCacheMixin,
     )
     filter_class = training_record.filters.RecordFilter
     serializer_action_classes = {
-        'create': RecordCreateSerializer,
-        'partial_update': RecordCreateSerializer,
-        'update': RecordCreateSerializer,
+        'create': RecordWriteSerializer,
+        'partial_update': RecordWriteSerializer,
+        'update': RecordWriteSerializer,
     }
     serializer_class = ReadOnlyRecordSerializer
     perms_map = {
