@@ -1,5 +1,4 @@
 '''表格导出服务'''
-from functools import reduce
 import tempfile
 import xlwt
 
@@ -56,13 +55,12 @@ class TableExportService:
         ptr_r = 3
         total = 0
         for idx, data_item in enumerate(data):
-            total = reduce(
-                lambda x, y: x + y, [value for value in data_item.values()])
+            total = sum(data_item.values())
             for key, value in data_item.items():
                 worksheet.write(ptr_r, 1, key)
                 worksheet.write(ptr_r, 2, value)
-                worksheet.write(ptr_r, 3, '%.2f' % (0.0 if total == 0 else (
-                    value * 100 / total)))
+                percent = 0.0 if total == 0 else value * 100 / total
+                worksheet.write(ptr_r, 3, f'{percent:.2f}')
                 ptr_r += 1
             # we ensure top always is bigger than down in case
             # data is empty.
@@ -71,7 +69,7 @@ class TableExportService:
             worksheet.write_merge(top, down, 0, 0, groupby_labels[idx], style)
         # 写入合计
         worksheet.write(2, 2, total)
-        worksheet.write(2, 3, '%.2f' % 100.0)
+        worksheet.write(2, 3, f'{100:.2f}')
         _, file_path = tempfile.mkstemp()
         workbook.save(file_path)
         return file_path
@@ -118,7 +116,7 @@ class TableExportService:
         workbook.save(file_path)
         return file_path
 
-    # pylint: disable=R0914
+    # pylint: disable=R0914, R0915
     @classmethod
     def export_traning_coverage_summary(cls, data):
         '''导出专任教师培训覆盖率表
@@ -172,11 +170,9 @@ class TableExportService:
             worksheet.write(ptr_r, 1, summary['department'])
             worksheet.write(ptr_r, 2, summary['total_count'])
             worksheet.write(ptr_r, 3, summary['coverage_count'])
-            worksheet.write(
-                ptr_r, 4,
-                0 if summary['total_count'] == 0 else summary['coverage_count']
-                * 100 / summary['total_count']
-                )
+            percent = 0 if summary['total_count'] == 0 else (
+                summary['coverage_count'] * 100 / summary['total_count'])
+            worksheet.write(ptr_r, 4, f'{percent:.2f}')
             total += summary['total_count']
             coverage_total += summary['coverage_count']
             ptr_r += 1
@@ -191,11 +187,9 @@ class TableExportService:
             worksheet.write(ptr_r, 1, summary['title'])
             worksheet.write(ptr_r, 2, summary['total_count'])
             worksheet.write(ptr_r, 3, summary['coverage_count'])
-            worksheet.write(
-                ptr_r, 4,
-                0 if summary['total_count'] == 0 else summary['coverage_count']
-                * 100 / summary['total_count']
-                )
+            percent = 0 if summary['total_count'] == 0 else (
+                summary['coverage_count'] * 100 / summary['total_count'])
+            worksheet.write(ptr_r, 4, f'{percent:.2f}')
             ptr_r += 1
         if not titles_data:
             ptr_r += 1
@@ -208,11 +202,9 @@ class TableExportService:
             worksheet.write(ptr_r, 1, summary['age_range'])
             worksheet.write(ptr_r, 2, summary['total_count'])
             worksheet.write(ptr_r, 3, summary['coverage_count'])
-            worksheet.write(
-                ptr_r, 4,
-                0 if summary['total_count'] == 0 else summary['coverage_count']
-                * 100 / summary['total_count']
-                )
+            percent = 0 if summary['total_count'] == 0 else (
+                summary['coverage_count'] * 100 / summary['total_count'])
+            worksheet.write(ptr_r, 4, f'{percent:.2f}')
             ptr_r += 1
 
         if not ages_data:
@@ -221,8 +213,8 @@ class TableExportService:
         # 最后写合计
         worksheet.write(1, 2, total)
         worksheet.write(1, 3, coverage_total)
-        worksheet.write(1, 4,
-                        0 if total == 0 else coverage_total * 100 / total)
+        percent = 0 if total == 0 else coverage_total * 100 / total
+        worksheet.write(1, 4, f'{percent:.2f}')
 
         # 写入数据
         _, file_path = tempfile.mkstemp()
@@ -267,18 +259,12 @@ class TableExportService:
             worksheet.write(ptr_r, 1, item['total_users'])
             worksheet.write(ptr_r, 2, item['total_coveraged_users'])
             worksheet.write(ptr_r, 3, item['total_hours'])
-            worksheet.write(
-                ptr_r, 4,
-                '%.02f' % (
-                    (item['total_hours']/item['total_users']) if
-                    item['total_users'] > 0 else 0.0)
-            )
-            worksheet.write(
-                ptr_r, 5,
-                '%.02f' % (
-                    (item['total_hours']/item['total_coveraged_users']) if
-                    item['total_coveraged_users'] > 0 else 0.0)
-            )
+            avg = (item['total_hours'] / item['total_users']) if item[
+                'total_users'] > 0 else 0.0
+            worksheet.write(ptr_r, 4, f'{avg:.02f}')
+            avg = (item['total_hours']/item['total_coveraged_users']) if item[
+                'total_coveraged_users'] > 0 else 0.0
+            worksheet.write(ptr_r, 5, f'{avg:.02f}')
             ptr_r += 1
 
         # 写入数据

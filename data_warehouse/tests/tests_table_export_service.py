@@ -92,7 +92,7 @@ class TestTableExportServices(TestCase):
         self.assertEqual(sheet.cell_value(1, 0), '总计')
         self.assertEqual(sheet.cell_value(1, 2), 80.0)
         self.assertEqual(sheet.cell_value(1, 3), 40.0)
-        self.assertEqual(sheet.cell_value(1, 4), 50.0)
+        self.assertEqual(sheet.cell_value(1, 4), '50.00')
 
         with self.assertRaisesMessage(BadRequest, '导出内容不存在。'):
             TableExportService.export_traning_coverage_summary({})
@@ -112,7 +112,7 @@ class TestTableExportServices(TestCase):
         self.assertEqual(sheet.cell_value(1, 0), '总计')
         self.assertEqual(sheet.cell_value(1, 2), 0.0)
         self.assertEqual(sheet.cell_value(1, 3), 0.0)
-        self.assertEqual(sheet.cell_value(1, 4), 0.0)
+        self.assertEqual(sheet.cell_value(1, 4), '0.00')
         self.assertEqual(sheet.cell_value(2, 0), '单位数据')
         self.assertEqual(sheet.cell_value(2, 1), '')
 
