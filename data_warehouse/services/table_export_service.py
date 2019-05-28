@@ -1,4 +1,5 @@
 '''表格导出服务'''
+from functools import reduce
 import tempfile
 import xlwt
 
@@ -12,107 +13,65 @@ class TableExportService:
     FEEDBACK_SHEET_NAME = '培训反馈表'
     TRAINING_HOURS_SHEET_NAME = '培训学时统计'
     RECORD_SHEET_NAME = '个人培训记录'
+    TEACHER_SHEET_NAME = '专任教师情况汇总'
 
     @staticmethod
     def export_staff_basic_info():
         '''导出教职工表'''
         # TODO
 
+    # pylint: disable=R0914
     @staticmethod
-    def export_teacher_basic_info(query_set):
-        '''导出专任教师表'''
+    def export_teacher_statistics(data):
+        '''导出专任教师表
+        Parameters
+        -------
+        data: list of dict {
+            key: string
+                分组后的标签名，例如按学院分组时则为学院的名称。
+            value: int
+                人数
+        }
+            data[0] 按部门分组数据，data[1]按职称分组数据
+            data[2] 按年龄分组数据， data[3]按最高学位分组数据
+        Returns
+        -------
+        str:
+            excel file path.
+        '''
         # 初始化excel
         workbook = xlwt.Workbook()
-        worksheet = workbook.add_sheet('专任教师情况汇总')
+        worksheet = workbook.add_sheet(TableExportService.TEACHER_SHEET_NAME)
         style = xlwt.easyxf(('font: bold on; '
                              'align: wrap on, vert centre, horiz center'))
         # 生成表头
         worksheet.write_merge(0, 1, 0, 1, '项目', style)
-        worksheet.write_merge(2, 2, 0, 1, '合计', style)
+        worksheet.write_merge(2, 2, 0, 1, '总计', style)
         worksheet.write_merge(0, 0, 2, 3, '专任教师', style)
-        worksheet.write_merge(0, 0, 4, 5, '外聘教师', style)
-
         worksheet.write(1, 2, '数量', style)
         worksheet.write(1, 3, '比例（%）', style)
-        worksheet.write(1, 4, '数量', style)
-        worksheet.write(1, 5, '比例（%）', style)
-        worksheet.write_merge(3,
-                              3 + len(
-                                  TableExportService.titles_zr.items()) - 1,
-                              0, 0, '职称', style)
-        # 专任教师--职称
-        total_zr, rows_zr = TableExportService.__helper(query_set,
-                                                        'teaching_type', 20,
-                                                        'technical_title',
-                                                        TableExportService
-                                                        .titles_zr)
-        ptr_r = 3
-        ptr_c = 1
-        TableExportService.__write(worksheet, ptr_r, ptr_c, total_zr, rows_zr,
-                                   style)
-        worksheet.write(2, 2, total_zr, style)
-        worksheet.write(2, 3, 100, style)
-        # 外聘教师--职称 TODO(WuJie) 什么是外聘教师
-        total_wp, rows_wp = TableExportService.__helper(query_set,
-                                                        'teaching_type', 21,
-                                                        'technical_title',
-                                                        TableExportService
-                                                        .titles_zr)
-        ptr_r = 3
-        ptr_c = 4
-        TableExportService.__write(worksheet, ptr_r, ptr_c, total_wp, rows_wp,
-                                   style, False)
-        worksheet.write(2, 4, total_wp, style)
-        worksheet.write(2, 5, 100, style)
-        # 专任教师--学位
-        ptr_r += len(TableExportService.titles_zr.items())
-        ptr_c = 1
-        worksheet.write_merge(ptr_r,
-                              ptr_r + len(
-                                  TableExportService.education_zr.items()) - 1,
-                              0, 0, '最高学位', style)
-        total_zr, rows_zr = TableExportService.__helper(query_set,
-                                                        'teaching_type', 20,
-                                                        'education_background',
-                                                        TableExportService
-                                                        .education_zr)
-        TableExportService.__write(worksheet, ptr_r, ptr_c, total_zr, rows_zr,
-                                   style)
-        # 外聘教师--学位
-        ptr_c = 4
-        total_wp, rows_wp = TableExportService.__helper(query_set,
-                                                        'teaching_type', 21,
-                                                        'education_background',
-                                                        TableExportService
-                                                        .education_zr)
-        TableExportService.__write(worksheet, ptr_r, ptr_c, total_wp, rows_wp,
-                                   style, False)
 
-        # 专任教师--年龄
-        ptr_r += len(TableExportService.education_zr.items())
-        ptr_c = 1
-        worksheet.write_merge(ptr_r, ptr_r + len(
-            TableExportService.ages.items()) - 1,
-                              0, 0, '年龄', style)
-        total_zr, rows_zr = TableExportService.__helper(query_set,
-                                                        'teaching_type', 20,
-                                                        'age',
-                                                        TableExportService
-                                                        .ages,
-                                                        mode='range')
-        TableExportService.__write(worksheet, ptr_r, ptr_c, total_zr, rows_zr,
-                                   style)
-        # 外聘教师--年龄
-        ptr_c = 4
-        total_wp, rows_wp = TableExportService.__helper(query_set,
-                                                        'teaching_type', 21,
-                                                        'age',
-                                                        TableExportService
-                                                        .ages, mode='range')
-        TableExportService.__write(worksheet, ptr_r, ptr_c, total_wp, rows_wp,
-                                   style, False)
-
-        # 写入数据
+        # 分组
+        groupby_labels = ('院系', '职称', '年龄', '最高学位')
+        ptr_r = 3
+        total = 0
+        for idx, data_item in enumerate(data):
+            total = reduce(
+                lambda x, y: x + y, [value for value in data_item.values()])
+            for key, value in data_item.items():
+                worksheet.write(ptr_r, 1, key)
+                worksheet.write(ptr_r, 2, value)
+                worksheet.write(ptr_r, 3, '%.2f' % (0.0 if total == 0 else (
+                    value * 100 / total)))
+                ptr_r += 1
+            # we ensure top always is bigger than down in case
+            # data is empty.
+            top = min(ptr_r - len(data_item), ptr_r - 1)
+            down = max(ptr_r - len(data_item), ptr_r - 1)
+            worksheet.write_merge(top, down, 0, 0, groupby_labels[idx], style)
+        # 写入合计
+        worksheet.write(2, 2, total)
+        worksheet.write(2, 3, '%.2f' % 100.0)
         _, file_path = tempfile.mkstemp()
         workbook.save(file_path)
         return file_path

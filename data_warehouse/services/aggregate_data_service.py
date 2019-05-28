@@ -463,6 +463,12 @@ class AggregateDataService:
     @admin_required()
     def table_teacher_statistics(cls, context):
         '''专任教师情况表导出'''
+        # adapat to @wangyang's code.
+        request = context.get('request')
+        user = request.user
+        department_id = '0' if user.is_school_admin else str(
+            user.administrative_department.id)
+        context['department_id'] = department_id
         data = []
         for group_by in range(4):
             # populate group_by params because endpoint
