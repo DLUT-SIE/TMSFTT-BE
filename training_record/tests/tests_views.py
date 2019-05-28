@@ -2,7 +2,7 @@
 import io
 import tempfile
 import json
-from unittest.mock import patch
+from unittest.mock import patch, PropertyMock
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -157,7 +157,8 @@ class TestRecordViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(set(response.data.keys()), expected_keys)
 
-    def test_update_record(self):
+    @patch('training_record.utils.is_user_allowed_operating')
+    def test_update_record(self, mocked_method):
         '''Record should be updated by PATCH request.'''
         off_campus_event = mommy.make(training_event.models.OffCampusEvent,
                                       id=1,)
@@ -169,13 +170,16 @@ class TestRecordViewSet(APITestCase):
             'num_hours': 5,
             'num_participants': 30,
         }
+        type(self.user).is_teacher = PropertyMock(return_value=True)
+        mocked_method.return_value(True)
         record = mommy.make(training_record.models.Record,
                             user=self.user,
                             off_campus_event=off_campus_event)
         PermissionService.assign_object_permissions(self.user, record)
         url = reverse('record-detail', args=(record.pk,))
         data = {'off_campus_event': json.dumps(off_campus_event_data),
-                'role': EventCoefficient.ROLE_PARTICIPATOR}
+                'role': EventCoefficient.ROLE_PARTICIPATOR,
+                'user': self.user.id}
 
         response = self.client.patch(url, data, format='json')
 

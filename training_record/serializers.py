@@ -99,7 +99,7 @@ class ReadOnlyRecordSerializer(serializers.ModelSerializer):
         return is_admin_allowed_operating(self.context['request'], obj)
 
 
-class RecordCreateSerializer(serializers.ModelSerializer):
+class RecordWriteSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize Record instance.'''
     off_campus_event = serializers.JSONField(
         binary=True,
@@ -136,6 +136,20 @@ class RecordCreateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         return RecordService.update_off_campus_record_from_raw_data(
             instance, **validated_data)
+
+    def validate(self, data):
+        '''Ensure having rights to update records'''
+        if not self.instance:
+            return data
+        user = self.context['request'].user
+        if ((user.is_teacher and
+             is_user_allowed_operating(self.context['request'],
+                                       self.instance)) or
+                ((user.is_department_admin or user.is_school_admin) and
+                 is_admin_allowed_operating(self.context['request'],
+                                            self.instance))):
+            return data
+        raise BadRequest('在此状态下您无法更改。')
 
     def validate_attachments(self, data):
         '''Validate attachments data.'''

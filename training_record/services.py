@@ -95,6 +95,7 @@ class RecordService:
     # pylint: disable=redefined-builtin
     # pylint: disable=unused-argument
     # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-locals
     @staticmethod
     def update_off_campus_record_from_raw_data(
             record, off_campus_event=None, user=None,
@@ -173,6 +174,17 @@ class RecordService:
                 )
                 PermissionService.assign_object_permissions(
                     user, record_content)
+            # reset status
+            pre_status = record.status
+            record.status = Record.STATUS_SUBMITTED
+            post_status = record.status
+            StatusChangeLog.objects.create(
+                record=record,
+                pre_status=pre_status,
+                post_status=post_status,
+                time=now(),
+                user=user,)
+            record.save()
         return record
 
     # pylint: disable=too-many-locals
