@@ -226,6 +226,7 @@ class AggregateDataService:
             cls.TABLE_NAME_TRAINING_FEEDBACK: 'table_training_feedback',
             cls.TABLE_NAME_WORKLOAD_CALCULATION: 'table_workload_calculation',
             cls.TABLE_NAME_TRAINING_RECORDS: 'table_training_records',
+            cls.TABLE_NAME_TEACHER: 'table_teacher_statistics'
         }
         table_type = context.get('table_type')
         handler = handlers.get(table_type, None)
@@ -457,3 +458,17 @@ class AggregateDataService:
             )
         file_path = TableExportService.export_records_for_user(data)
         return file_path, '个人培训记录.xls'
+
+    @classmethod
+    @admin_required()
+    def table_teacher_statistics(cls, context):
+        '''专任教师情况表导出'''
+        data = []
+        for group_by in range(4):
+            # populate group_by params because endpoint
+            # wont give us the param.
+            context['group_by'] = str(group_by)
+            group_users = cls.get_group_users(context)
+            data.append(group_users)
+        file_path = TableExportService.export_teacher_statistics(data)
+        return file_path, '专任教师表.xls'
