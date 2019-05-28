@@ -65,7 +65,7 @@ class TrainingHoursSerializer(BaseTableExportSerializer):
     end_time = serializers.DateTimeField(required=False)
 
 
-class TableTrainingRecordsSerializer(serializers.Serializer):
+class TableTrainingRecordsSerializer(BaseTableExportSerializer):
     '''Serialize parameters for training records.'''
     event_name = serializers.CharField(required=False, default='')
     event_location = serializers.CharField(required=False, default='')
