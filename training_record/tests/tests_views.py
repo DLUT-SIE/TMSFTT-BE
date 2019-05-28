@@ -375,6 +375,8 @@ class TestCampusEventFeedbackViewSet(APITestCase):
             'record': record.id,
             'content': '1',
         }
+        assign_perm('training_record.change_record', self.user, record)
+        PermissionService.assign_object_permissions(self.user, record)
         response = self.client.post(url, data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(CampusEventFeedback.objects.count(), 1)
