@@ -15,3 +15,8 @@ class ReviewNoteSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return ReviewNoteService.create_review_note(validated_data)
+
+    def validate(self, data):
+        if self.context['request'].user.has_perm('change_record'):
+            raise serializers.ValidationError('您无权添加审核提示！')
+        return data
