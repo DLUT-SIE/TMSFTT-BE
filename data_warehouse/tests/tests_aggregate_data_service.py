@@ -386,3 +386,16 @@ class TestAggregateDataService(TestCase):
         data = AggregateDataService.training_hours_statistics(context)
         mock_training_hours_service.get_training_hours_data.assert_called()
         self.assertIsNotNone(data)
+
+    @patch('data_warehouse.services.aggregate_data_service'
+           '.TableExportService')
+    def test_table_teacher_statistics(self, mock_table_export_service):
+        '''Should 正确的导出专任教师表'''
+        context = {}
+        context['request'] = self.request
+        context['department_id'] = '0'
+        context['group_by'] = '3'
+        file_path, _ = AggregateDataService.table_teacher_statistics(
+            context)
+        mock_table_export_service.export_teacher_statistics.assert_called()
+        self.assertIsNotNone(file_path)
