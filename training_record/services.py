@@ -178,13 +178,13 @@ class RecordService:
             pre_status = record.status
             record.status = Record.STATUS_SUBMITTED
             post_status = record.status
+            record.save()
             StatusChangeLog.objects.create(
                 record=record,
                 pre_status=pre_status,
                 post_status=post_status,
                 time=now(),
                 user=user,)
-            record.save()
         return record
 
     # pylint: disable=too-many-locals
