@@ -470,7 +470,7 @@ class AggregateDataService:
             user.administrative_department.id)
         context['department_id'] = department_id
         data = []
-        for group_by in range(4):
+        for group_by in EnumData.GROUP_BY_LIST:
             # populate group_by params because endpoint
             # wont give us the param.
             context['group_by'] = str(group_by)
