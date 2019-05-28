@@ -7,7 +7,6 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework import serializers
 from model_mommy import mommy
 
-from infra.exceptions import BadRequest
 from training_record.models import Record, RecordAttachment
 from training_record.serializers import (
     RecordWriteSerializer, CampusEventFeedbackSerializer)
@@ -103,6 +102,6 @@ class TestCampusEventFeedbackSerializer(TestCase):
         }
         serializer = CampusEventFeedbackSerializer(context=context)
         with self.assertRaisesMessage(
-                BadRequest,
+                serializers.ValidationError,
                 '您没有权限为此记录提交反馈'):
             serializer.validate({'record': '1'})

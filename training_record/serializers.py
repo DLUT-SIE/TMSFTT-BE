@@ -61,7 +61,7 @@ class CampusEventFeedbackSerializer(serializers.ModelSerializer):
         record = data.get('record')
         if not self.context['request'].user.has_perm(
                 'training_record.change_record', record):
-            raise BadRequest('您没有权限为此记录提交反馈')
+            raise serializers.ValidationError('您没有权限为此记录提交反馈')
         return data
 
 
