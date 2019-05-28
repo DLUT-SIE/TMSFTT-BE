@@ -294,23 +294,6 @@ class TestRecordContentViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_record_content(self):
-        '''RecordContent should be accessed by GET request.'''
-        campus_event = mommy.make(training_event.models.CampusEvent)
-        record = mommy.make(training_record.models.Record,
-                            campus_event=campus_event)
-        record_content = mommy.make(training_record.models.RecordContent,
-                                    record=record)
-        PermissionService.assign_object_permissions(self.user, record_content)
-        url = reverse('recordcontent-detail', args=(record_content.pk,))
-        expected_keys = {'id', 'create_time', 'update_time', 'record',
-                         'content_type', 'content'}
-
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(set(response.data.keys()), expected_keys)
-
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 class TestRecordAttachmentViewSet(APITestCase):
@@ -332,24 +315,6 @@ class TestRecordAttachmentViewSet(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_get_record_attachment(self):
-        '''RecordAttachment should be accessed by GET request.'''
-        campus_event = mommy.make(training_event.models.CampusEvent)
-        record = mommy.make(training_record.models.Record,
-                            campus_event=campus_event)
-        record_attachment = mommy.make(training_record.models.RecordAttachment,
-                                       record=record)
-        PermissionService.assign_object_permissions(
-            self.user, record_attachment)
-        url = reverse('recordattachment-detail', args=(record_attachment.pk,))
-        expected_keys = {'id', 'create_time', 'update_time', 'record',
-                         'attachment_type', 'path'}
-
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(set(response.data.keys()), expected_keys)
 
 
 class TestStatusChangeLogViewSet(APITestCase):

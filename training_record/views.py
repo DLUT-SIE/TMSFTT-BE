@@ -3,9 +3,6 @@ import django_filters
 from django.db.models import Q
 from rest_framework import viewsets, status, decorators, mixins
 from rest_framework.response import Response
-from rest_framework_bulk.mixins import (
-    BulkCreateModelMixin,
-)
 from rest_framework_guardian import filters
 
 import auth.permissions
@@ -139,7 +136,8 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         return Response({'count': count}, status=status.HTTP_200_OK)
 
 
-class RecordContentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
+class RecordContentViewSet(mixins.ListModelMixin,
+                           viewsets.GenericViewSet):
     '''Create API views for RecordContent.'''
     queryset = training_record.models.RecordContent.objects.all()
     serializer_class = training_record.serializers.RecordContentSerializer
@@ -151,7 +149,9 @@ class RecordContentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
     )
 
 
-class RecordAttachmentViewSet(BulkCreateModelMixin, viewsets.ModelViewSet):
+class RecordAttachmentViewSet(mixins.ListModelMixin,
+                              mixins.DestroyModelMixin,
+                              viewsets.GenericViewSet):
     '''Create API views for RecordAttachment.'''
     queryset = training_record.models.RecordAttachment.objects.all()
     serializer_class = training_record.serializers.RecordAttachmentSerializer
