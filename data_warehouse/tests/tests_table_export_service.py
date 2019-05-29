@@ -262,3 +262,71 @@ class TestTableExportServices(TestCase):
         self.assertEqual(sheet.cell_value(6, 0), '职称')
         self.assertEqual(sheet.cell_value(9, 0), '年龄')
         self.assertEqual(sheet.cell_value(13, 0), '最高学位')
+
+    def test_export_training_summary(self):
+        '''Should 正确的导出培训总体情况表'''
+        mock_data = [
+            {
+                'campus_records':
+                {
+                    '测试学院1': 12,
+                    '测试学院2': 15,
+                    '测试学院3': 13
+                },
+                'off_campus_records':
+                {
+                   '测试学院1': 12,
+                   '测试学院2': 15,
+                   '测试学院3': 13
+                }
+            },
+            {
+                'campus_records':
+                {
+                    '教授': 10,
+                    '副教授': 12,
+                    '讲师': 18
+                },
+                'off_campus_records':
+                {
+                    '教授': 10,
+                    '副教授': 12,
+                    '讲师': 18
+                },
+            },
+            {
+                'campus_records':
+                {
+                    '35岁以下': 40
+                },
+                'off_campus_records':
+                {
+                    '35岁以下': 40
+                }
+            }
+            ]
+
+        file_path = TableExportService.export_training_summary(mock_data)
+        self.assertIsNotNone(file_path)
+        workbook = xlrd.open_workbook(file_path)
+        sheet = workbook.sheet_by_name(
+            TableExportService.TEACHER_SUMMARY_SHEET_NAME)
+        self.assertIsNotNone(sheet)
+
+        self.assertEqual(sheet.cell_value(0, 0), '类别')
+        self.assertEqual(sheet.cell_value(2, 0), '总计')
+        self.assertEqual(sheet.cell_value(0, 2), '校内培训')
+        self.assertEqual(sheet.cell_value(0, 4), '校外培训')
+        self.assertEqual(sheet.cell_value(1, 2), '数量')
+        self.assertEqual(sheet.cell_value(1, 3), '比例（%）')
+        self.assertEqual(sheet.cell_value(1, 4), '数量')
+        self.assertEqual(sheet.cell_value(1, 5), '比例（%）')
+
+        self.assertEqual(sheet.cell_value(2, 2), 40.0)
+        self.assertEqual(sheet.cell_value(2, 4), 40.0)
+        self.assertEqual(sheet.cell_value(2, 3), '100.00')
+        self.assertEqual(sheet.cell_value(2, 5), '100.00')
+
+        self.assertEqual(sheet.cell_value(3, 0), '院系')
+        self.assertEqual(sheet.cell_value(6, 0), '职称')
+        self.assertEqual(sheet.cell_value(9, 0), '年龄')

@@ -1,8 +1,6 @@
 '''表格导出服务'''
 import tempfile
 import xlwt
-
-from auth.models import Department
 from infra.exceptions import BadRequest
 
 
@@ -13,6 +11,7 @@ class TableExportService:
     TRAINING_HOURS_SHEET_NAME = '培训学时统计'
     RECORD_SHEET_NAME = '个人培训记录'
     TEACHER_SHEET_NAME = '专任教师情况汇总'
+    TEACHER_SUMMARY_SHEET_NAME = '培训总体情况汇总'
 
     @staticmethod
     def export_staff_basic_info():
@@ -75,41 +74,82 @@ class TableExportService:
         return file_path
 
     @staticmethod
-    def export_training_summary():
-        '''导出培训总体情况表'''
+    def export_training_summary(data):
+        '''导出培训总体情况表（含校内和校外培训活动）
+        Parameters
+        -------
+        data: list of dict {
+            campus_records: dict {
+                key: string
+                    分组后的标签名，例如按学院分组时则为学院的名称。
+                value: int
+                    人数
+            },
+                校内培训活动
+            off_campus_records: dict {
+               key: string
+                    分组后的标签名，例如按学院分组时则为学院的名称。
+                value: int
+                    人数
+            }
+                校外培训活动
+        }
+            data[0] 按部门分组数据，data[1]按职称分组数据
+            data[2] 按年龄分组数据。
+
+        Returns
+        -------
+        str:
+            excel file path.
+        '''
         # 初始化excel
         workbook = xlwt.Workbook()
-        worksheet = workbook.add_sheet('培训总体情况汇总')
+        worksheet = workbook.add_sheet(
+            TableExportService.TEACHER_SUMMARY_SHEET_NAME)
         style = xlwt.easyxf(('font: bold on; '
                              'align: wrap on, vert centre, horiz center'))
         # 生成表头
         worksheet.write_merge(0, 1, 0, 1, '类别', style)
-        worksheet.write_merge(2, 2, 0, 1, '合计', style)
-        worksheet.write_merge(0, 0, 2, 3, '专任教师', style)
-        worksheet.write_merge(0, 0, 4, 5, '其他人员', style)
+        worksheet.write_merge(2, 2, 0, 1, '总计', style)
+        worksheet.write_merge(0, 0, 2, 3, '校内培训', style)
+        worksheet.write_merge(0, 0, 4, 5, '校外培训', style)
 
         worksheet.write(1, 2, '数量', style)
         worksheet.write(1, 3, '比例（%）', style)
         worksheet.write(1, 4, '数量', style)
         worksheet.write(1, 5, '比例（%）', style)
-        # 单位数据
-        departments_qs = Department.objects.all()
-        worksheet.write_merge(3, 3 + len(departments_qs) - 1,
-                              0, 0, '单位数据', style)
-        deparment_filter_dict = {}
-        for dept in departments_qs:
-            deparment_filter_dict[dept.name] = dept.raw_department_id
 
-        ptr = 3 + len(departments_qs)
-        # 职称
-        worksheet.write_merge(ptr, ptr + len(
-            TableExportService.titles_trainning.items()) - 1,
-                              0, 0, '职称', style)
-        ptr += len(TableExportService.titles_trainning.items())
-        # 年龄
-        worksheet.write_merge(ptr, ptr + len(
-            TableExportService.ages.items()) - 1,
-                              0, 0, '年龄', style)
+        # 分组
+        groupby_labels = ('院系', '职称', '年龄')
+        ptr_r = 3
+        total_campus, total_off_campus = 0, 0
+        # iterate different group bys.
+        for idx, data_item in enumerate(data):
+            ptr_c = 0
+            total_campus = sum(data_item['campus_records'].values())
+            total_off_campus = sum(data_item['off_campus_records'].values())
+            # iterate campus_records and off_campus_records
+            for _, item in data_item.items():
+                total = sum(item.values())
+                tmp_ptr = ptr_r
+                for key, value in item.items():
+                    worksheet.write(tmp_ptr, ptr_c + 1, key)
+                    worksheet.write(tmp_ptr, ptr_c + 2, value)
+                    percent = 0.0 if total == 0 else value * 100 / total
+                    worksheet.write(tmp_ptr, ptr_c + 3, f'{percent:.2f}')
+                    tmp_ptr += 1
+                ptr_c += 3
+            ptr_r = tmp_ptr
+            # we ensure top always is bigger than down in case
+            # data is empty.
+            top = min(ptr_r - len(data_item['campus_records']), ptr_r - 1)
+            down = max(ptr_r - len(data_item['campus_records']), ptr_r - 1)
+            worksheet.write_merge(top, down, 0, 0, groupby_labels[idx], style)
+        # 写入合计
+        worksheet.write(2, 2, total_campus)
+        worksheet.write(2, 4, total_off_campus)
+        worksheet.write(2, 3, f'{100:.2f}')
+        worksheet.write(2, 5, f'{100:.2f}')
 
         # 写入数据
         _, file_path = tempfile.mkstemp()
