@@ -424,3 +424,60 @@ class TableExportService:
         _, file_path = tempfile.mkstemp()
         workbook.save(file_path)
         return file_path
+    
+    @staticmethod
+    def export_attendance_sheet(user_data, event_data):
+        '''Export attendance sheet for admin.
+        Parameters
+        ------
+        user_data: User object
+        event_data: CampusEvent object
+
+        Returns
+        ------
+        string
+            导出的excel文件路径
+        '''
+        if user_data is None or not user_data:
+            raise BadRequest('导出内容不存在。')
+        
+        #TODO
+        '''
+        还应该补充培训活动编号的信息
+        '''
+        # 初始化excel
+        workbook = xlwt.Workbook()
+        worksheet = workbook.add_sheet('签到表')
+        ptr_r = 0
+        worksheet.write(ptr_r, 0, '培训活动编号')
+        worksheet.write(ptr_r, 1, event_data['id'])
+        ptr_r += 1
+        style = xlwt.easyxf(('font: bold on; '
+                             'align: wrap on, vert centre, horiz center'))
+        sheet_name = event_data['name'] + \
+            '(' + event_data['time'] + ')' +'签到表'
+        worksheet.write_merge(ptr_r,ptr_r,0,6,sheet_name, style)
+        ptr_r += 1
+        # 生成表头
+        worksheet.write(ptr_r, 0, '序号', style)
+        worksheet.write(ptr_r, 1, '院系', style)
+        worksheet.write(ptr_r, 2, '工号', style)
+        worksheet.write(ptr_r, 3, '姓名', style)
+        worksheet.write(ptr_r, 4, '参与形式', style)
+        worksheet.write(ptr_r, 5, '签到', style)
+        # 已报名用户数据
+        ptr_r += 1
+        for idx, item in enumerate(user_data):
+            worksheet.write(ptr_r, 0, idx+1, style)
+            worksheet.write(ptr_r, 1,
+                            item['department_str'], style)
+            worksheet.write(ptr_r, 2, item['username'], style)
+            worksheet.write(ptr_r, 3,
+                            item['first_name']+item['last_name'],
+                            style)
+            ptr_r += 1
+        # 写入数据
+        _, file_path = tempfile.mkstemp()
+        workbook.save(file_path)
+        return file_path
+    

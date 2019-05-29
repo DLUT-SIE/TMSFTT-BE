@@ -4,6 +4,7 @@ from datetime import datetime
 import pytz
 from rest_framework import serializers
 from django.utils.timezone import now
+from training_event.serializers import ReadOnlyCampusEventSerializer
 
 # pylint: disable=W0223
 
@@ -95,3 +96,7 @@ class TrainingSummarySerializer(BaseTableExportSerializer):
     '''培训总体情况导出用于处理http请求参数的序列化器'''
     start_time = serializers.DateTimeField(required=False)
     end_time = serializers.DateTimeField(required=False)
+
+class AttendanceSheetSerializer(BaseTableExportSerializer):
+    '''Serialize parameters for user.'''
+    event_id = serializers.IntegerField(required=False)
