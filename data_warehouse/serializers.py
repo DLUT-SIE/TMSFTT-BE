@@ -4,7 +4,6 @@ from datetime import datetime
 import pytz
 from rest_framework import serializers
 from django.utils.timezone import now
-from training_event.serializers import ReadOnlyCampusEventSerializer
 
 # pylint: disable=W0223
 

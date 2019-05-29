@@ -13,6 +13,7 @@ class TableExportService:
     TRAINING_HOURS_SHEET_NAME = '培训学时统计'
     RECORD_SHEET_NAME = '个人培训记录'
     TEACHER_SHEET_NAME = '专任教师情况汇总'
+    ATTENDANCE_SHEET_NAME = '签到表'
 
     @staticmethod
     def export_staff_basic_info():
@@ -380,14 +381,23 @@ class TableExportService:
         _, file_path = tempfile.mkstemp()
         workbook.save(file_path)
         return file_path
-    
+
     @staticmethod
     def export_attendance_sheet(user_data, event_data):
         '''Export attendance sheet for admin.
         Parameters
         ------
-        user_data: User object
-        event_data: CampusEvent object
+        user_data: list of dict{
+            department_str: string,
+            username: string,
+            first_name: string,
+            last_name: string,
+
+        }
+        event_data: event dict{
+            name: string,
+            time: string,
+        }
 
         Returns
         ------
@@ -396,23 +406,27 @@ class TableExportService:
         '''
         if user_data is None or not user_data:
             raise BadRequest('导出内容不存在。')
-        
-        #TODO
-        '''
-        还应该补充培训活动编号的信息
-        '''
         # 初始化excel
         workbook = xlwt.Workbook()
         worksheet = workbook.add_sheet('签到表')
-        ptr_r = 0
-        worksheet.write(ptr_r, 0, '培训活动编号')
-        worksheet.write(ptr_r, 1, event_data['id'])
-        ptr_r += 1
+        id_col = worksheet.col(0)
+        id_col.width = 256 * 20
+        department_col = worksheet.col(1)
+        department_col.width = 256 * 20
+        username_col = worksheet.col(2)
+        username_col.width = 256 * 20
         style = xlwt.easyxf(('font: bold on; '
                              'align: wrap on, vert centre, horiz center'))
+        style_value = xlwt.easyxf((
+            'align: wrap on, vert centre, horiz center'))
+
+        ptr_r = 0
+        worksheet.write(ptr_r, 0, '培训活动编号', style_value)
+        worksheet.write(ptr_r, 1, event_data['id'], style_value)
+        ptr_r += 1
         sheet_name = event_data['name'] + \
-            '(' + event_data['time'] + ')' +'签到表'
-        worksheet.write_merge(ptr_r,ptr_r,0,6,sheet_name, style)
+            '(' + event_data['time'] + ')' + '签到表'
+        worksheet.write_merge(ptr_r, ptr_r, 0, 5, sheet_name, style)
         ptr_r += 1
         # 生成表头
         worksheet.write(ptr_r, 0, '序号', style)
@@ -424,16 +438,14 @@ class TableExportService:
         # 已报名用户数据
         ptr_r += 1
         for idx, item in enumerate(user_data):
-            worksheet.write(ptr_r, 0, idx+1, style)
+            worksheet.write(ptr_r, 0, idx+1, style_value)
             worksheet.write(ptr_r, 1,
-                            item['department_str'], style)
-            worksheet.write(ptr_r, 2, item['username'], style)
+                            item['department_str'], style_value)
+            worksheet.write(ptr_r, 2, item['username'], style_value)
             worksheet.write(ptr_r, 3,
-                            item['first_name']+item['last_name'],
-                            style)
+                            item['first_name']+item['last_name'], style_value)
             ptr_r += 1
         # 写入数据
         _, file_path = tempfile.mkstemp()
         workbook.save(file_path)
         return file_path
-    

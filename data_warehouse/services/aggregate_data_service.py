@@ -492,25 +492,26 @@ class AggregateDataService:
     @classmethod
     def attendance_sheet(cls, context):
         '''签到表导出'''
-        request = context.get('request')
-        event_data = context.get('event_id', None)
-        matched_user = AttendanceSheetService.get_user(event_data)
-        matched_event  = AttendanceSheetService.get_event(event_data)
-         # prepare data to be written in excel.
+        event_id = context.get('event_id', None)
+        matched_user = AttendanceSheetService.get_user(event_id)
+        matched_event = AttendanceSheetService.get_event(event_id)
+        # prepare data to be written in excel.
         event_data = {
-                'id': matched_event.id,
-                'name': matched_event.name,
-                'time': matched_event.time.strftime('%Y-%m-%d')
+            'id': matched_event.id,
+            'name': matched_event.name,
+            'time': matched_event.time.strftime('%Y-%m-%d')
         }
-        user_data= []
-        for user in matched_user:
-            user_data.append(
-                {
-                    'department_str': user.department.name,
-                    'username': user.username,
-                    'first_name': user.first_name,
-                    'last_name':  user.last_name,
-                }
-            )
-        file_path = TableExportService.export_attendance_sheet(user_data, event_data)
+        user_data = []
+        if matched_user:
+            for user in matched_user:
+                user_data.append(
+                    {
+                        'department_str': user.department.name,
+                        'username': user.username,
+                        'first_name': user.first_name,
+                        'last_name':  user.last_name,
+                    }
+                )
+        file_path = TableExportService.export_attendance_sheet(user_data,
+                                                               event_data)
         return file_path, '签到表.xls'
