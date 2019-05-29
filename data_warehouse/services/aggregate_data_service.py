@@ -237,6 +237,8 @@ class AggregateDataService:
             cls.TABLE_NAME_TRAINING_RECORDS: 'table_training_records',
             cls.TABLE_NAME_TEACHER: 'table_teacher_statistics'
             cls.TABLE_NAME_ATTENDANCE_SHEET: 'attendance_sheet'
+            cls.TABLE_NAME_TEACHER: 'table_teacher_statistics',
+            cls.TABLE_NAME_ATTENDANCE_SHEET: 'attendance_sheet',
         }
         table_type = context.get('table_type')
         handler = handlers.get(table_type, None)
