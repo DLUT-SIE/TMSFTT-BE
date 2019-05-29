@@ -187,7 +187,7 @@ class AggregateDataService:
 
     @staticmethod
     def get_group_records(context):
-        '''get group records data'''
+        '''get group records data 培训总体情况数据'''
         group_by = context.get('group_by', '')
         start_year = context.get('start_year', str(datetime.now().year))
         end_year = context.get('end_year', str(datetime.now().year))
@@ -459,7 +459,7 @@ class AggregateDataService:
     @admin_required()
     def table_teacher_statistics(cls, context):
         '''专任教师情况表导出'''
-        # adapat to @wangyang's code.
+        # adapt to @wangyang's code.
         request = context.get('request')
         user = request.user
         department_id = '0' if user.is_school_admin else str(
@@ -479,3 +479,28 @@ class AggregateDataService:
     @admin_required()
     def table_training_summary(cls, context):
         '''培训总体情况表导出'''
+        # adapt to @wangyang's code
+        request = context.get('request')
+        user = request.user
+        department_id = '0' if user.is_school_admin else str(
+            user.administrative_department.id)
+        context['department_id'] = department_id
+        start_time = context.get('start_time', None)
+        end_time = context.get('end_time', None)
+        if start_time is not None:
+            context['start_year'] = str(start_time.year)
+        if end_time is not None:
+            context['end_year'] = str(end_time.year)
+        data = []
+        group_by_list = [
+            EnumData.BY_DEPARTMENT, EnumData.BY_TECHNICAL_TITLE,
+            EnumData.BY_AGE_DISTRIBUTION]
+        for group_by in group_by_list:
+            # populate group_by params because endpoint
+            # wont give us the param.
+            context['group_by'] = str(group_by)
+            group_records = cls.get_group_records(context)
+            data.append(group_records)
+        print(data)
+        file_path = TableExportService.export_training_summary(data)
+        return file_path, '培训总体情况表.xls'
