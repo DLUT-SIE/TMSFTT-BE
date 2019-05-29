@@ -152,7 +152,7 @@ class TestSchoolCoreStatisticsService(TestCase):
                 year -= 1
                 month += 12
             fake_current_time = current_time.replace(
-                year=year, month=month)
+                year=year, month=month, day=1)
             mocked_now.return_value = fake_current_time
             months.append(fake_current_time.strftime('%Y年%m月'))
 

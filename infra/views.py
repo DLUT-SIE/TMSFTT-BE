@@ -1,5 +1,7 @@
 '''Provide API views for infra module.'''
 from django.utils.timezone import now
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import viewsets, decorators, status
 from rest_framework.response import Response
 from rest_framework_guardian import filters
@@ -27,6 +29,10 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
         'unread': ['%(app_label)s.view_%(model_name)s'],
         'mark_all_as_read': ['%(app_label)s.view_%(model_name)s'],
     }
+
+    @method_decorator(cache_page(60))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
     def _get_read_status_filtered_notifications(self, request, is_read):
         '''Return filtered notifications based on read status.'''

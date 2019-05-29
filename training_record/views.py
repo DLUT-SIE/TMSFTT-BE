@@ -1,6 +1,8 @@
 '''Provide API views for training_record module.'''
 import django_filters
 from django.db.models import Q
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import viewsets, status, decorators, mixins
 from rest_framework.response import Response
 from rest_framework_guardian import filters
@@ -55,6 +57,10 @@ class RecordViewSet(MultiSerializerActionClassMixin,
     permission_classes = (
         auth.permissions.DjangoObjectPermissions,
     )
+
+    @method_decorator(cache_page(60))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
     def _get_paginated_response(self, queryset):
         '''Return paginated response'''
@@ -148,6 +154,10 @@ class RecordContentViewSet(mixins.ListModelMixin,
         auth.permissions.DjangoObjectPermissions,
     )
 
+    @method_decorator(cache_page(60))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
 
 class RecordAttachmentViewSet(mixins.ListModelMixin,
                               mixins.DestroyModelMixin,
@@ -166,11 +176,19 @@ class RecordAttachmentViewSet(mixins.ListModelMixin,
         # TODO: Destroy is allowed only when user has change access to record
         instance.delete()
 
+    @method_decorator(cache_page(60))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
 
 class StatusChangeLogViewSet(viewsets.ReadOnlyModelViewSet):
     '''Create API views for StatusChangeLog.'''
     queryset = training_record.models.StatusChangeLog.objects.all()
     serializer_class = training_record.serializers.StatusChangeLogSerializer
+
+    @method_decorator(cache_page(60))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
 
 class CampusEventFeedbackViewSet(mixins.CreateModelMixin,
@@ -181,3 +199,7 @@ class CampusEventFeedbackViewSet(mixins.CreateModelMixin,
     permission_classes = (
         auth.permissions.DjangoModelPermissions,
     )
+
+    @method_decorator(cache_page(60))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
