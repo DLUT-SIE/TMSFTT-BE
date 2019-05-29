@@ -175,6 +175,7 @@ class RecordService:
                     user, record_content)
         return record
 
+    # pylint: disable=too-many-locals
     @staticmethod
     def create_campus_records_from_excel(file):
         '''Create training records of campus training event.
