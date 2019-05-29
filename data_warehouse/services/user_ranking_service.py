@@ -3,7 +3,7 @@ import math
 from collections import defaultdict
 
 from django.core.cache import cache
-from django.db import models
+from django.db import models, transaction
 from django.db.models.functions import Coalesce
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
@@ -219,6 +219,8 @@ class UserRankingService:
         This function normally should be registered and invoked automatically
         by Celery.
         '''
-        Ranking.objects.all().delete()
         baseoffset = 0
-        baseoffset = cls.generate_user_rankings_by_training_hours(baseoffset)
+        with transaction.atomic():
+            Ranking.objects.all().delete()
+            baseoffset = cls.generate_user_rankings_by_training_hours(
+                baseoffset)
