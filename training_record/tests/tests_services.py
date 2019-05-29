@@ -260,7 +260,7 @@ class TestRecordService(TestCase):
         tup = tempfile.mkstemp()
         work_book = xlwt.Workbook()
         sheet = work_book.add_sheet(u'sheet1', cell_overwrite_ok=True)
-        sheet.write(0, 0, self.campus_event.id+1)
+        sheet.write(0, 1, self.campus_event.id+1)
         work_book.save(tup[1])
         with open(tup[0], 'rb') as work_book:
             excel = work_book.read()
@@ -273,31 +273,59 @@ class TestRecordService(TestCase):
         tup = tempfile.mkstemp()
         work_book = xlwt.Workbook()
         sheet = work_book.add_sheet(u'sheet1', cell_overwrite_ok=True)
-        sheet.write(0, 0, self.campus_event.id)
-        sheet.write(1, 0, self.user.id+1)
+        sheet.write(0, 1, self.campus_event.id)
+        sheet.write(3, 2, self.user.id+1)
+        sheet.write(3, 5, '6')
         work_book.save(tup[1])
+        mommy.make(EventCoefficient,
+                   campus_event=self.campus_event,
+                   role=EventCoefficient.ROLE_PARTICIPATOR)
+        mommy.make(EventCoefficient,
+                   campus_event=self.campus_event,
+                   role=EventCoefficient.ROLE_EXPERT)
         with open(tup[0], 'rb') as work_book:
             excel = work_book.read()
         with self.assertRaisesMessage(
                 BadRequest,
-                '第2行，编号为{}的用户不存在'.format(self.user.id+1)):
+                '第4行，编号为{}的用户不存在'.format(self.user.id+1)):
             RecordService.create_campus_records_from_excel(excel)
 
-    def test_create_campus_records_bad_event_coefficient_id(self):
-        '''Should raise Error if get invalid event_coefficient id.'''
+    def test_create_campus_records_bad_event_coefficient(self):
+        '''Should raise Error if get invalid event_coefficient.'''
         tup = tempfile.mkstemp()
         work_book = xlwt.Workbook()
         sheet = work_book.add_sheet(u'sheet1', cell_overwrite_ok=True)
-        sheet.write(0, 0, self.campus_event.id)
-        sheet.write(1, 0, self.user.id)
-        sheet.write(1, 1, self.event_coefficient.id + 1000)
+        sheet.write(0, 1, self.campus_event.id)
+        sheet.write(3, 2, self.user.id)
         work_book.save(tup[1])
         with open(tup[0], 'rb') as work_book:
             excel = work_book.read()
         with self.assertRaisesMessage(
                 BadRequest,
-                '第2行，编号为{}的活动系数不存在'.format(
-                    self.event_coefficient.id + 1000)):
+                '该活动对应的活动系数不存在'):
+            RecordService.create_campus_records_from_excel(excel)
+
+    def test_create_campus_records_with_bad_role(self):
+        '''Should raise Error if get bad role.'''
+        tup = tempfile.mkstemp()
+        work_book = xlwt.Workbook()
+        sheet = work_book.add_sheet(u'sheet1', cell_overwrite_ok=True)
+        sheet.write(0, 1, self.campus_event.id)
+        sheet.write(3, 2, self.user.id)
+        sheet.write(3, 5, '6')
+        mommy.make(EventCoefficient,
+                   campus_event=self.campus_event,
+                   role=EventCoefficient.ROLE_PARTICIPATOR)
+        mommy.make(EventCoefficient,
+                   campus_event=self.campus_event,
+                   role=EventCoefficient.ROLE_EXPERT)
+        work_book.save(tup[1])
+        with open(tup[0], 'rb') as work_book:
+            excel = work_book.read()
+
+        with self.assertRaisesMessage(
+                BadRequest,
+                '第4行，不存在的参与形式'):
             RecordService.create_campus_records_from_excel(excel)
 
     def test_create_campus_records(self):
@@ -305,9 +333,16 @@ class TestRecordService(TestCase):
         tup = tempfile.mkstemp()
         work_book = xlwt.Workbook()
         sheet = work_book.add_sheet(u'sheet1', cell_overwrite_ok=True)
-        sheet.write(0, 0, self.campus_event.id)
-        sheet.write(1, 0, self.user.id)
-        sheet.write(1, 1, self.event_coefficient.id)
+        sheet.write(0, 1, self.campus_event.id)
+        sheet.write(3, 2, self.user.id)
+        sheet.write(3, 4, '参与')
+        sheet.write(3, 5, '6')
+        mommy.make(EventCoefficient,
+                   campus_event=self.campus_event,
+                   role=EventCoefficient.ROLE_PARTICIPATOR)
+        mommy.make(EventCoefficient,
+                   campus_event=self.campus_event,
+                   role=EventCoefficient.ROLE_EXPERT)
         work_book.save(tup[1])
         with open(tup[0], 'rb') as work_book:
             excel = work_book.read()
