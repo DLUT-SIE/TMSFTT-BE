@@ -214,15 +214,11 @@ class RecordService:
             except Exception:
                 raise BadRequest('编号为{}的活动不存在'.format(event_id))
             # get coefficient from sheet
-            try:
-                coefficient_participator = EventCoefficient.objects.get(
-                    campus_event=event_id,
-                    role=EventCoefficient.ROLE_PARTICIPATOR)
-                coefficient_expert = EventCoefficient.objects.get(
-                    campus_event=event_id,
-                    role=EventCoefficient.ROLE_EXPERT)
-            except Exception:
-                raise BadRequest('该活动对应的活动系数不存在')
+            coefficients = {
+                x.get_role_display(): x
+                for x in EventCoefficient.objects.filter(
+                    campus_event_id=event_id)
+            }
 
             # process the info of users
             for index in range(3, sheet.nrows):
@@ -239,11 +235,8 @@ class RecordService:
                         index + 1, user_id))
 
                 role_str = sheet.cell(index, 4).value
-                if role_str == '专家':
-                    event_coefficient = coefficient_expert
-                elif role_str == '参与':
-                    event_coefficient = coefficient_participator
-                else:
+                event_coefficient = coefficients.get(role_str, None)
+                if event_coefficient is None:
                     raise BadRequest('第{}行，不存在的参与形式'.format(
                         index + 1))
 
