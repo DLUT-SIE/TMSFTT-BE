@@ -22,12 +22,12 @@ class ProgramSerializer(serializers.ModelSerializer):
     def validate_department(self, department):
         '''Forbid illegal create of department.'''
         if self.instance is not None:
-            if department.name != self.instance.department.name:
+            if department.id != self.instance.department.id:
                 raise serializers.ValidationError('不可以修改培训项目的院系')
         if self.instance is None:
             if not self.context['request'].user.check_department_admin(
                     department):
-                raise serializers.ValidationError('不能创建非本学院开设的培训项目')
+                raise serializers.ValidationError('无效的院系')
         return department
 
 
