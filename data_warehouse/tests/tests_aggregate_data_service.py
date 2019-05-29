@@ -390,7 +390,6 @@ class TestAggregateDataService(TestCase):
         mock_training_hours_service.get_training_hours_data.assert_called()
         self.assertIsNotNone(data)
 
-<<<<<<< HEAD
     @patch('data_warehouse.services.aggregate_data_service'
            '.TableExportService')
     def test_table_teacher_statistics(self, mock_table_export_service):
@@ -403,7 +402,7 @@ class TestAggregateDataService(TestCase):
             context)
         mock_table_export_service.export_teacher_statistics.assert_called()
         self.assertIsNotNone(file_path)
-=======
+
     @patch('data_warehouse.services.attendance_sheet_service'
            '.AttendanceSheetService')
     @patch('data_warehouse.services.aggregate_data_service'
@@ -438,4 +437,3 @@ class TestAggregateDataService(TestCase):
         AggregateDataService.attendance_sheet(context)
         mock_attendance_sheet_service.get_user.return_value = []
         mock_table_export_service.export_attendance_sheet.assert_called()
->>>>>>> 完成测试.#245
