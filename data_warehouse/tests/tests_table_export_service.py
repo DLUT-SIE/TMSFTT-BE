@@ -275,9 +275,9 @@ class TestTableExportServices(TestCase):
                 },
                 'off_campus_records':
                 {
-                   '测试学院1': 12,
-                   '测试学院2': 15,
-                   '测试学院3': 13
+                    '测试学院1': 12,
+                    '测试学院2': 15,
+                    '测试学院3': 13
                 }
             },
             {
