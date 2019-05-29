@@ -8,6 +8,7 @@ from rest_framework_bulk import (
 )
 
 from infra.utils import format_file_size
+from infra.exceptions import BadRequest
 from training_record.models import (
     Record,
     RecordAttachment,
@@ -56,6 +57,13 @@ class CampusEventFeedbackSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return CampusEventFeedbackService.create_feedback(
             **validated_data)
+
+    def validate(self, data):
+        record = data.get('record')
+        if not self.context['request'].user.has_perm(
+                'training_record.change_record', record):
+            raise BadRequest('您没有权限为此记录提交反馈')
+        return data
 
 
 class ReadOnlyRecordSerializer(serializers.ModelSerializer):

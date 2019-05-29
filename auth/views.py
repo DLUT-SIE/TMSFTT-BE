@@ -1,6 +1,8 @@
 '''Provide API views for auth module.'''
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, Group
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import viewsets, mixins, status, decorators
 from rest_framework.response import Response
 from rest_framework_bulk.mixins import BulkCreateModelMixin
@@ -33,6 +35,10 @@ class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @method_decorator(cache_page(60))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     '''Create API views for User.'''
@@ -48,6 +54,10 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         auth.permissions.SchoolAdminOnlyPermission,
     )
     filter_fields = ('username',)
+
+    @method_decorator(cache_page(60))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
@@ -70,6 +80,10 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @method_decorator(cache_page(60))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
 
 class UserGroupViewSet(mixins.CreateModelMixin,
                        mixins.ListModelMixin,
@@ -87,6 +101,10 @@ class UserGroupViewSet(mixins.CreateModelMixin,
     )
     filter_fields = ('group',)
 
+    @method_decorator(cache_page(60))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
 
 class GroupPermissionViewSet(BulkCreateModelMixin,
                              viewsets.ModelViewSet):
@@ -100,6 +118,10 @@ class GroupPermissionViewSet(BulkCreateModelMixin,
     )
     filter_fields = ('group',)
 
+    @method_decorator(cache_page(60))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
 
 class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
     '''Create READ-ONLY APIs for Permission.'''
@@ -109,3 +131,7 @@ class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (
         auth.permissions.SchoolAdminOnlyPermission,
     )
+
+    @method_decorator(cache_page(60))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
