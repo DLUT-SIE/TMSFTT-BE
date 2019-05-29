@@ -501,6 +501,5 @@ class AggregateDataService:
             context['group_by'] = str(group_by)
             group_records = cls.get_group_records(context)
             data.append(group_records)
-        print(data)
         file_path = TableExportService.export_training_summary(data)
         return file_path, '培训总体情况表.xls'

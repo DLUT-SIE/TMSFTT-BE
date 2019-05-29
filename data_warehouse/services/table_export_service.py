@@ -125,21 +125,25 @@ class TableExportService:
         total_campus, total_off_campus = 0, 0
         # iterate different group bys.
         for idx, data_item in enumerate(data):
-            ptr_c = 0
             total_campus = sum(data_item['campus_records'].values())
             total_off_campus = sum(data_item['off_campus_records'].values())
             # iterate campus_records and off_campus_records
-            for _, item in data_item.items():
-                total = sum(item.values())
-                tmp_ptr = ptr_r
-                for key, value in item.items():
-                    worksheet.write(tmp_ptr, ptr_c + 1, key)
-                    worksheet.write(tmp_ptr, ptr_c + 2, value)
-                    percent = 0.0 if total == 0 else value * 100 / total
-                    worksheet.write(tmp_ptr, ptr_c + 3, f'{percent:.2f}')
-                    tmp_ptr += 1
-                ptr_c += 3
-            ptr_r = tmp_ptr
+            zipped_data = []
+            for key, value in data_item['campus_records'].items():
+                zipped_data.append(
+                    (key, value, data_item['off_campus_records'][key])
+                    )
+            for dept, campus_cnt, off_campus_cnt in zipped_data:
+                worksheet.write(ptr_r, 1, dept)
+                worksheet.write(ptr_r, 2, campus_cnt)
+                percent = 0.0 if total_campus == 0 else (
+                    campus_cnt * 100 / total_campus)
+                worksheet.write(ptr_r, 3, f'{percent:.2f}')
+                worksheet.write(ptr_r, 4, off_campus_cnt)
+                percent = 0.0 if total_off_campus == 0 else (
+                    off_campus_cnt * 100 / total_off_campus)
+                worksheet.write(ptr_r, 5, f'{percent:.2f}')
+                ptr_r += 1
             # we ensure top always is bigger than down in case
             # data is empty.
             top = min(ptr_r - len(data_item['campus_records']), ptr_r - 1)
