@@ -93,4 +93,4 @@ class TableTrainingRecordsSerializer(BaseTableExportSerializer):
 
 class AttendanceSheetSerializer(BaseTableExportSerializer):
     '''Serialize parameters for user.'''
-    event_id = serializers.IntegerField(required=False)
+    event_id = serializers.IntegerField(required=True)
