@@ -151,6 +151,7 @@ class AggregateDataService:
         return res
 
     @classmethod
+    @admin_required()
     def teachers_statistics(cls, context):
         ''' get teachers statistics data'''
         group_users = cls.get_group_users(context)
@@ -179,6 +180,7 @@ class AggregateDataService:
         return group_users
 
     @classmethod
+    @admin_required()
     def records_statistics(cls, context):
         ''' get records statistics data'''
         group_records = cls.get_group_records(context)
@@ -232,6 +234,7 @@ class AggregateDataService:
         return group_data
 
     @classmethod
+    @admin_required()
     def coverage_statistics(cls, context):
         '''get canvas coverage statistics data'''
         group_data = cls.get_group_coverage_data(context)
@@ -277,6 +280,7 @@ class AggregateDataService:
         return group_users
 
     @classmethod
+    @admin_required()
     def training_hours_statistics(cls, context):
         '''to get training hours statistics data'''
         group_data = cls.get_group_hours_data(context)
@@ -317,6 +321,7 @@ class AggregateDataService:
         return file_path, '培训学时与工作量表.xls'
 
     @classmethod
+    @admin_required()
     def table_workload_calculation(cls, context):
         '''工作量计算表格'''
         # 生成excel文件
