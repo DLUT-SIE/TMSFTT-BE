@@ -207,15 +207,29 @@ class RecordService:
 
         with transaction.atomic():
             # get event from sheet
-            event_id = int(sheet.cell(0, 0).value)
+            event_id = int(sheet.cell(0, 1).value)
             try:
                 campus_event = CampusEvent.objects.get(pk=event_id)
             except Exception:
                 raise BadRequest('编号为{}的活动不存在'.format(event_id))
+            # get coefficient from sheet
+            try:
+                coefficient_participator = EventCoefficient.objects.get(
+                    campus_event=event_id,
+                    role=EventCoefficient.ROLE_PARTICIPATOR)
+                coefficient_expert = EventCoefficient.objects.get(
+                    campus_event=event_id,
+                    role=EventCoefficient.ROLE_EXPERT)
+            except Exception:
+                raise BadRequest('该活动对应的活动系数不存在')
 
             # process the info of users
-            for index in range(1, sheet.nrows):
-                user_id = int(sheet.cell(index, 0).value)
+            for index in range(3, sheet.nrows):
+                isSigned = sheet.cell(index, 5).value
+                if not isSigned:
+                    continue
+
+                user_id = int(sheet.cell(index, 2).value)
 
                 try:
                     user = User.objects.get(pk=user_id)
@@ -223,13 +237,14 @@ class RecordService:
                     raise BadRequest('第{}行，编号为{}的用户不存在'.format(
                         index + 1, user_id))
 
-                event_coefficient_id = int(sheet.cell(index, 1).value)
-                try:
-                    event_coefficient = EventCoefficient.objects.get(
-                        pk=event_coefficient_id)
-                except Exception:
-                    raise BadRequest('第{}行，编号为{}的活动系数不存在'.format(
-                        index + 1, event_coefficient_id))
+                role_str = sheet.cell(index, 4).value
+                if role_str == '专家':
+                    event_coefficient = coefficient_expert
+                elif role_str == '参与':
+                    event_coefficient = coefficient_participator
+                else:
+                    raise BadRequest('第{}行，不存在的参与形式'.format(
+                        index + 1))
 
                 record = Record.objects.create(
                     campus_event=campus_event, user=user,
