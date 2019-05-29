@@ -215,46 +215,6 @@ class AggregateDataService:
         )
         return group_records
 
-    @classmethod
-    def table_export(cls, context):
-        '''处理表格导出相关的请求'''
-        handlers = {
-            cls.TABLE_NAME_TRAINING_HOURS_SUMMARY:
-            'table_training_hours_statistics',
-            cls.TABLE_NAME_COVERAGE_SUMMARY: 'table_coverage_statistics',
-            cls.TABLE_NAME_TRAINING_SUMMARY: 'table_trainee_statistics',
-            cls.TABLE_NAME_TRAINING_FEEDBACK: 'table_training_feedback',
-            cls.TABLE_NAME_WORKLOAD_CALCULATION: 'table_workload_calculation',
-            cls.TABLE_NAME_TRAINING_RECORDS: 'table_training_records',
-            cls.TABLE_NAME_TEACHER: 'table_teacher_statistics'
-        }
-        table_type = context.get('table_type')
-        handler = handlers.get(table_type, None)
-        if handler is None:
-            raise BadRequest('未定义的表类型。')
-        handler_method = getattr(cls, handler, None)
-        return handler_method(context)
-
-    @classmethod
-    @admin_required()
-    def table_training_hours_statistics(cls, context):
-        '''培训学时与工作量'''
-        request = context.get('request')
-        start_time = context.get('start_time')
-        end_time = context.get('end_time')
-        data = TrainingHoursStatisticsService.get_training_hours_data(
-            request.user, start_time, end_time)
-        file_path = TableExportService.export_training_hours(data)
-        return file_path, '培训学时与工作量表.xls'
-
-    @classmethod
-    def training_hours_statistics(cls, context):
-        '''to get training hours statistics data'''
-        group_data = cls.get_group_hours_data(context)
-        data = CanvasDataFormater.format_hours_statistics_data(
-            group_data)
-        return data
-
     @staticmethod
     def get_group_hours_data(context):
         '''get group training hours data'''
@@ -270,10 +230,6 @@ class AggregateDataService:
         group_data = TrainingHoursStatisticsService.get_training_hours_data(
             context['request'].user, start_time, end_time)
         return group_data
-
-    @classmethod
-    def table_trainee_statistics(cls, context):
-        '''pass'''
 
     @classmethod
     def coverage_statistics(cls, context):
@@ -319,6 +275,46 @@ class AggregateDataService:
             raise BadRequest("错误的参数")
         group_users = group_by_handler[group_by](users_qs)
         return group_users
+
+    @classmethod
+    def training_hours_statistics(cls, context):
+        '''to get training hours statistics data'''
+        group_data = cls.get_group_hours_data(context)
+        data = CanvasDataFormater.format_hours_statistics_data(
+            group_data)
+        return data
+
+    @classmethod
+    def table_export(cls, context):
+        '''处理表格导出相关的请求'''
+        handlers = {
+            cls.TABLE_NAME_TRAINING_HOURS_SUMMARY:
+            'table_training_hours_statistics',
+            cls.TABLE_NAME_COVERAGE_SUMMARY: 'table_coverage_statistics',
+            cls.TABLE_NAME_TRAINING_SUMMARY: 'table_training_summary',
+            cls.TABLE_NAME_TRAINING_FEEDBACK: 'table_training_feedback',
+            cls.TABLE_NAME_WORKLOAD_CALCULATION: 'table_workload_calculation',
+            cls.TABLE_NAME_TRAINING_RECORDS: 'table_training_records',
+            cls.TABLE_NAME_TEACHER: 'table_teacher_statistics',
+        }
+        table_type = context.get('table_type')
+        handler = handlers.get(table_type, None)
+        if handler is None:
+            raise BadRequest('未定义的表类型。')
+        handler_method = getattr(cls, handler, None)
+        return handler_method(context)
+
+    @classmethod
+    @admin_required()
+    def table_training_hours_statistics(cls, context):
+        '''培训学时与工作量'''
+        request = context.get('request')
+        start_time = context.get('start_time')
+        end_time = context.get('end_time')
+        data = TrainingHoursStatisticsService.get_training_hours_data(
+            request.user, start_time, end_time)
+        file_path = TableExportService.export_training_hours(data)
+        return file_path, '培训学时与工作量表.xls'
 
     @classmethod
     def table_workload_calculation(cls, context):
@@ -478,3 +474,8 @@ class AggregateDataService:
             data.append(group_users)
         file_path = TableExportService.export_teacher_statistics(data)
         return file_path, '专任教师表.xls'
+
+    @classmethod
+    @admin_required()
+    def table_training_summary(cls, context):
+        '''培训总体情况表导出'''
