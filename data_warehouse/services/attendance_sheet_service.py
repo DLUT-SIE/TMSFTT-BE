@@ -18,9 +18,8 @@ class AttendanceSheetService:
                 id__in=enrolled_users
             )
         return None
-    
+
     @staticmethod
     def get_event(event_id):
         '''get matched event'''
-        matched_event = CampusEvent.objects.get(pk=event_id)
-        return matched_event
+        return CampusEvent.objects.get(pk=event_id)
