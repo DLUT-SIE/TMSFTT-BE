@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from model_mommy import mommy
 
+from infra.exceptions import BadRequest
 from auth.models import Department
 from auth.utils import assign_perm
 from training_event.models import OffCampusEvent
@@ -37,7 +38,7 @@ class TestReviewNoteService(APITestCase):
     def test_create_review_note_user(self):
         '''Should create ReviewNote.'''
         data = {'record': self.record, 'content': '*', 'user': self.user1}
-        review_note = ReviewNoteService.create_review_note(data)
+        review_note = ReviewNoteService.create_review_note(**data)
 
         count = ReviewNote.objects.all().count()
         self.assertEqual(count, 1)
@@ -49,7 +50,7 @@ class TestReviewNoteService(APITestCase):
     def test_create_review_note_admin(self):
         '''Should create ReviewNote.'''
         data = {'record': self.record, 'content': '*', 'user': self.user2}
-        review_note = ReviewNoteService.create_review_note(data)
+        review_note = ReviewNoteService.create_review_note(**data)
 
         count = ReviewNote.objects.all().count()
         self.assertEqual(count, 1)
@@ -57,3 +58,11 @@ class TestReviewNoteService(APITestCase):
         self.assertTrue(self.user1.has_perm('view_reviewnote', review_note))
         self.assertTrue(self.user2.has_perm('add_reviewnote', review_note))
         self.assertTrue(self.user2.has_perm('view_reviewnote', review_note))
+
+    def test_create_review_note_no_content(self):
+        '''Should raise BadRequest if review note's content is None.'''
+        content = None
+        with self.assertRaisesMessage(
+                BadRequest, '审核提示内容不能为空！'):
+            ReviewNoteService.create_review_note(
+                self.user1, self.record, content)
