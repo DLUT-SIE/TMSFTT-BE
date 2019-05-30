@@ -96,6 +96,7 @@ class TrainingSummarySerializer(BaseTableExportSerializer):
     start_time = serializers.DateTimeField(required=False)
     end_time = serializers.DateTimeField(required=False)
 
+
 class AttendanceSheetSerializer(BaseTableExportSerializer):
     '''Serialize parameters for user.'''
     event_id = serializers.IntegerField(required=True)

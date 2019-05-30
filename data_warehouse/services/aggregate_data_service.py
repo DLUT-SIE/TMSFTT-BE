@@ -59,7 +59,7 @@ class AggregateDataService:
         TABLE_NAME_TRAINING_FEEDBACK: '培训反馈表',
         TABLE_NAME_WORKLOAD_CALCULATION: '工作量计算表',
         TABLE_NAME_TRAINING_RECORDS: '个人培训记录',
-        TABLE_NAME_ATTENDANCE_SHEET: '签到表',
+        TABLE_NAME_ATTENDANCE_SHEET: '签到表'
     }
 
     # 校验http请求参数的序列化器配置
@@ -223,48 +223,6 @@ class AggregateDataService:
         )
         return group_records
 
-
-    @classmethod
-    def table_export(cls, context):
-        '''处理表格导出相关的请求'''
-        handlers = {
-            cls.TABLE_NAME_TRAINING_HOURS_SUMMARY:
-            'table_training_hours_statistics',
-            cls.TABLE_NAME_COVERAGE_SUMMARY: 'table_coverage_statistics',
-            cls.TABLE_NAME_TRAINING_SUMMARY: 'table_trainee_statistics',
-            cls.TABLE_NAME_TRAINING_FEEDBACK: 'table_training_feedback',
-            cls.TABLE_NAME_WORKLOAD_CALCULATION: 'table_workload_calculation',
-            cls.TABLE_NAME_TRAINING_RECORDS: 'table_training_records',
-            cls.TABLE_NAME_TEACHER: 'table_teacher_statistics',
-            cls.TABLE_NAME_ATTENDANCE_SHEET: 'attendance_sheet',
-        }
-        table_type = context.get('table_type')
-        handler = handlers.get(table_type, None)
-        if handler is None:
-            raise BadRequest('未定义的表类型。')
-        handler_method = getattr(cls, handler, None)
-        return handler_method(context)
-
-    @classmethod
-    @admin_required()
-    def table_training_hours_statistics(cls, context):
-        '''培训学时与工作量'''
-        request = context.get('request')
-        start_time = context.get('start_time')
-        end_time = context.get('end_time')
-        data = TrainingHoursStatisticsService.get_training_hours_data(
-            request.user, start_time, end_time)
-        file_path = TableExportService.export_training_hours(data)
-        return file_path, '培训学时与工作量表.xls'
-
-    @classmethod
-    def training_hours_statistics(cls, context):
-        '''to get training hours statistics data'''
-        group_data = cls.get_group_hours_data(context)
-        data = CanvasDataFormater.format_hours_statistics_data(
-            group_data)
-        return data
-
     @staticmethod
     def get_group_hours_data(context):
         '''get group training hours data'''
@@ -348,6 +306,7 @@ class AggregateDataService:
             cls.TABLE_NAME_WORKLOAD_CALCULATION: 'table_workload_calculation',
             cls.TABLE_NAME_TRAINING_RECORDS: 'table_training_records',
             cls.TABLE_NAME_TEACHER: 'table_teacher_statistics',
+            cls.TABLE_NAME_ATTENDANCE_SHEET: 'attendance_sheet',
         }
         table_type = context.get('table_type')
         handler = handlers.get(table_type, None)
@@ -557,28 +516,10 @@ class AggregateDataService:
         file_path = TableExportService.export_training_summary(data)
         return file_path, '培训总体情况表.xls'
 
+    @classmethod
     def attendance_sheet(cls, context):
         '''签到表导出'''
-        event_id = context.get('event_id', None)
-        matched_user = AttendanceSheetService.get_user(event_id)
-        matched_event = AttendanceSheetService.get_event(event_id)
-        # prepare data to be written in excel.
-        event_data = {
-            'id': matched_event.id,
-            'name': matched_event.name,
-            'time': matched_event.time.strftime('%Y-%m-%d')
-        }
-        user_data = []
-        if matched_user:
-            for user in matched_user:
-                user_data.append(
-                    {
-                        'department_str': user.department.name,
-                        'username': user.username,
-                        'first_name': user.first_name,
-                        'last_name':  user.last_name,
-                    }
-                )
-        file_path = TableExportService.export_attendance_sheet(user_data,
-                                                               event_data)
+        event_id = context.get('event_id')
+        enrollments = AttendanceSheetService.get_enrollment(event_id)
+        file_path = TableExportService.export_attendance_sheet(enrollments)
         return file_path, '签到表.xls'

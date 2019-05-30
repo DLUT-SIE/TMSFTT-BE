@@ -427,28 +427,17 @@ class TableExportService:
         return file_path
 
     @staticmethod
-    def export_attendance_sheet(user_data, event_data):
+    def export_attendance_sheet(data):
         '''Export attendance sheet for admin.
         Parameters
         ------
-        user_data: list of dict{
-            department_str: string,
-            username: string,
-            first_name: string,
-            last_name: string,
-
-        }
-        event_data: event dict{
-            name: string,
-            time: string,
-        }
-
+        data: list of Enrollment objects
         Returns
         ------
         string
             导出的excel文件路径
         '''
-        if user_data is None or not user_data:
+        if not data:
             raise BadRequest('导出内容不存在。')
         # 初始化excel
         workbook = xlwt.Workbook()
@@ -466,10 +455,10 @@ class TableExportService:
 
         ptr_r = 0
         worksheet.write(ptr_r, 0, '培训活动编号', style_value)
-        worksheet.write(ptr_r, 1, event_data['id'], style_value)
+        worksheet.write(ptr_r, 1, data[0].campus_event.id, style_value)
         ptr_r += 1
-        sheet_name = event_data['name'] + \
-            '(' + event_data['time'] + ')' + '签到表'
+        sheet_name = data[0].campus_event.name + \
+            '(' + data[0].campus_event.time.strftime('%Y-%m-%d') + ')' + '签到表'
         worksheet.write_merge(ptr_r, ptr_r, 0, 5, sheet_name, style)
         ptr_r += 1
         # 生成表头
@@ -481,13 +470,14 @@ class TableExportService:
         worksheet.write(ptr_r, 5, '签到', style)
         # 已报名用户数据
         ptr_r += 1
-        for idx, item in enumerate(user_data):
+        for idx, item in enumerate(data):
             worksheet.write(ptr_r, 0, idx+1, style_value)
             worksheet.write(ptr_r, 1,
-                            item['department_str'], style_value)
-            worksheet.write(ptr_r, 2, item['username'], style_value)
+                            item.user.department.name, style_value)
+            worksheet.write(ptr_r, 2, item.user.username, style_value)
             worksheet.write(ptr_r, 3,
-                            item['first_name']+item['last_name'], style_value)
+                            item.user.first_name+item.user.last_name,
+                            style_value)
             ptr_r += 1
         # 写入数据
         _, file_path = tempfile.mkstemp()

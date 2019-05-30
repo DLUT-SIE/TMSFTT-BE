@@ -6,22 +6,17 @@ from training_event.models import (
 )
 from data_warehouse.services.attendance_sheet_service import (
     AttendanceSheetService)
-from auth.models import User
+from auth.models import User, Department
 
 
 class TestAttendanceSheetService(APITestCase):
     '''Unit tests for attendance sheet service.'''
-    def setUp(self):
-        self.event = mommy.make(CampusEvent, id=1, num_participants=10)
-        self.user = mommy.make(User)
-
-    def test_get_event(self):
-        '''Should return matched event.'''
-        data = AttendanceSheetService.get_event(1)
-        self.assertEqual(data.id, 1)
-
-    def test_get_user(self):
-        '''Should return matched user.'''
-        mommy.make(Enrollment, user=self.user, campus_event=self.event)
-        count = AttendanceSheetService.get_user(1).count()
+    def test_get_enrollment(self):
+        '''Should get matched enrollment'''
+        event = mommy.make(CampusEvent, id=1, num_participants=10)
+        department = mommy.make(
+            Department, name='大连理工大学', id=1)
+        user = mommy.make(User, department=department)
+        mommy.make(Enrollment, user=user, campus_event=event)
+        count = AttendanceSheetService.get_enrollment(1).count()
         self.assertEqual(count, 1)

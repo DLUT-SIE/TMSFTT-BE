@@ -1,25 +1,13 @@
 '''Service for export attendance sheet'''
-from training_event.models import (
-    CampusEvent, Enrollment
-)
-from auth.models import User
+from training_event.models import Enrollment
 
 
 class AttendanceSheetService:
     '''Service for attendance sheet'''
     @staticmethod
-    def get_user(event_id):
-        '''get matched user'''
-        enrolled_users = list(Enrollment.objects.filter(
-            campus_event=event_id
-        ).values_list('user_id', flat=True))
-        if enrolled_users:
-            return User.objects.filter(
-                id__in=enrolled_users
+    def get_enrollment(event_id):
+        '''get matched enrollment'''
+        return Enrollment.objects.filter(
+            campus_event_id=event_id).select_related(
+                'user__department', 'campus_event'
             )
-        return None
-
-    @staticmethod
-    def get_event(event_id):
-        '''get matched event'''
-        return CampusEvent.objects.get(pk=event_id)
