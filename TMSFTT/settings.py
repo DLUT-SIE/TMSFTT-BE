@@ -161,14 +161,3 @@ SOAP_AUTH_INTERFACE_METHOD = 'unknown'
 
 # Site settings
 SITE_ID = 1
-
-# Cache
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://10.7.23.14:6380/1",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
-    }
-}
