@@ -1,5 +1,7 @@
 '''Define ORM models for auth module.'''
-from django.contrib.auth.models import Permission, AbstractUser, Group
+from django.contrib.auth.models import (
+    Permission, AbstractUser, Group, UserManager
+)
 from django.db import models
 
 from auth.utils import (
@@ -64,13 +66,15 @@ class Department(models.Model):
         return str(self.name)
 
 
-class UserManager(models.Manager):
+class ActiveUserManager(UserManager):
+    '''Filter queryset with active status.'''
     def get_queryset(self):
+        '''Exclude retired users.'''
         return super().get_queryset().exclude(
             models.Q(tenure_status='退休')
             | models.Q(tenure_status='离休')
         )
-    
+
 
 class User(AbstractUser):
     '''User holds private information for user.'''
@@ -116,7 +120,7 @@ class User(AbstractUser):
     cell_phone_number = models.CharField(
         verbose_name='手机号', max_length=40, blank=True, null=True)
 
-    objects = UserManager()
+    objects = ActiveUserManager()
 
     def __str__(self):
         return self.username

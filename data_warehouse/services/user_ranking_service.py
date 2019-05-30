@@ -5,7 +5,6 @@ from collections import defaultdict
 from django.core.cache import cache
 from django.db import models, transaction
 from django.db.models.functions import Coalesce
-from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 
 from auth.models import Department
