@@ -148,6 +148,7 @@ class TestUserRankingService(TestCase):
             department = departments[idx % len(departments)]
             user = mommy.make(
                 User,
+                teaching_type='专任教师',
                 administrative_department_id=department.id,
             )
             users.append(user)
