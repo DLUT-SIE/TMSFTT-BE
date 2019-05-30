@@ -17,7 +17,7 @@ from data_warehouse.services import (
     CoverageStatisticsService,
     TableExportService,
     CampusEventFeedbackService,
-    TrainingHoursStatisticsService,
+    TrainingHoursStatisticsService
 )
 from data_warehouse.decorators import (
     admin_required,
