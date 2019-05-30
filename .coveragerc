@@ -9,3 +9,4 @@ omit =
     mock_cas/*,
     data_migration/*,
     auth/authentication.py,
+    drf_cache,

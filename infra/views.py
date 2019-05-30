@@ -10,9 +10,10 @@ import auth.permissions
 import infra.models
 import infra.serializers
 from infra.services import NotificationService
+from drf_cache.mixins import DRFCacheMixin
 
 
-class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
+class NotificationViewSet(DRFCacheMixin, viewsets.ReadOnlyModelViewSet):
     '''Create API views for Notification.'''
     queryset = (
         infra.models.Notification.objects

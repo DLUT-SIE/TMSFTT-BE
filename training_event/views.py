@@ -1,8 +1,6 @@
 '''Provide API views for training_event module.'''
 import django_filters
 from django.core.cache import cache
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 from rest_framework import mixins, viewsets, views, status, decorators
 from rest_framework.response import Response
 from rest_framework_guardian import filters
@@ -19,9 +17,11 @@ from training_event.serializers import (ReadOnlyCampusEventSerializer,
 import training_event.serializers
 import training_event.filters
 from infra.mixins import MultiSerializerActionClassMixin
+from drf_cache.mixins import DRFCacheMixin
 
 
-class CampusEventViewSet(MultiSerializerActionClassMixin,
+class CampusEventViewSet(DRFCacheMixin,
+                         MultiSerializerActionClassMixin,
                          viewsets.ModelViewSet):
     '''Create API views for CampusEvent.'''
     queryset = (
@@ -48,10 +48,6 @@ class CampusEventViewSet(MultiSerializerActionClassMixin,
         'review_event': ['%(app_label)s.review_%(model_name)s'],
     }
 
-    @method_decorator(cache_page(60))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
-
     @decorators.action(methods=['POST'], detail=True,
                        url_path='review-event')
     def review_event(self, request, pk=None):  # pylint: disable=invalid-name
@@ -61,19 +57,17 @@ class CampusEventViewSet(MultiSerializerActionClassMixin,
         return Response(status=status.HTTP_201_CREATED)
 
 
-class OffCampusEventViewSet(mixins.ListModelMixin,
+class OffCampusEventViewSet(DRFCacheMixin,
+                            mixins.ListModelMixin,
                             viewsets.GenericViewSet):
     '''Create API views for OffCampusEvent.'''
     queryset = OffCampusEvent.objects.all()
     serializer_class = OffCampusEventSerializer
     filter_class = training_event.filters.OffCampusEventFilter
 
-    @method_decorator(cache_page(60))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
 
-
-class EnrollmentViewSet(mixins.CreateModelMixin,
+class EnrollmentViewSet(DRFCacheMixin,
+                        mixins.CreateModelMixin,
                         mixins.DestroyModelMixin,
                         viewsets.GenericViewSet):
     '''Create API views for Enrollment.
@@ -86,10 +80,6 @@ class EnrollmentViewSet(mixins.CreateModelMixin,
     permission_classes = (
         auth.permissions.DjangoObjectPermissions,
     )
-
-    @method_decorator(cache_page(60))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
 
     def perform_destroy(self, instance):
         '''Use service to change num_enrolled and delete enrollment.'''

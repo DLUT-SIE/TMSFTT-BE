@@ -49,13 +49,6 @@ class TestUserCoreStatisticsService(TestCase):
             'award': award
         })
 
-        # Test cache
-        new_res = UserCoreStatisticsService.get_competition_award_info(
-            self.user, context)
-
-        self.assertIn('timestamp', new_res)
-        self.assertEqual(new_res['timestamp'], res['timestamp'])
-
     def test_get_competition_award_info_none(self):
         '''Should return None if there is no award info.'''
         context = {
@@ -69,13 +62,6 @@ class TestUserCoreStatisticsService(TestCase):
         self.assertEqual({'timestamp', 'data', 'start_time', 'end_time'},
                          set(res.keys()))
         self.assertIsNone(res['data'])
-
-        # Test cache
-        new_res = UserCoreStatisticsService.get_competition_award_info(
-            self.user, context)
-
-        self.assertIn('timestamp', new_res)
-        self.assertEqual(new_res['timestamp'], res['timestamp'])
 
     def test_get_monthly_added_records_statistics(self):
         '''Should return number of records added by month.'''
@@ -128,15 +114,6 @@ class TestUserCoreStatisticsService(TestCase):
         self.assertEqual(res['campus_data'], expected_campus_data)
         self.assertEqual(res['off_campus_data'], expected_off_campus_data)
 
-        # Test cache
-        new_res = (
-            UserCoreStatisticsService
-            .get_monthly_added_records_statistics(self.user)
-        )
-
-        self.assertIn('timestamp', new_res)
-        self.assertEqual(new_res['timestamp'], res['timestamp'])
-
     def test_get_records_statistics(self):
         '''should get data.'''
         expected_num_campus_records = 5
@@ -187,13 +164,6 @@ class TestUserCoreStatisticsService(TestCase):
             res['campus_records_ratio'], expected_campus_records_ratio)
         self.assertEqual(
             res['off_campus_records_ratio'], expected_off_campus_records_ratio)
-
-        # Test cache
-        new_res = UserCoreStatisticsService.get_records_statistics(
-            self.user, context)
-
-        self.assertIn('timestamp', new_res)
-        self.assertEqual(new_res['timestamp'], res['timestamp'])
 
     def test_get_event_statistics(self):
         '''Should get data.'''
@@ -249,13 +219,6 @@ class TestUserCoreStatisticsService(TestCase):
         self.assertEqual(
             res['num_events_as_expert'], expected_num_events_as_expert)
 
-        # Test cache
-        new_res = UserCoreStatisticsService.get_events_statistics(
-            self.user, context)
-
-        self.assertIn('timestamp', new_res)
-        self.assertEqual(new_res['timestamp'], res['timestamp'])
-
     def test_get_programs_statistics(self):
         '''Should get data.'''
         expected_program_names = ['A', 'B', 'C', 'D', 'E']
@@ -286,10 +249,3 @@ class TestUserCoreStatisticsService(TestCase):
             sorted(res['programs']), expected_program_names)
         self.assertListEqual(
             sorted(res['data'], key=lambda x: x['name']), expected_data)
-
-        # Test cache
-        new_res = UserCoreStatisticsService.get_programs_statistics(
-            self.user, context)
-
-        self.assertIn('timestamp', new_res)
-        self.assertEqual(new_res['timestamp'], res['timestamp'])
