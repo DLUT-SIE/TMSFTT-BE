@@ -455,4 +455,3 @@ class TestAggregateDataService(TestCase):
         AggregateDataService.attendance_sheet(context)
         mock_attendance_sheet_service.get_user.return_value = []
         mock_table_export_service.export_attendance_sheet.assert_called()
-
