@@ -12,11 +12,15 @@ class ReviewNoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = training_review.models.ReviewNote
         fields = '__all__'
+        read_only_fields = ('user',)
 
     def create(self, validated_data):
-        return ReviewNoteService.create_review_note(validated_data)
+        validated_data['user'] = self.context['request'].user
+        return ReviewNoteService.create_review_note(**validated_data)
 
     def validate(self, data):
-        if self.context['request'].user.has_perm('change_record'):
+        record = data.get('record')
+        if not self.context['request'].user.has_perm(
+                'training_record.change_record', record):
             raise serializers.ValidationError('您无权添加审核提示！')
         return data
