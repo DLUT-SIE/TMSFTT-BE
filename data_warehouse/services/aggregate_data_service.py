@@ -235,8 +235,6 @@ class AggregateDataService:
             cls.TABLE_NAME_TRAINING_FEEDBACK: 'table_training_feedback',
             cls.TABLE_NAME_WORKLOAD_CALCULATION: 'table_workload_calculation',
             cls.TABLE_NAME_TRAINING_RECORDS: 'table_training_records',
-            cls.TABLE_NAME_TEACHER: 'table_teacher_statistics'
-            cls.TABLE_NAME_ATTENDANCE_SHEET: 'attendance_sheet'
             cls.TABLE_NAME_TEACHER: 'table_teacher_statistics',
             cls.TABLE_NAME_ATTENDANCE_SHEET: 'attendance_sheet',
         }
