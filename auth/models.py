@@ -64,6 +64,14 @@ class Department(models.Model):
         return str(self.name)
 
 
+class UserManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().exclude(
+            models.Q(tenure_status='退休')
+            | models.Q(tenure_status='离休')
+        )
+    
+
 class User(AbstractUser):
     '''User holds private information for user.'''
     GENDER_UNKNOWN = 0
@@ -107,6 +115,8 @@ class User(AbstractUser):
         verbose_name='任教类型', max_length=40, blank=True, null=True)
     cell_phone_number = models.CharField(
         verbose_name='手机号', max_length=40, blank=True, null=True)
+
+    objects = UserManager()
 
     def __str__(self):
         return self.username
