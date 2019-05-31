@@ -172,8 +172,8 @@ class SchoolCoreStatisticsService:
         start_time = current_time.replace(year=current_time.year-1, day=1,
                                           hour=0, minute=0, second=0)
 
-        def format_time(x):
-            return x.strftime('%Y年%m月')
+        def format_time(dt_instance):
+            return dt_instance.strftime('%Y年%m月')
 
         monthly_records = {format_time(x['month']): x['count'] for x in (
             Record.objects
