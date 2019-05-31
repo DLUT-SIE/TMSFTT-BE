@@ -3,6 +3,7 @@ from django.utils.timezone import now
 from django.contrib.auth import get_user_model
 
 from infra.models import Notification
+from infra.utils import prod_logger
 
 
 User = get_user_model()
@@ -28,6 +29,8 @@ class NotificationService:  # pylint: disable=R0903
     @staticmethod
     def delete_user_notifications(user):
         '''Delete all notifications the current user received.'''
+        msg = f'正在删除用户 {user.first_name}(工号: {user.username}) 的所有通知'
+        prod_logger.info(msg)
         return Notification.objects.filter(recipient=user).delete()
 
     @staticmethod

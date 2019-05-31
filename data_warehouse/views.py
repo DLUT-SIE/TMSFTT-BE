@@ -3,8 +3,6 @@ import os
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import status, viewsets
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 
 from data_warehouse.services.aggregate_data_service import (
     AggregateDataService
@@ -17,14 +15,11 @@ from data_warehouse.serializers import (
 )
 from infra.exceptions import BadRequest
 from secure_file.models import SecureFile
+from drf_cache.mixins import DRFCacheMixin
 
 
-class AggregateDataViewSet(viewsets.ViewSet):
+class AggregateDataViewSet(DRFCacheMixin, viewsets.ViewSet):
     '''create API views for getting graph data and table data'''
-
-    @method_decorator(cache_page(60))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
 
     @action(detail=False, url_path='data', url_name='data')
     def get_aggregate_data(self, request):
