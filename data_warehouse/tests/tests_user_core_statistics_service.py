@@ -63,26 +63,30 @@ class TestUserCoreStatisticsService(TestCase):
                          set(res.keys()))
         self.assertIsNone(res['data'])
 
-    def test_get_monthly_added_records_statistics(self):
+    @patch('data_warehouse.services.user_core_statistics_service.now')
+    def test_get_monthly_added_records_statistics(self, mocked_service_now):
         '''Should return number of records added by month.'''
         current = now().replace(month=1, day=1)
 
-        def get_year_month(idx):
-            year = current.year
-            if idx >= 12:
-                year += 1
-            month = idx % 12 + 1
+        def get_year_month(offset):
+            year = current.year + offset // 12
+            if offset % 12 == 0:
+                return {'year': year}
+            month = current.month + offset % 12
+            if month > 12:
+                year += month // 12
+                month %= 12
             return {
                 'year': year,
                 'month': month,
             }
 
         expected_months = [
-            current.replace(**get_year_month(idx)).strftime('%Y年%m月')
-            for idx in range(6, 18)
+            current.replace(**get_year_month(offset)).strftime('%Y年%m月')
+            for offset in range(5, 18)
         ]
-        expected_campus_data = [1 + x // 3 for x in range(6, 18)]
-        expected_off_campus_data = [1 + x // 2 for x in range(6, 18)]
+        expected_campus_data = [1 + x // 3 for x in range(5, 18)]
+        expected_off_campus_data = [1 + x // 2 for x in range(5, 18)]
 
         for idx in range(18):
             kwargs = get_year_month(idx)
@@ -100,7 +104,8 @@ class TestUserCoreStatisticsService(TestCase):
                     _fill_optional=['off_campus_event'],
                     _quantity=idx // 2 + 1,
                     )
-
+        mocked_service_now.return_value = current.replace(
+            **get_year_month(17))
         res = UserCoreStatisticsService.get_monthly_added_records_statistics(
             self.user
         )
