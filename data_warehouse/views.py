@@ -15,10 +15,9 @@ from data_warehouse.serializers import (
 )
 from infra.exceptions import BadRequest
 from secure_file.models import SecureFile
-from drf_cache.mixins import DRFCacheMixin
 
 
-class AggregateDataViewSet(DRFCacheMixin, viewsets.ViewSet):
+class AggregateDataViewSet(viewsets.ViewSet):
     '''create API views for getting graph data and table data'''
 
     @action(detail=False, url_path='data', url_name='data')
