@@ -165,6 +165,10 @@ class RecordCreateSerializer(serializers.ModelSerializer):
 
 class StatusChangeLogSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize StatusChangeLog instance.'''
+    pre_status_str = serializers.CharField(source='get_pre_status_display')
+    post_status_str = serializers.CharField(source='get_post_status_display')
+    user = serializers.CharField(source='user.first_name')
+
     class Meta:
         model = StatusChangeLog
         fields = '__all__'

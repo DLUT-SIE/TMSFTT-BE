@@ -343,7 +343,7 @@ class TestStatusChangeLogViewSet(APITestCase):
                          record=record)
         url = reverse('statuschangelog-detail', args=(log.pk,))
         expected_keys = {'id', 'record', 'time', 'user', 'pre_status',
-                         'post_status'}
+                         'post_status', 'post_status_str', 'pre_status_str'}
 
         response = self.client.get(url)
 

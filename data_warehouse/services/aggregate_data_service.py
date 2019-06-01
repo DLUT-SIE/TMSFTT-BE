@@ -24,12 +24,15 @@ from data_warehouse.decorators import (
 )
 from data_warehouse.services.training_record_service import (
     TrainingRecordService)
+from data_warehouse.services.attendance_sheet_service import (
+    AttendanceSheetService)
 from data_warehouse.serializers import (
     CoverageStatisticsSerializer,
     TrainingFeedbackSerializer,
     SummaryParametersSerializer,
     TrainingHoursSerializer,
     TableTrainingRecordsSerializer,
+    AttendanceSheetSerializer
 )
 from data_warehouse.consts import EnumData
 
@@ -45,6 +48,7 @@ class AggregateDataService:
     TABLE_NAME_TRAINING_FEEDBACK = 6
     TABLE_NAME_WORKLOAD_CALCULATION = 7
     TABLE_NAME_TRAINING_RECORDS = 8
+    TABLE_NAME_ATTENDANCE_SHEET = 9
 
     TABLE_NAME_CHOICES = {
         TABLE_NAME_STAFF: '教职工表',
@@ -54,7 +58,8 @@ class AggregateDataService:
         TABLE_NAME_TRAINING_HOURS_SUMMARY: '培训学时与工作量表',
         TABLE_NAME_TRAINING_FEEDBACK: '培训反馈表',
         TABLE_NAME_WORKLOAD_CALCULATION: '工作量计算表',
-        TABLE_NAME_TRAINING_RECORDS: '个人培训记录'
+        TABLE_NAME_TRAINING_RECORDS: '个人培训记录',
+        TABLE_NAME_ATTENDANCE_SHEET: '签到表'
     }
 
     # 校验http请求参数的序列化器配置
@@ -63,6 +68,7 @@ class AggregateDataService:
         TABLE_NAME_TRAINING_FEEDBACK: TrainingFeedbackSerializer,
         TABLE_NAME_TRAINING_HOURS_SUMMARY: TrainingHoursSerializer,
         TABLE_NAME_TRAINING_RECORDS: TableTrainingRecordsSerializer,
+        TABLE_NAME_ATTENDANCE_SHEET: AttendanceSheetSerializer,
     }
 
     TITLES = (
@@ -151,6 +157,7 @@ class AggregateDataService:
         return res
 
     @classmethod
+    @admin_required()
     def teachers_statistics(cls, context):
         ''' get teachers statistics data'''
         group_users = cls.get_group_users(context)
@@ -179,6 +186,7 @@ class AggregateDataService:
         return group_users
 
     @classmethod
+    @admin_required()
     def records_statistics(cls, context):
         ''' get records statistics data'''
         group_records = cls.get_group_records(context)
@@ -232,6 +240,7 @@ class AggregateDataService:
         return group_data
 
     @classmethod
+    @admin_required()
     def coverage_statistics(cls, context):
         '''get canvas coverage statistics data'''
         group_data = cls.get_group_coverage_data(context)
@@ -277,6 +286,7 @@ class AggregateDataService:
         return group_users
 
     @classmethod
+    @admin_required()
     def training_hours_statistics(cls, context):
         '''to get training hours statistics data'''
         group_data = cls.get_group_hours_data(context)
@@ -296,6 +306,7 @@ class AggregateDataService:
             cls.TABLE_NAME_WORKLOAD_CALCULATION: 'table_workload_calculation',
             cls.TABLE_NAME_TRAINING_RECORDS: 'table_training_records',
             cls.TABLE_NAME_TEACHER: 'table_teacher_statistics',
+            cls.TABLE_NAME_ATTENDANCE_SHEET: 'attendance_sheet',
         }
         table_type = context.get('table_type')
         handler = handlers.get(table_type, None)
@@ -317,6 +328,7 @@ class AggregateDataService:
         return file_path, '培训学时与工作量表.xls'
 
     @classmethod
+    @admin_required()
     def table_workload_calculation(cls, context):
         '''工作量计算表格'''
         # 生成excel文件
@@ -503,3 +515,11 @@ class AggregateDataService:
             data.append(group_records)
         file_path = TableExportService.export_training_summary(data)
         return file_path, '培训总体情况表.xls'
+
+    @classmethod
+    def attendance_sheet(cls, context):
+        '''签到表导出'''
+        event_id = context.get('event_id')
+        enrollments = AttendanceSheetService.get_enrollment(event_id)
+        file_path = TableExportService.export_attendance_sheet(enrollments)
+        return file_path, '签到表.xls'

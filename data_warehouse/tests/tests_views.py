@@ -25,7 +25,7 @@ class AggregateDataViewSet(APITestCase):
             'statistics&group_by=0&start_year=2019&end_year=2019&'\
             'department_id=1'
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         url = reverse('aggregate-data-data') + '?graph=1&a=2&'\
             'b=2019&c=2019&d=1'
         response = self.client.get(url)

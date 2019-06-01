@@ -1,17 +1,17 @@
 '''Provide API views for training_review module.'''
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
+import django_filters
 from rest_framework import viewsets, mixins
 from rest_framework_guardian import filters
-import django_filters
 
 import auth.permissions
 import training_review.models
 import training_review.serializers
 import training_review.filters
+from drf_cache.mixins import DRFCacheMixin
 
 
-class ReviewNoteViewSet(mixins.CreateModelMixin,
+class ReviewNoteViewSet(DRFCacheMixin,
+                        mixins.CreateModelMixin,
                         mixins.ListModelMixin,
                         viewsets.GenericViewSet):
     '''Create API views for ReviewNote.'''
@@ -27,7 +27,3 @@ class ReviewNoteViewSet(mixins.CreateModelMixin,
     permission_classes = (
         auth.permissions.DjangoObjectPermissions,
     )
-
-    @method_decorator(cache_page(60))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)

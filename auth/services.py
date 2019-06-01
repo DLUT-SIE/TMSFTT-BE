@@ -27,7 +27,6 @@ class PermissionService:
         -------
         None
         '''
-
         # i: assgin User-Object-Permissions for the current user
         group = Group.objects.get(name='个人权限')
         cls._assign_group_permissions(group, user, instance)
@@ -65,9 +64,6 @@ class PermissionService:
         for perm in group.permissions.all().filter(
                 content_type_id=content_type.id):
             assign_perm(perm, user_or_group, instance)
-            prod_logger.info(
-                '赋予用户/用户组 %s 对 %s 对象的 %s 权限',
-                user_or_group, instance, perm)
 
 
 class UserService:
@@ -155,8 +151,10 @@ class UserGroupService:
         with transaction.atomic():
             usergroup = UserGroup.objects.create(
                 user=user, group=group)
-            content = (f'用户({user.first_name}-{user.username})'
-                       f'被加入用户组({group})中')
-            prod_logger.info(content)
-            NotificationService.send_system_notification(user, content)
+            msg = (
+                f'用户 {user.first_name}(工号: {user.username})'
+                f' 被管理员添加至用户组 {group} 中'
+            )
+            prod_logger.info(msg)
+            NotificationService.send_system_notification(user, msg)
             return usergroup

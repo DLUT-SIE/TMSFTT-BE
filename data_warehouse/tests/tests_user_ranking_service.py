@@ -102,15 +102,6 @@ class TestUserRankingService(TestCase):
             Ranking.RANKING_BY_TOTAL_TRAINING_HOURS
         )
 
-        # Test cache
-        new_data = (
-            UserRankingService
-            .get_total_training_hours_ranking_in_department(self.user)
-        )
-
-        self.assertIn('timestamp', data)
-        self.assertEqual(data['timestamp'], new_data['timestamp'])
-
     @patch(
         'data_warehouse.services.user_ranking_service'
         '.UserRankingService._get_ranking')
@@ -133,15 +124,6 @@ class TestUserRankingService(TestCase):
             self.user, dlut_department_id,
             Ranking.RANKING_BY_TOTAL_TRAINING_HOURS
         )
-
-        # Test cache
-        new_data = (
-            UserRankingService
-            .get_total_training_hours_ranking_in_school(self.user)
-        )
-
-        self.assertIn('timestamp', data)
-        self.assertEqual(data['timestamp'], new_data['timestamp'])
 
     def test_round_ranking_float(self):
         '''Should round float.'''
@@ -166,6 +148,7 @@ class TestUserRankingService(TestCase):
             department = departments[idx % len(departments)]
             user = mommy.make(
                 User,
+                teaching_type='专任教师',
                 administrative_department_id=department.id,
             )
             users.append(user)

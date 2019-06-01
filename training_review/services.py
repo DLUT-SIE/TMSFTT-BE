@@ -2,13 +2,14 @@
 from django.db import transaction
 
 from auth.services import PermissionService
+from infra.exceptions import BadRequest
 from training_review.models import ReviewNote
 
 
 class ReviewNoteService:
     '''Provide services for TrainingReview.'''
     @staticmethod
-    def create_review_note(review_note_data):
+    def create_review_note(user=None, record=None, content=None):
         '''Create a TrainingReview with ObjectPermission.
         1. Assign object permission to the current user (the user,
         user's department_admin, school_admin etc.)
@@ -19,9 +20,14 @@ class ReviewNoteService:
 
         Parametsers
         ----------
-        review_note_data: dict
-            This dict should have full information needed to
-            create a ReviewNote.
+        user: User
+            The user who created the review note.
+
+        record: Record
+            The record to which the created review note is related.
+
+        content: string
+            The content represents what user want to say about the record.
 
         Returns
         -------
@@ -29,9 +35,13 @@ class ReviewNoteService:
         '''
 
         with transaction.atomic():
-            review_note = ReviewNote.objects.create(**review_note_data)
+            if content is None:
+                raise BadRequest('审核提示内容不能为空！')
+            review_note = ReviewNote.objects.create(user=user,
+                                                    record=record,
+                                                    content=content)
             PermissionService.assign_object_permissions(
-                review_note_data['user'], review_note)
+                user, review_note)
             PermissionService.assign_object_permissions(
-                review_note_data['record'].user, review_note)
+                record.user, review_note)
             return review_note

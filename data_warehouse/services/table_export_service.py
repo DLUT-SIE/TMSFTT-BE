@@ -12,6 +12,7 @@ class TableExportService:
     RECORD_SHEET_NAME = '个人培训记录'
     TEACHER_SHEET_NAME = '专任教师情况汇总'
     TEACHER_SUMMARY_SHEET_NAME = '培训总体情况汇总'
+    ATTENDANCE_SHEET_NAME = '签到表'
 
     @staticmethod
     def export_staff_basic_info():
@@ -419,6 +420,64 @@ class TableExportService:
             worksheet.write(ptr_r, 5,
                             item['create_time'].strftime('%Y-%m-%d'), style)
             worksheet.write(ptr_r, 6, item['status'], style)
+            ptr_r += 1
+        # 写入数据
+        _, file_path = tempfile.mkstemp()
+        workbook.save(file_path)
+        return file_path
+
+    @staticmethod
+    def export_attendance_sheet(data):
+        '''Export attendance sheet for admin.
+        Parameters
+        ------
+        data: list of Enrollment objects
+        Returns
+        ------
+        string
+            导出的excel文件路径
+        '''
+        if not data:
+            raise BadRequest('导出内容不存在。')
+        # 初始化excel
+        workbook = xlwt.Workbook()
+        worksheet = workbook.add_sheet('签到表')
+        id_col = worksheet.col(0)
+        id_col.width = 256 * 20
+        department_col = worksheet.col(1)
+        department_col.width = 256 * 20
+        username_col = worksheet.col(2)
+        username_col.width = 256 * 20
+        style = xlwt.easyxf(('font: bold on; '
+                             'align: wrap on, vert centre, horiz center'))
+        style_value = xlwt.easyxf((
+            'align: wrap on, vert centre, horiz center'))
+
+        ptr_r = 0
+        worksheet.write(ptr_r, 0, '培训活动编号', style_value)
+        worksheet.write(ptr_r, 1, data[0].campus_event.id, style_value)
+        ptr_r += 1
+        sheet_name = data[0].campus_event.name + \
+            '(' + data[0].campus_event.time.strftime('%Y-%m-%d') + ')' + '签到表'
+        worksheet.write_merge(ptr_r, ptr_r, 0, 5, sheet_name, style)
+        ptr_r += 1
+        # 生成表头
+        worksheet.write(ptr_r, 0, '序号', style)
+        worksheet.write(ptr_r, 1, '院系', style)
+        worksheet.write(ptr_r, 2, '工号', style)
+        worksheet.write(ptr_r, 3, '姓名', style)
+        worksheet.write(ptr_r, 4, '参与形式', style)
+        worksheet.write(ptr_r, 5, '签到', style)
+        # 已报名用户数据
+        ptr_r += 1
+        for idx, item in enumerate(data):
+            worksheet.write(ptr_r, 0, idx+1, style_value)
+            worksheet.write(ptr_r, 1,
+                            item.user.department.name, style_value)
+            worksheet.write(ptr_r, 2, item.user.username, style_value)
+            worksheet.write(ptr_r, 3,
+                            item.user.first_name+item.user.last_name,
+                            style_value)
             ptr_r += 1
         # 写入数据
         _, file_path = tempfile.mkstemp()

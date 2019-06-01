@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "guardian",
 
     'secure_file',
+    'drf_cache',
     'auth.apps.AuthConfig',
     'infra',
     'training_program',

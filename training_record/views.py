@@ -1,8 +1,6 @@
 '''Provide API views for training_record module.'''
 import django_filters
 from django.db.models import Q
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 from rest_framework import viewsets, status, decorators, mixins
 from rest_framework.response import Response
 from rest_framework_guardian import filters
@@ -16,10 +14,12 @@ from training_record.serializers import (CampusEventFeedbackSerializer,
                                          RecordCreateSerializer,
                                          ReadOnlyRecordSerializer)
 from infra.mixins import MultiSerializerActionClassMixin
+from drf_cache.mixins import DRFCacheMixin
 
 
 # pylint: disable=C0103
-class RecordViewSet(MultiSerializerActionClassMixin,
+class RecordViewSet(DRFCacheMixin,
+                    MultiSerializerActionClassMixin,
                     viewsets.ModelViewSet):
     '''Create API views for Record.'''
     queryset = (
@@ -57,10 +57,6 @@ class RecordViewSet(MultiSerializerActionClassMixin,
     permission_classes = (
         auth.permissions.DjangoObjectPermissions,
     )
-
-    @method_decorator(cache_page(60))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
 
     def _get_paginated_response(self, queryset):
         '''Return paginated response'''
@@ -142,7 +138,8 @@ class RecordViewSet(MultiSerializerActionClassMixin,
         return Response({'count': count}, status=status.HTTP_200_OK)
 
 
-class RecordContentViewSet(mixins.ListModelMixin,
+class RecordContentViewSet(DRFCacheMixin,
+                           mixins.ListModelMixin,
                            viewsets.GenericViewSet):
     '''Create API views for RecordContent.'''
     queryset = training_record.models.RecordContent.objects.all()
@@ -154,12 +151,9 @@ class RecordContentViewSet(mixins.ListModelMixin,
         auth.permissions.DjangoObjectPermissions,
     )
 
-    @method_decorator(cache_page(60))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
 
-
-class RecordAttachmentViewSet(mixins.ListModelMixin,
+class RecordAttachmentViewSet(DRFCacheMixin,
+                              mixins.ListModelMixin,
                               mixins.DestroyModelMixin,
                               viewsets.GenericViewSet):
     '''Create API views for RecordAttachment.'''
@@ -176,22 +170,22 @@ class RecordAttachmentViewSet(mixins.ListModelMixin,
         # TODO: Destroy is allowed only when user has change access to record
         instance.delete()
 
-    @method_decorator(cache_page(60))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
 
-
-class StatusChangeLogViewSet(viewsets.ReadOnlyModelViewSet):
+class StatusChangeLogViewSet(DRFCacheMixin,
+                             viewsets.ReadOnlyModelViewSet):
     '''Create API views for StatusChangeLog.'''
-    queryset = training_record.models.StatusChangeLog.objects.all()
+    queryset = (
+        training_record.models.StatusChangeLog.objects.all()
+        .select_related('user')
+        .order_by('-time')
+    )
     serializer_class = training_record.serializers.StatusChangeLogSerializer
-
-    @method_decorator(cache_page(60))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filter_fields = ('record',)
 
 
-class CampusEventFeedbackViewSet(mixins.CreateModelMixin,
+class CampusEventFeedbackViewSet(DRFCacheMixin,
+                                 mixins.CreateModelMixin,
                                  viewsets.GenericViewSet):
     '''Create API views for CampusEventFeedback.'''
     queryset = training_record.models.CampusEventFeedback.objects.all()
@@ -199,7 +193,3 @@ class CampusEventFeedbackViewSet(mixins.CreateModelMixin,
     permission_classes = (
         auth.permissions.DjangoModelPermissions,
     )
-
-    @method_decorator(cache_page(60))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)

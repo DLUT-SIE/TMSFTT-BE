@@ -22,6 +22,7 @@ class TestReviewNoteViewSet(APITestCase):
         cls.user = mommy.make(User)
         cls.group = mommy.make(Group, name="个人权限")
         cls.user.groups.add(cls.group)
+        assign_perm('training_record.change_record', cls.group)
         assign_perm('training_review.add_reviewnote', cls.group)
         assign_perm('training_review.view_reviewnote', cls.group)
 
@@ -31,12 +32,17 @@ class TestReviewNoteViewSet(APITestCase):
     def test_create_review_note(self):
         '''ReviewNote should be created by POST request.'''
         off_campus_event = mommy.make(tevent.OffCampusEvent)
-        user = mommy.make(User)
         record = mommy.make(trecord.Record, off_campus_event=off_campus_event)
+        group = mommy.make(Group, name="创建权限")
+        user = self.user
+        user.groups.add(group)
+        assign_perm('training_record.change_record', group)
+        assign_perm('training_record.change_record', group, record)
+        assign_perm('training_review.add_reviewnote', group)
+        assign_perm('training_review.view_reviewnote', group)
         content = 'Reviewnote is created.'
         url = reverse('reviewnote-list')
-        data = {'user': user.pk,
-                'record': record.pk,
+        data = {'record': record.pk,
                 'content': content}
 
         response = self.client.post(url, data, format='json')

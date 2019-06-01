@@ -5,10 +5,10 @@ from collections import defaultdict
 from django.core.cache import cache
 from django.db import models, transaction
 from django.db.models.functions import Coalesce
-from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 
 from auth.models import Department
+from auth.services import UserService
 from training_record.models import Record
 from data_warehouse.models import Ranking
 
@@ -131,9 +131,8 @@ class UserRankingService:
     def generate_user_rankings_by_training_hours(baseoffset=0):
         '''Calculate user rankings by training hours.'''
         dlut_department = Department.objects.get(name='大连理工大学').id
-        User = get_user_model()
         user_training_hours = list(
-            User.objects
+            UserService.get_full_time_teachers()
             .filter(administrative_department__isnull=False)
             .prefetch_related(
                 models.Prefetch('record_set', Record.objects.filter(
