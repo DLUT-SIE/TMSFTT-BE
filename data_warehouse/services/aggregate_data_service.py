@@ -207,7 +207,7 @@ class AggregateDataService:
         department_id = int(department_id)
         if department_id == 0:
             department_id = Department.objects.get(name='大连理工大学').id
-        time = {'start': start_time, 'end': end_time}
+        time = {'start_time': start_time, 'end_time': end_time}
         records = RecordsStatisticsService.get_records_by_time_department(
             context['request'].user, department_id, time)
         group_records = {}
@@ -276,7 +276,6 @@ class AggregateDataService:
     @admin_required()
     def training_hours_statistics(cls, context):
         '''to get training hours statistics data'''
-        print(context)
         group_data = cls.get_group_hours_data(context)
 
         data = CanvasDataFormater.format_hours_statistics_data(
