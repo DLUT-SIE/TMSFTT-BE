@@ -149,6 +149,5 @@ class EnrollmentSerailizer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        if 'user' not in validated_data and 'request' in self.context:
-            validated_data['user'] = self.context['request'].user
+        validated_data['user'] = self.context['request'].user
         return EnrollmentService.create_enrollment(validated_data)
