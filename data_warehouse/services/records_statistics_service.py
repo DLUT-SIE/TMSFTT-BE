@@ -139,8 +139,8 @@ class RecordsStatisticsService:
         department_id: int
         time: dict
             {
-                'start': date
-                'end': date
+                'start_time': datetime
+                'end_time': datetime
             }
 
         Return
@@ -155,7 +155,6 @@ class RecordsStatisticsService:
             'campus_records': Record.objects.none(),
             'off_campus_records': Record.objects.none()
         }
-
         start_time = time['start_time']
         end_time = time['end_time']
         if start_time > end_time:
