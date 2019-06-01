@@ -197,19 +197,17 @@ class AggregateDataService:
     def get_group_records(context):
         '''get group records data 培训总体情况数据'''
         group_by = context.get('group_by', '')
-        start_year = context.get('start_year', str(datetime.now().year))
-        end_year = context.get('end_year', str(datetime.now().year))
+        start_time = context.get('start_time',
+                                 datetime.now().replace(year=2016))
+        end_time = context.get('end_time', datetime.now())
         department_id = context.get('department_id', '')
-        if not (group_by.isdigit() and start_year.isdigit() and
-                end_year.isdigit() and department_id.isdigit()):
+        if not (group_by.isdigit() and department_id.isdigit()):
             raise BadRequest("错误的参数")
         group_by = int(group_by)
-        start_year = int(start_year)
-        end_year = int(end_year)
         department_id = int(department_id)
         if department_id == 0:
             department_id = Department.objects.get(name='大连理工大学').id
-        time = {'start': start_year, 'end': end_year}
+        time = {'start': start_time, 'end': end_time}
         records = RecordsStatisticsService.get_records_by_time_department(
             context['request'].user, department_id, time)
         group_records = {}
@@ -226,15 +224,9 @@ class AggregateDataService:
     @staticmethod
     def get_group_hours_data(context):
         '''get group training hours data'''
-        start_year = context.get('start_year', str(datetime.now().year))
-        end_year = context.get('end_year', str(datetime.now().year))
-        if not (start_year.isdigit() and end_year.isdigit()):
-            raise BadRequest("错误的参数")
-        start_time = make_aware(datetime.strptime(
-            start_year + '-1-1', '%Y-%m-%d'))
-        end_year = str(int(end_year) + 1)
-        end_time = make_aware(datetime.strptime(
-            end_year + '-1-1', '%Y-%m-%d'))
+        start_time = context.get('start_time', 
+                                 datetime.now().replace(year=2016))
+        end_time = context.get('end_time', datetime.now())
         group_data = TrainingHoursStatisticsService.get_training_hours_data(
             context['request'].user, start_time, end_time)
         return group_data
@@ -251,21 +243,16 @@ class AggregateDataService:
     def get_group_coverage_data(context):
         '''get group coverage data'''
         group_by = context.get('group_by', '')
-        start_year = context.get('start_year', str(datetime.now().year))
-        end_year = context.get('end_year', str(datetime.now().year))
+        start_time = context.get('start_time', 
+                                 datetime.now().replace(year=2016))
+        end_time = context.get('end_time', datetime.now())
         department_id = context.get('department_id', '')
         program_id = context.get('program_id', '')
-        if not (group_by.isdigit() and start_year.isdigit() and
-                end_year.isdigit() and department_id.isdigit() and
+        if not (group_by.isdigit() and department_id.isdigit() and
                 program_id.isdigit()):
             raise BadRequest("错误的参数")
         department_id = None if department_id == '0' else int(department_id)
         program_id = None if program_id == '0' else int(program_id)
-        start_time = make_aware(
-            datetime.strptime(start_year + '-1-1', '%Y-%m-%d'))
-        end_year = str(int(end_year) + 1)
-        end_time = make_aware(
-            datetime.strptime(end_year + '-1-1', '%Y-%m-%d'))
         group_by = int(group_by)
         records = CoverageStatisticsService.get_training_records(
             context['request'].user, program_id, department_id,
@@ -289,7 +276,9 @@ class AggregateDataService:
     @admin_required()
     def training_hours_statistics(cls, context):
         '''to get training hours statistics data'''
+        print(context)
         group_data = cls.get_group_hours_data(context)
+      
         data = CanvasDataFormater.format_hours_statistics_data(
             group_data)
         return data
