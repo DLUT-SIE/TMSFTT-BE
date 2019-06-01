@@ -174,8 +174,14 @@ class RecordAttachmentViewSet(DRFCacheMixin,
 class StatusChangeLogViewSet(DRFCacheMixin,
                              viewsets.ReadOnlyModelViewSet):
     '''Create API views for StatusChangeLog.'''
-    queryset = training_record.models.StatusChangeLog.objects.all()
+    queryset = (
+        training_record.models.StatusChangeLog.objects.all()
+        .select_related('user')
+        .order_by('-time')
+    )
     serializer_class = training_record.serializers.StatusChangeLogSerializer
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filter_fields = ('record',)
 
 
 class CampusEventFeedbackViewSet(DRFCacheMixin,
