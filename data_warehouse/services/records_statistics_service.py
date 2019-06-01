@@ -1,6 +1,6 @@
 '''provide records statistics relevant methods'''
 from django.db.models import Count
-from django.utils.timezone import datetime, make_aware
+from django.utils.timezone import datetime
 
 from data_warehouse.consts import EnumData
 from auth.models import Department

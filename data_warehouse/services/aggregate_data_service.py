@@ -1,6 +1,6 @@
 '''Provide services of data aggregate.'''
 from django.utils.timezone import now
-from django.utils.timezone import datetime, make_aware
+from django.utils.timezone import datetime
 
 from auth.models import Department, User
 from infra.exceptions import BadRequest
@@ -224,7 +224,7 @@ class AggregateDataService:
     @staticmethod
     def get_group_hours_data(context):
         '''get group training hours data'''
-        start_time = context.get('start_time', 
+        start_time = context.get('start_time',
                                  datetime.now().replace(year=2016))
         end_time = context.get('end_time', datetime.now())
         group_data = TrainingHoursStatisticsService.get_training_hours_data(
@@ -243,7 +243,7 @@ class AggregateDataService:
     def get_group_coverage_data(context):
         '''get group coverage data'''
         group_by = context.get('group_by', '')
-        start_time = context.get('start_time', 
+        start_time = context.get('start_time',
                                  datetime.now().replace(year=2016))
         end_time = context.get('end_time', datetime.now())
         department_id = context.get('department_id', '')
@@ -278,7 +278,7 @@ class AggregateDataService:
         '''to get training hours statistics data'''
         print(context)
         group_data = cls.get_group_hours_data(context)
-      
+
         data = CanvasDataFormater.format_hours_statistics_data(
             group_data)
         return data
