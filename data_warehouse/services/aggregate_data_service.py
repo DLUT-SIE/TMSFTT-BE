@@ -248,7 +248,7 @@ class AggregateDataService:
         end_time = context.get('end_time', datetime.now())
         department_id = context.get('department_id', '')
         program_id = context.get('program_id', '')
-        if not (group_by.isdigit() and department_id.isdigit() and
+        if not (group_by.isdigit() and department_id.isdigit() and 
                 program_id.isdigit()):
             raise BadRequest("错误的参数")
         department_id = None if department_id == '0' else int(department_id)
