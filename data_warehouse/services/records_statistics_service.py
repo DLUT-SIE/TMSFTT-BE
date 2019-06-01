@@ -157,11 +157,9 @@ class RecordsStatisticsService:
             'campus_records': Record.objects.none(),
             'off_campus_records': Record.objects.none()
         }
-        start_time = current.replace(year=current.year-1)
-        end_time = current
-        if time is not None:
-            start_time = time['start']
-            end_time = time['end']
+
+        start_time = time['start_time']
+        end_time = time['end_time']
         if start_time > end_time:
             raise BadRequest("错误的参数")
         queryset = Record.objects.select_related(
