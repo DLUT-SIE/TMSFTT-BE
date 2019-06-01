@@ -183,18 +183,18 @@ class TestAggregateDataService(TestCase):
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
             AggregateDataService.records_statistics(self.context)
         self.context['group_by'] = '0'
-        self.context['start_year'] = '2018'
-        self.context['end_year'] = '2016'
+        self.context['start_time'] = '2018-06-01'
+        self.context['end_time'] = '2016-06-01'
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
             AggregateDataService.records_statistics(self.context)
         self.context['group_by'] = '1000'
-        self.context['start_year'] = '2015'
-        self.context['end_year'] = '2016'
+        self.context['start_time'] = '2015-06-01'
+        self.context['end_time'] = '2016-06-01'
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
             AggregateDataService.records_statistics(self.context)
         self.context['group_by'] = '0'
-        self.context['start_year'] = '2016'
-        self.context['end_year'] = '2019'
+        self.context['start_time'] = '2016-06-01'
+        self.context['end_time'] = '2019-06-01'
         data = AggregateDataService.records_statistics(self.context)
         self.assertEqual(len(data['label']), 1)
         self.context['group_by'] = '1'
@@ -262,8 +262,8 @@ class TestAggregateDataService(TestCase):
         self.context = {'request': self.request}
         self.context['department_id'] = '0'
         self.context['program_id'] = '0'
-        self.context['start_year'] = '2019'
-        self.context['end_year'] = '2019'
+        self.context['start_time'] = '2019-06-01'
+        self.context['end_time'] = '2019-06-01'
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
             AggregateDataService.coverage_statistics(self.context)
         self.context['group_by'] = '100'
@@ -368,12 +368,8 @@ class TestAggregateDataService(TestCase):
         '''test get group hours data'''
         context = {}
         context['request'] = self.request
-        context['start_year'] = 'qqq'
-        context['end_year'] = 'www'
-        with self.assertRaisesMessage(BadRequest, '错误的参数'):
-            AggregateDataService.get_group_hours_data(context)
-        context['start_year'] = '2016'
-        context['end_year'] = '2019'
+        context['start_time'] = '2016-06-01'
+        context['end_time'] = '2019-06-01'
         group_data = AggregateDataService.get_group_hours_data(context)
         mock_training_hours_service.get_training_hours_data.assert_called()
         self.assertIsNotNone(group_data)
@@ -384,8 +380,8 @@ class TestAggregateDataService(TestCase):
         '''test function hours statistics'''
         context = {}
         context['request'] = self.request
-        context['start_year'] = '2016'
-        context['end_year'] = '2019'
+        context['start_time'] = '2016-06-01'
+        context['end_time'] = '2019-06-01'
         data = AggregateDataService.training_hours_statistics(context)
         mock_training_hours_service.get_training_hours_data.assert_called()
         self.assertIsNotNone(data)
