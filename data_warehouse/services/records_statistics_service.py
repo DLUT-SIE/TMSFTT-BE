@@ -1,6 +1,5 @@
 '''provide records statistics relevant methods'''
 from django.db.models import Count
-from django.utils.timezone import datetime
 
 from data_warehouse.consts import EnumData
 from auth.models import Department
@@ -152,7 +151,6 @@ class RecordsStatisticsService:
             'off_campus_records':QuerySet([])
         }
         '''
-        current = datetime.now()
         records = {
             'campus_records': Record.objects.none(),
             'off_campus_records': Record.objects.none()
