@@ -140,8 +140,8 @@ class RecordsStatisticsService:
         department_id: int
         time: dict
             {
-                'start': int
-                'end': int
+                'start': date
+                'end': date
             }
 
         Return
@@ -152,17 +152,17 @@ class RecordsStatisticsService:
             'off_campus_records':QuerySet([])
         }
         '''
-        current_year = datetime.now().year
+        current = datetime.now()
         records = {
             'campus_records': Record.objects.none(),
             'off_campus_records': Record.objects.none()
         }
-        start_year = current_year
-        end_year = current_year
+        start_time = current.replace(year=current.year-1)
+        end_time = current
         if time is not None:
-            start_year = time['start']
-            end_year = time['end']
-        if start_year > end_year:
+            start_time = time['start']
+            end_time = time['end']
+        if start_time > end_time:
             raise BadRequest("错误的参数")
         queryset = Record.objects.select_related(
             'campus_event', 'off_campus_event', 'user').filter(
@@ -170,14 +170,12 @@ class RecordsStatisticsService:
             )
         campus_records = queryset.filter(
             campus_event__isnull=False,
-            campus_event__time__range=(
-                make_aware(datetime(start_year, 1, 1)),
-                make_aware(datetime(end_year + 1, 1, 1))))
+            campus_event__time__range=(start_time, end_time)
+            )
         off_campus_records = queryset.filter(
             off_campus_event__isnull=False,
-            off_campus_event__time__range=(
-                make_aware(datetime(start_year, 1, 1)),
-                make_aware(datetime(end_year + 1, 1, 1))))
+            off_campus_event__time__range=(start_time, end_time)
+            )
         departments = Department.objects.filter(id=department_id)
         if not departments:
             return records
