@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 
 from auth.services import PermissionService
+from infra.utils import prod_logger
 from infra.exceptions import BadRequest
 from training_record.models import (
     Record, RecordContent, RecordAttachment,
@@ -21,30 +22,33 @@ User = get_user_model()
 class RecordService:
     '''Provide services for Record.'''
     @staticmethod
-    def create_off_campus_record_from_raw_data(
-            off_campus_event=None, user=None,
-            contents=None, attachments=None, role=None):
+    def create_off_campus_record_from_raw_data(data):
         '''Create a training record of off-campus training event.
 
         Parameters
         ----------
-        off_campus_event: dict
-            This dict should have full information needed to create an
-            OffCampusEvent.
-        user: User
-            The user of which the record is related to.
-        contents(optional): list of dict
-            Every dict of this list should have full information needed to
-            create a RecordContent.
-        attachments(optional): list of InMemoryFile
+        data: dict
+                off_campus_event: dict
+                    This dict should have full information needed to create an
+                    OffCampusEvent.
+                user: User
+                    The user of which the record is related to.
+                contents(optional): list of dict
+                    Every dict of this list should have full information needed
+                    to create a RecordContent.
+                attachments(optional): list of InMemoryFile
 
-        role: number
-            The role of the user.
-
+                role: number
+                    The role of the user.
         Returns
         -------
         record: Record
         '''
+        off_campus_event = data.get('off_campus_event', None)
+        user = data.get('user', None)
+        contents = data.get('contents', None)
+        attachments = data.get('attachments', None)
+        role = data.get('role', None)
         if off_campus_event is None:
             raise BadRequest('校外培训活动数据格式无效')
         if user is None or not isinstance(user, User):
@@ -88,7 +92,10 @@ class RecordService:
                 )
                 PermissionService.assign_object_permissions(
                     user, record_attachment)
-
+            msg = (f'用户{user}创建了其参加'
+                   + f'{off_campus_event.name}'
+                   + f'({off_campus_event.id})活动的培训记录')
+            prod_logger.info(msg)
         return record
 
     # pylint: disable=invalid-name
@@ -98,26 +105,33 @@ class RecordService:
     # pylint: disable=too-many-locals
     @staticmethod
     def update_off_campus_record_from_raw_data(
-            record, off_campus_event=None, user=None,
-            contents=None, attachments=None, role=None):
+            record, data, context=None):
         '''Update the off-campus record
 
         Parameters
         ----------
-        off_campus_event: dict
-            This dict should have full information needed to update an
-            OffCampusEvent.
-        user: User
-            The user of which the record is related to.
-        contents(optional): list of dict
-            Every dict of this list should have full information needed to
-            create a RecordContent.
-        attachments(optional): list of InMemoryFile
+        data: dict
+                off_campus_event: dict
+                    This dict should have full information needed to update an
+                    OffCampusEvent.
+                user: User
+                    The user of which the record is related to.
+                contents(optional): list of dict
+                    Every dict of this list should have full information needed
+                    to create a RecordContent.
+                attachments(optional): list of InMemoryFile
 
+        context:dict
+            this dict should have information of user who sent request
         Returns
         -------
         record: Record
         '''
+        off_campus_event = data.get('off_campus_event', None)
+        user = data.get('user', None)
+        contents = data.get('contents', None)
+        attachments = data.get('attachments', None)
+        role = data.get('role', None)
         off_campus_event_data = off_campus_event
         if off_campus_event_data is None:
             raise BadRequest('校外培训活动数据格式无效')
@@ -132,19 +146,16 @@ class RecordService:
         with transaction.atomic():
             # get the record to be updated
             try:
-                record = Record.objects.select_for_update().get(id=record.id)
+                record = Record.objects.select_for_update().get(
+                    id=record.id)
             except Exception:
                 raise BadRequest('校外培训记录无效')
 
             # update the offCampusEvent
-            try:
-                off_campus_event_instance = (
-                    OffCampusEvent.objects.select_for_update().get(
-                        id=off_campus_event_data.get('id'))
-                )
-            except Exception:
-                raise BadRequest('校外培训活动数据格式无效')
+            off_campus_event_instance = record.off_campus_event
 
+            if 'id' in off_campus_event_data:
+                off_campus_event_data.pop('id')
             for key, val in off_campus_event_data.items():
                 setattr(off_campus_event_instance, key, val)
             off_campus_event_instance.save()
@@ -179,12 +190,19 @@ class RecordService:
             record.status = Record.STATUS_SUBMITTED
             post_status = record.status
             record.save()
-            StatusChangeLog.objects.create(
-                record=record,
-                pre_status=pre_status,
-                post_status=post_status,
-                time=now(),
-                user=user,)
+            if pre_status != post_status:
+                StatusChangeLog.objects.create(
+                    record=record,
+                    pre_status=pre_status,
+                    post_status=post_status,
+                    time=now(),
+                    user=user,)
+
+            request_user = context['request'].user
+            msg = (f'用户{request_user}修改了用户{user}参加'
+                   + f'{off_campus_event_instance.name}'
+                   + f'({off_campus_event_instance.id})活动的培训记录')
+            prod_logger.info(msg)
         return record
 
     # pylint: disable=too-many-locals

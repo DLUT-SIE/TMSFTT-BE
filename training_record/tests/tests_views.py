@@ -72,7 +72,7 @@ class TestRecordViewSet(APITestCase):
             training_record.models.Record.objects.get().off_campus_event.id,
             event.id)
         self.assertEqual(
-            training_record.models.Record.objects.get().user.id, user.id)
+            training_record.models.Record.objects.get().user.id, self.user.id)
 
     def test_list_record(self):
         '''Record list should be accessed by GET request.'''

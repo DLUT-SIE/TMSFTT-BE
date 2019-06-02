@@ -130,16 +130,19 @@ class RecordWriteSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return RecordService.create_off_campus_record_from_raw_data(
-            **validated_data)
+            validated_data)
 
     def update(self, instance, validated_data):
         return RecordService.update_off_campus_record_from_raw_data(
-            instance, **validated_data)
+            instance, validated_data, self.context)
 
     def validate(self, data):
         '''Ensure having rights to update records'''
         if not self.instance:
+            data['user'] = self.context['request'].user
             return data
+
+        data['user'] = self.instance.user
         if (is_user_allowed_operating(self.context['request'], self.instance)
                 or is_admin_allowed_operating(
                     self.context['request'], self.instance)):
