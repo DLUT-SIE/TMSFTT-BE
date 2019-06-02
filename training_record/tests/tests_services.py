@@ -215,7 +215,7 @@ class TestRecordService(TestCase):
         tup = tempfile.mkstemp()
         with self.assertRaisesMessage(
                 BadRequest, '无效的表格'):
-            RecordService.create_campus_records_from_excel(tup[0])
+            RecordService.create_campus_records_from_excel(tup[0], '')
 
     def test_create_campus_records_bad_event_id(self):
         '''Should raise Error if get invalid event id.'''
@@ -228,7 +228,7 @@ class TestRecordService(TestCase):
             excel = work_book.read()
         with self.assertRaisesMessage(
                 BadRequest, '编号为{}的活动不存在'.format(self.campus_event.id+1)):
-            RecordService.create_campus_records_from_excel(excel)
+            RecordService.create_campus_records_from_excel(excel, '')
 
     def test_create_campus_records_bad_user_id(self):
         '''Should raise Error if get invalid user id.'''
@@ -239,6 +239,9 @@ class TestRecordService(TestCase):
         sheet.write(3, 2, self.user.id+1)
         sheet.write(3, 5, '6')
         work_book.save(tup[1])
+        user = mommy.make(User)
+        assign_perm('training_event.change_campusevent',
+                    user, self.campus_event)
         mommy.make(EventCoefficient,
                    campus_event=self.campus_event,
                    role=EventCoefficient.ROLE_PARTICIPATOR)
@@ -250,7 +253,7 @@ class TestRecordService(TestCase):
         with self.assertRaisesMessage(
                 BadRequest,
                 '第4行，编号为{}的用户不存在'.format(self.user.id+1)):
-            RecordService.create_campus_records_from_excel(excel)
+            RecordService.create_campus_records_from_excel(excel, user)
 
     def test_create_campus_records_with_bad_role(self):
         '''Should raise Error if get bad role.'''
@@ -260,6 +263,9 @@ class TestRecordService(TestCase):
         sheet.write(0, 1, self.campus_event.id)
         sheet.write(3, 2, self.user.id)
         sheet.write(3, 5, '6')
+        user = mommy.make(User)
+        assign_perm('training_event.change_campusevent',
+                    user, self.campus_event)
         mommy.make(EventCoefficient,
                    campus_event=self.campus_event,
                    role=EventCoefficient.ROLE_PARTICIPATOR)
@@ -273,7 +279,7 @@ class TestRecordService(TestCase):
         with self.assertRaisesMessage(
                 BadRequest,
                 '第4行，不存在的参与形式'):
-            RecordService.create_campus_records_from_excel(excel)
+            RecordService.create_campus_records_from_excel(excel, user)
 
     def test_create_campus_records(self):
         '''Should return the number of created records.'''
@@ -284,6 +290,9 @@ class TestRecordService(TestCase):
         sheet.write(3, 2, self.user.id)
         sheet.write(3, 4, '参与')
         sheet.write(3, 5, '6')
+        user = mommy.make(User)
+        assign_perm('training_event.change_campusevent',
+                    user, self.campus_event)
         mommy.make(EventCoefficient,
                    campus_event=self.campus_event,
                    role=EventCoefficient.ROLE_PARTICIPATOR)
@@ -294,7 +303,7 @@ class TestRecordService(TestCase):
         with open(tup[0], 'rb') as work_book:
             excel = work_book.read()
 
-        count = RecordService.create_campus_records_from_excel(excel)
+        count = RecordService.create_campus_records_from_excel(excel, user)
         self.assertEqual(count, 1)
 
     def test_department_admin_review_no_record(self):
