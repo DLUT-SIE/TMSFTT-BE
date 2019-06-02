@@ -1,6 +1,6 @@
 '''Provide services of data aggregate.'''
 from django.utils.timezone import now
-from django.utils.timezone import datetime, make_aware
+from django.utils.timezone import datetime
 
 from auth.models import Department, User
 from infra.exceptions import BadRequest
@@ -24,12 +24,15 @@ from data_warehouse.decorators import (
 )
 from data_warehouse.services.training_record_service import (
     TrainingRecordService)
+from data_warehouse.services.attendance_sheet_service import (
+    AttendanceSheetService)
 from data_warehouse.serializers import (
     CoverageStatisticsSerializer,
     TrainingFeedbackSerializer,
     SummaryParametersSerializer,
     TrainingHoursSerializer,
     TableTrainingRecordsSerializer,
+    AttendanceSheetSerializer
 )
 from data_warehouse.consts import EnumData
 
@@ -45,6 +48,7 @@ class AggregateDataService:
     TABLE_NAME_TRAINING_FEEDBACK = 6
     TABLE_NAME_WORKLOAD_CALCULATION = 7
     TABLE_NAME_TRAINING_RECORDS = 8
+    TABLE_NAME_ATTENDANCE_SHEET = 9
 
     TABLE_NAME_CHOICES = {
         TABLE_NAME_STAFF: '教职工表',
@@ -54,7 +58,8 @@ class AggregateDataService:
         TABLE_NAME_TRAINING_HOURS_SUMMARY: '培训学时与工作量表',
         TABLE_NAME_TRAINING_FEEDBACK: '培训反馈表',
         TABLE_NAME_WORKLOAD_CALCULATION: '工作量计算表',
-        TABLE_NAME_TRAINING_RECORDS: '个人培训记录'
+        TABLE_NAME_TRAINING_RECORDS: '个人培训记录',
+        TABLE_NAME_ATTENDANCE_SHEET: '签到表'
     }
 
     # 校验http请求参数的序列化器配置
@@ -63,6 +68,7 @@ class AggregateDataService:
         TABLE_NAME_TRAINING_FEEDBACK: TrainingFeedbackSerializer,
         TABLE_NAME_TRAINING_HOURS_SUMMARY: TrainingHoursSerializer,
         TABLE_NAME_TRAINING_RECORDS: TableTrainingRecordsSerializer,
+        TABLE_NAME_ATTENDANCE_SHEET: AttendanceSheetSerializer,
     }
 
     TITLES = (
@@ -151,6 +157,7 @@ class AggregateDataService:
         return res
 
     @classmethod
+    @admin_required()
     def teachers_statistics(cls, context):
         ''' get teachers statistics data'''
         group_users = cls.get_group_users(context)
@@ -179,6 +186,7 @@ class AggregateDataService:
         return group_users
 
     @classmethod
+    @admin_required()
     def records_statistics(cls, context):
         ''' get records statistics data'''
         group_records = cls.get_group_records(context)
@@ -189,19 +197,17 @@ class AggregateDataService:
     def get_group_records(context):
         '''get group records data 培训总体情况数据'''
         group_by = context.get('group_by', '')
-        start_year = context.get('start_year', str(datetime.now().year))
-        end_year = context.get('end_year', str(datetime.now().year))
+        start_time = context.get('start_time',
+                                 datetime.now().replace(year=2016))
+        end_time = context.get('end_time', datetime.now())
         department_id = context.get('department_id', '')
-        if not (group_by.isdigit() and start_year.isdigit() and
-                end_year.isdigit() and department_id.isdigit()):
+        if not (group_by.isdigit() and department_id.isdigit()):
             raise BadRequest("错误的参数")
         group_by = int(group_by)
-        start_year = int(start_year)
-        end_year = int(end_year)
         department_id = int(department_id)
         if department_id == 0:
             department_id = Department.objects.get(name='大连理工大学').id
-        time = {'start': start_year, 'end': end_year}
+        time = {'start_time': start_time, 'end_time': end_time}
         records = RecordsStatisticsService.get_records_by_time_department(
             context['request'].user, department_id, time)
         group_records = {}
@@ -218,20 +224,15 @@ class AggregateDataService:
     @staticmethod
     def get_group_hours_data(context):
         '''get group training hours data'''
-        start_year = context.get('start_year', str(datetime.now().year))
-        end_year = context.get('end_year', str(datetime.now().year))
-        if not (start_year.isdigit() and end_year.isdigit()):
-            raise BadRequest("错误的参数")
-        start_time = make_aware(datetime.strptime(
-            start_year + '-1-1', '%Y-%m-%d'))
-        end_year = str(int(end_year) + 1)
-        end_time = make_aware(datetime.strptime(
-            end_year + '-1-1', '%Y-%m-%d'))
+        start_time = context.get('start_time',
+                                 datetime.now().replace(year=2016))
+        end_time = context.get('end_time', datetime.now())
         group_data = TrainingHoursStatisticsService.get_training_hours_data(
             context['request'].user, start_time, end_time)
         return group_data
 
     @classmethod
+    @admin_required()
     def coverage_statistics(cls, context):
         '''get canvas coverage statistics data'''
         group_data = cls.get_group_coverage_data(context)
@@ -242,21 +243,16 @@ class AggregateDataService:
     def get_group_coverage_data(context):
         '''get group coverage data'''
         group_by = context.get('group_by', '')
-        start_year = context.get('start_year', str(datetime.now().year))
-        end_year = context.get('end_year', str(datetime.now().year))
+        start_time = context.get('start_time',
+                                 datetime.now().replace(year=2016))
+        end_time = context.get('end_time', datetime.now())
         department_id = context.get('department_id', '')
         program_id = context.get('program_id', '')
-        if not (group_by.isdigit() and start_year.isdigit() and
-                end_year.isdigit() and department_id.isdigit() and
+        if not (group_by.isdigit() and department_id.isdigit() and
                 program_id.isdigit()):
             raise BadRequest("错误的参数")
         department_id = None if department_id == '0' else int(department_id)
         program_id = None if program_id == '0' else int(program_id)
-        start_time = make_aware(
-            datetime.strptime(start_year + '-1-1', '%Y-%m-%d'))
-        end_year = str(int(end_year) + 1)
-        end_time = make_aware(
-            datetime.strptime(end_year + '-1-1', '%Y-%m-%d'))
         group_by = int(group_by)
         records = CoverageStatisticsService.get_training_records(
             context['request'].user, program_id, department_id,
@@ -277,9 +273,11 @@ class AggregateDataService:
         return group_users
 
     @classmethod
+    @admin_required()
     def training_hours_statistics(cls, context):
         '''to get training hours statistics data'''
         group_data = cls.get_group_hours_data(context)
+
         data = CanvasDataFormater.format_hours_statistics_data(
             group_data)
         return data
@@ -296,6 +294,7 @@ class AggregateDataService:
             cls.TABLE_NAME_WORKLOAD_CALCULATION: 'table_workload_calculation',
             cls.TABLE_NAME_TRAINING_RECORDS: 'table_training_records',
             cls.TABLE_NAME_TEACHER: 'table_teacher_statistics',
+            cls.TABLE_NAME_ATTENDANCE_SHEET: 'attendance_sheet',
         }
         table_type = context.get('table_type')
         handler = handlers.get(table_type, None)
@@ -317,6 +316,7 @@ class AggregateDataService:
         return file_path, '培训学时与工作量表.xls'
 
     @classmethod
+    @admin_required()
     def table_workload_calculation(cls, context):
         '''工作量计算表格'''
         # 生成excel文件
@@ -503,3 +503,11 @@ class AggregateDataService:
             data.append(group_records)
         file_path = TableExportService.export_training_summary(data)
         return file_path, '培训总体情况表.xls'
+
+    @classmethod
+    def attendance_sheet(cls, context):
+        '''签到表导出'''
+        event_id = context.get('event_id')
+        enrollments = AttendanceSheetService.get_enrollment(event_id)
+        file_path = TableExportService.export_attendance_sheet(enrollments)
+        return file_path, '签到表.xls'

@@ -1,7 +1,6 @@
 '''Provide API views for infra module.'''
 from django.utils.timezone import now
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
+from django.core.cache import cache
 from rest_framework import viewsets, decorators, status
 from rest_framework.response import Response
 from rest_framework_guardian import filters
@@ -10,9 +9,10 @@ import auth.permissions
 import infra.models
 import infra.serializers
 from infra.services import NotificationService
+from drf_cache.mixins import DRFCacheMixin
 
 
-class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
+class NotificationViewSet(DRFCacheMixin, viewsets.ReadOnlyModelViewSet):
     '''Create API views for Notification.'''
     queryset = (
         infra.models.Notification.objects
@@ -29,10 +29,6 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
         'unread': ['%(app_label)s.view_%(model_name)s'],
         'mark_all_as_read': ['%(app_label)s.view_%(model_name)s'],
     }
-
-    @method_decorator(cache_page(60))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
 
     def _get_read_status_filtered_notifications(self, request, is_read):
         '''Return filtered notifications based on read status.'''
@@ -76,4 +72,5 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
         '''Mark all notifications as read for user.'''
         count = NotificationService.mark_user_notifications_as_read(
             request.user)
+        cache.clear()
         return Response({'count': count}, status=status.HTTP_201_CREATED)

@@ -9,6 +9,9 @@ from django.contrib.auth.models import Group
 from model_mommy import mommy
 
 from auth.models import Department
+from training_event.models import (
+    CampusEvent, Enrollment
+)
 from data_warehouse.services import (
     AggregateDataService
 )
@@ -180,18 +183,18 @@ class TestAggregateDataService(TestCase):
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
             AggregateDataService.records_statistics(self.context)
         self.context['group_by'] = '0'
-        self.context['start_year'] = '2018'
-        self.context['end_year'] = '2016'
+        self.context['start_time'] = '2018-06-01'
+        self.context['end_time'] = '2016-06-01'
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
             AggregateDataService.records_statistics(self.context)
         self.context['group_by'] = '1000'
-        self.context['start_year'] = '2015'
-        self.context['end_year'] = '2016'
+        self.context['start_time'] = '2015-06-01'
+        self.context['end_time'] = '2016-06-01'
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
             AggregateDataService.records_statistics(self.context)
         self.context['group_by'] = '0'
-        self.context['start_year'] = '2016'
-        self.context['end_year'] = '2019'
+        self.context['start_time'] = '2016-06-01'
+        self.context['end_time'] = '2019-06-01'
         data = AggregateDataService.records_statistics(self.context)
         self.assertEqual(len(data['label']), 1)
         self.context['group_by'] = '1'
@@ -259,8 +262,8 @@ class TestAggregateDataService(TestCase):
         self.context = {'request': self.request}
         self.context['department_id'] = '0'
         self.context['program_id'] = '0'
-        self.context['start_year'] = '2019'
-        self.context['end_year'] = '2019'
+        self.context['start_time'] = '2019-06-01'
+        self.context['end_time'] = '2019-06-01'
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
             AggregateDataService.coverage_statistics(self.context)
         self.context['group_by'] = '100'
@@ -365,12 +368,8 @@ class TestAggregateDataService(TestCase):
         '''test get group hours data'''
         context = {}
         context['request'] = self.request
-        context['start_year'] = 'qqq'
-        context['end_year'] = 'www'
-        with self.assertRaisesMessage(BadRequest, '错误的参数'):
-            AggregateDataService.get_group_hours_data(context)
-        context['start_year'] = '2016'
-        context['end_year'] = '2019'
+        context['start_time'] = '2016-06-01'
+        context['end_time'] = '2019-06-01'
         group_data = AggregateDataService.get_group_hours_data(context)
         mock_training_hours_service.get_training_hours_data.assert_called()
         self.assertIsNotNone(group_data)
@@ -381,8 +380,8 @@ class TestAggregateDataService(TestCase):
         '''test function hours statistics'''
         context = {}
         context['request'] = self.request
-        context['start_year'] = '2016'
-        context['end_year'] = '2019'
+        context['start_time'] = '2016-06-01'
+        context['end_time'] = '2019-06-01'
         data = AggregateDataService.training_hours_statistics(context)
         mock_training_hours_service.get_training_hours_data.assert_called()
         self.assertIsNotNone(data)
@@ -417,3 +416,38 @@ class TestAggregateDataService(TestCase):
             .export_training_summary.assert_called()
         )
         self.assertIsNotNone(file_path)
+
+    @patch('data_warehouse.services.attendance_sheet_service'
+           '.AttendanceSheetService')
+    @patch('data_warehouse.services.aggregate_data_service'
+           '.TableExportService')
+    def test_attendance_sheet(self, mock_table_export_service,
+                              mock_attendance_sheet_service,):
+        '''用人报名的情况下应该正确处理签到表'''
+        event = mommy.make(CampusEvent, id=1, num_participants=10)
+        context = {
+            'event_id': 1,
+        }
+        department = mommy.make(
+            Department, name='大连理工大学', id=1,
+            create_time=now(), update_time=now())
+        user = mommy.make(User, department=department)
+        mommy.make(Enrollment, user=user, campus_event=event)
+        AggregateDataService.attendance_sheet(context)
+        mock_attendance_sheet_service.get_user.return_value = []
+        mock_table_export_service.export_attendance_sheet.assert_called()
+
+    @patch('data_warehouse.services.attendance_sheet_service'
+           '.AttendanceSheetService')
+    @patch('data_warehouse.services.aggregate_data_service'
+           '.TableExportService')
+    def test_attendance_sheet_no_enrolled(self, mock_table_export_service,
+                                          mock_attendance_sheet_service,):
+        '''没有报名的情况下应该正确处理签到表'''
+        mommy.make(CampusEvent, id=1, num_participants=10)
+        context = {
+            'event_id': 1,
+        }
+        AggregateDataService.attendance_sheet(context)
+        mock_attendance_sheet_service.get_user.return_value = []
+        mock_table_export_service.export_attendance_sheet.assert_called()

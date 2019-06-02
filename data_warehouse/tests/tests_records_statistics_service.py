@@ -96,24 +96,28 @@ class TestRecordsStatisticsService(TestCase):
     def test_get_records_by_time_department(self):
         '''test get_records_by_time_department function'''
         time = {
-            'start': 2020,
-            'end': 2019
+            'start_time': '2016-01-01',
+            'end_time': '2030-01-01'
+        }
+        badtime = {
+            'start_time': '2019-01-01',
+            'end_time': '2016-01-01'
         }
         art_group = mommy.make(Group, name='建筑与艺术学院-管理员')
         art_user = mommy.make(User)
         art_user.groups.add(art_group)
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
             RecordsStatisticsService.get_records_by_time_department(
-                self.user, self.department_art.id, time)
+                self.user, self.department_art.id, badtime)
         records = RecordsStatisticsService.get_records_by_time_department(
-            self.user, 0, None)
+            self.user, 0, time)
         self.assertFalse(records['campus_records'])
         records = RecordsStatisticsService.get_records_by_time_department(
-            self.user, self.department_dlut.id, None)
+            self.user, self.department_dlut.id, time)
         self.assertIn(self.record, records['campus_records'])
         records = RecordsStatisticsService.get_records_by_time_department(
-            self.user, self.department_art.id, None)
+            self.user, self.department_art.id, time)
         self.assertIn(self.record, records['campus_records'])
         records = RecordsStatisticsService.get_records_by_time_department(
-            art_user, self.department_art.id, None)
+            art_user, self.department_art.id, time)
         self.assertIn(self.record, records['campus_records'])

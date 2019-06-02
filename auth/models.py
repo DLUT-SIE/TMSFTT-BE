@@ -1,6 +1,7 @@
 '''Define ORM models for auth module.'''
-from django.contrib.auth.models import Permission, AbstractUser, Group
-from django.core.cache import cache
+from django.contrib.auth.models import (
+    Permission, AbstractUser, Group, UserManager
+)
 from django.db import models
 
 from auth.utils import (
@@ -65,6 +66,16 @@ class Department(models.Model):
         return str(self.name)
 
 
+class ActiveUserManager(UserManager):
+    '''Filter queryset with active status.'''
+    def get_queryset(self):
+        '''Exclude retired users.'''
+        return super().get_queryset().exclude(
+            models.Q(tenure_status='退休')
+            | models.Q(tenure_status='离休')
+        )
+
+
 class User(AbstractUser):
     '''User holds private information for user.'''
     GENDER_UNKNOWN = 0
@@ -109,42 +120,26 @@ class User(AbstractUser):
     cell_phone_number = models.CharField(
         verbose_name='手机号', max_length=40, blank=True, null=True)
 
+    objects = ActiveUserManager()
+
     def __str__(self):
         return self.username
 
     @property
     def is_teacher(self):
         '''Field to indicate whether the user is a teacher.'''
-        cache_key = f'is_teacher:{self.id}'
-        cached_result = cache.get(cache_key)
-        if cached_result is not None:
-            return cached_result
-        res = self.groups.filter(name__endswith='专任教师').exists()
-        cache.set(cache_key, res, 10 * 60)
-        return res
+        return self.groups.filter(name__endswith='专任教师').exists()
 
     @property
     def is_department_admin(self):
         '''Field to indicate whether the user is a department admin.'''
-        cache_key = f'is_department_admin:{self.id}'
-        cached_result = cache.get(cache_key)
-        if cached_result is not None:
-            return cached_result
-        res = self.groups.filter(name__endswith='管理员').exists()
-        cache.set(cache_key, res, 10 * 60)
-        return res
+        return self.groups.filter(name__endswith='管理员').exists()
 
     @property
     def is_school_admin(self):
         '''Field to indicate whether the user is a superadmin.'''
-        cache_key = f'is_school_admin:{self.id}'
-        cached_result = cache.get(cache_key)
-        if cached_result is not None:
-            return cached_result
-        res = self.is_staff or self.is_superuser or self.groups.filter(
+        return self.is_staff or self.is_superuser or self.groups.filter(
             name='大连理工大学-管理员').exists()
-        cache.set(cache_key, res, 10 * 60)
-        return res
 
     def check_department_admin(self, department):
         '''check department admin.'''

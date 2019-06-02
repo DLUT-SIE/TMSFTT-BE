@@ -8,7 +8,6 @@ from rest_framework_bulk import (
 )
 
 from infra.utils import format_file_size
-from infra.exceptions import BadRequest
 from training_record.models import (
     Record,
     RecordAttachment,
@@ -62,7 +61,7 @@ class CampusEventFeedbackSerializer(serializers.ModelSerializer):
         record = data.get('record')
         if not self.context['request'].user.has_perm(
                 'training_record.change_record', record):
-            raise BadRequest('您没有权限为此记录提交反馈')
+            raise serializers.ValidationError('您没有权限为此记录提交反馈')
         return data
 
 
@@ -99,7 +98,7 @@ class ReadOnlyRecordSerializer(serializers.ModelSerializer):
         return is_admin_allowed_operating(self.context['request'], obj)
 
 
-class RecordCreateSerializer(serializers.ModelSerializer):
+class RecordWriteSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize Record instance.'''
     off_campus_event = serializers.JSONField(
         binary=True,
@@ -137,6 +136,16 @@ class RecordCreateSerializer(serializers.ModelSerializer):
         return RecordService.update_off_campus_record_from_raw_data(
             instance, **validated_data)
 
+    def validate(self, data):
+        '''Ensure having rights to update records'''
+        if not self.instance:
+            return data
+        if (is_user_allowed_operating(self.context['request'], self.instance)
+                or is_admin_allowed_operating(
+                    self.context['request'], self.instance)):
+            return data
+        raise serializers.ValidationError('在此状态下您无法更改')
+
     def validate_attachments(self, data):
         '''Validate attachments data.'''
         max_count = 3
@@ -165,6 +174,10 @@ class RecordCreateSerializer(serializers.ModelSerializer):
 
 class StatusChangeLogSerializer(serializers.ModelSerializer):
     '''Indicate how to serialize StatusChangeLog instance.'''
+    pre_status_str = serializers.CharField(source='get_pre_status_display')
+    post_status_str = serializers.CharField(source='get_post_status_display')
+    user = serializers.CharField(source='user.first_name')
+
     class Meta:
         model = StatusChangeLog
         fields = '__all__'

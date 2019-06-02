@@ -95,6 +95,7 @@ class RecordService:
     # pylint: disable=redefined-builtin
     # pylint: disable=unused-argument
     # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-locals
     @staticmethod
     def update_off_campus_record_from_raw_data(
             record, off_campus_event=None, user=None,
@@ -173,8 +174,20 @@ class RecordService:
                 )
                 PermissionService.assign_object_permissions(
                     user, record_content)
+            # reset status
+            pre_status = record.status
+            record.status = Record.STATUS_SUBMITTED
+            post_status = record.status
+            record.save()
+            StatusChangeLog.objects.create(
+                record=record,
+                pre_status=pre_status,
+                post_status=post_status,
+                time=now(),
+                user=user,)
         return record
 
+    # pylint: disable=too-many-locals
     @staticmethod
     def create_campus_records_from_excel(file):
         '''Create training records of campus training event.
@@ -207,15 +220,25 @@ class RecordService:
 
         with transaction.atomic():
             # get event from sheet
-            event_id = int(sheet.cell(0, 0).value)
+            event_id = int(sheet.cell(0, 1).value)
             try:
                 campus_event = CampusEvent.objects.get(pk=event_id)
             except Exception:
                 raise BadRequest('编号为{}的活动不存在'.format(event_id))
+            # get coefficient from sheet
+            coefficients = {
+                x.get_role_display(): x
+                for x in EventCoefficient.objects.filter(
+                    campus_event_id=event_id)
+            }
 
             # process the info of users
-            for index in range(1, sheet.nrows):
-                user_id = int(sheet.cell(index, 0).value)
+            for index in range(3, sheet.nrows):
+                isSigned = sheet.cell(index, 5).value
+                if not isSigned:
+                    continue
+
+                user_id = int(sheet.cell(index, 2).value)
 
                 try:
                     user = User.objects.get(pk=user_id)
@@ -223,13 +246,11 @@ class RecordService:
                     raise BadRequest('第{}行，编号为{}的用户不存在'.format(
                         index + 1, user_id))
 
-                event_coefficient_id = int(sheet.cell(index, 1).value)
-                try:
-                    event_coefficient = EventCoefficient.objects.get(
-                        pk=event_coefficient_id)
-                except Exception:
-                    raise BadRequest('第{}行，编号为{}的活动系数不存在'.format(
-                        index + 1, event_coefficient_id))
+                role_str = sheet.cell(index, 4).value
+                event_coefficient = coefficients.get(role_str, None)
+                if event_coefficient is None:
+                    raise BadRequest('第{}行，不存在的参与形式'.format(
+                        index + 1))
 
                 record = Record.objects.create(
                     campus_event=campus_event, user=user,

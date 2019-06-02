@@ -7,21 +7,20 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework import serializers
 from model_mommy import mommy
 
-from infra.exceptions import BadRequest
 from training_record.models import Record, RecordAttachment
 from training_record.serializers import (
-    RecordCreateSerializer, CampusEventFeedbackSerializer)
+    RecordWriteSerializer, CampusEventFeedbackSerializer)
 from training_event.models import OffCampusEvent
 
 
 # pylint: disable=no-self-use
 # pylint: disable=unused-variable
-class TestRecordCreateSerializer(TestCase):
+class TestRecordWriteSerializer(TestCase):
     '''Unit tests for serializer of Record.'''
     @patch('os.path.splitext', lambda x: ('abc', '.pdf'))
     def test_validate_attachments_too_much_attachments(self):
         '''Should raise ValidationError if there are too much attachments.'''
-        serializer = RecordCreateSerializer()
+        serializer = RecordWriteSerializer()
         off_campus_event = mommy.make(OffCampusEvent)
         files = [
             InMemoryUploadedFile(
@@ -46,7 +45,7 @@ class TestRecordCreateSerializer(TestCase):
         '''
         Should raise ValidationError if the size of attachments is too large.
         '''
-        serializer = RecordCreateSerializer()
+        serializer = RecordWriteSerializer()
         data = [Mock(size=100*1024*1024, name='a.png') for _ in range(2)]
 
         with self.assertRaisesMessage(
@@ -57,9 +56,28 @@ class TestRecordCreateSerializer(TestCase):
     @patch('training_record.serializers.RecordService')
     def test_update(self, mocked_service):
         '''Should update record'''
-        serializer = RecordCreateSerializer()
+        serializer = RecordWriteSerializer()
         serializer.update(1, {})
         mocked_service.update_off_campus_record_from_raw_data.assert_called()
+
+    def test_validate_with_bad_data(self):
+        '''shoud raise badrequest when have no right'''
+        off_campus_event = mommy.make(OffCampusEvent)
+        record = mommy.make(Record, off_campus_event=off_campus_event)
+        request = Mock()
+        user = Mock()
+        user.is_school_admin = False
+        user.is_teacher = False
+        request.user = user
+        context = {
+            'request': request
+        }
+        serializer = RecordWriteSerializer(record, context=context)
+        serializer.instance = Mock()
+        with self.assertRaisesMessage(
+                serializers.ValidationError,
+                '在此状态下您无法更改'):
+            serializer.validate('')
 
 
 class TestCampusEventFeedbackSerializer(TestCase):
@@ -84,6 +102,6 @@ class TestCampusEventFeedbackSerializer(TestCase):
         }
         serializer = CampusEventFeedbackSerializer(context=context)
         with self.assertRaisesMessage(
-                BadRequest,
+                serializers.ValidationError,
                 '您没有权限为此记录提交反馈'):
             serializer.validate({'record': '1'})

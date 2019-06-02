@@ -1,4 +1,5 @@
 '''school core statistics service'''
+from datetime import timedelta
 from django.core.cache import cache
 from django.db import models
 from django.db.models import Q, Count, functions
@@ -167,28 +168,32 @@ class SchoolCoreStatisticsService:
         cached_value = cache.get(cache_key)
         if cached_value:
             return cached_value
-        current_time = now()
-        monthly_records = (
+        current_time = now().replace(day=30)
+        start_time = current_time.replace(year=current_time.year-1, day=1,
+                                          hour=0, minute=0, second=0)
+
+        def format_time(dt_instance):
+            return dt_instance.strftime('%Y年%m月')
+
+        monthly_records = {format_time(x['month']): x['count'] for x in (
             Record.objects
-            .filter(
-                Q(campus_event__isnull=False)
-                | Q(status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
-            )
-            .filter(create_time__gte=current_time.replace(
-                year=current_time.year-1, day=1,
-                hour=0, minute=0, second=0))
+            .filter(create_time__gte=start_time)
             .annotate(
                 month=functions.TruncMonth('create_time'),
             )
             .values('month')
             .annotate(count=Count('id'))
             .order_by('month')
-        )
+        )}
+        months = []
+        tmp_time = start_time
+        while tmp_time <= current_time:
+            months.append(format_time(tmp_time))
+            tmp_time += timedelta(days=31)
         res = {
             'timestamp': current_time,
-            'months': [
-                x['month'].strftime('%Y年%m月') for x in monthly_records],
-            'records': [x['count'] for x in monthly_records]
+            'months': months,
+            'records': [monthly_records.get(x, 0) for x in months]
         }
         cache.set(cache_key, res, 8 * 3600)
         return res

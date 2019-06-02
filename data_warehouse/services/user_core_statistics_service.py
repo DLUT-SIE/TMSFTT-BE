@@ -1,5 +1,6 @@
 '''user core statistics service'''
 from collections import defaultdict
+from datetime import timedelta
 
 from django.core.cache import cache
 from django.db import models
@@ -110,26 +111,44 @@ class UserCoreStatisticsService:
         cached_value = cache.get(cache_key)
         if cached_value:
             return cached_value
-        monthly_records = (
+        current_time = now().replace(day=30)
+        start_time = current_time.replace(year=current_time.year-1, day=1,
+                                          hour=0, minute=0, second=0)
+
+        def format_time(dt_instance):
+            return dt_instance.strftime('%Y年%m月')
+
+        monthly_records = {format_time(x['month']): x for x in (
             Record.objects
             .filter(user=user)
+            .filter(create_time__gte=start_time)
             .annotate(
                 month=functions.TruncMonth('create_time'),
             )
             .values('month')
+            .annotate(count=models.Count('id'))
+            .order_by('month')
             .annotate(
                 campus_count=models.Count('campus_event'),
                 off_campus_count=models.Count('off_campus_event'))
-            .order_by('-month')
-            .values('month', 'campus_count', 'off_campus_count')[:12]
-        )
-        monthly_records = list(monthly_records)[::-1]
+            .values('month', 'campus_count', 'off_campus_count')
+        )}
+        months = []
+        tmp_time = start_time
+        while tmp_time <= current_time:
+            months.append(format_time(tmp_time))
+            tmp_time += timedelta(days=31)
+        campus_data = [
+            monthly_records.get(x, {'campus_count': 0})['campus_count']
+            for x in months]
+        off_campus_data = [
+            monthly_records.get(x, {'off_campus_count': 0})['off_campus_count']
+            for x in months]
         res = {
             'timestamp': now(),
-            'months': [x['month'].strftime('%Y年%m月') for x in monthly_records],
-            'campus_data': [x['campus_count'] for x in monthly_records],
-            'off_campus_data': [
-                x['off_campus_count'] for x in monthly_records],
+            'months': months,
+            'campus_data': campus_data,
+            'off_campus_data': off_campus_data,
         }
         cache.set(cache_key, res, 8 * 3600)  # Cache for 8 hours
         return res

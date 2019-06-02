@@ -1,3 +1,5 @@
+from django.core.cache import cache
+
 from .settings import *
 
 
@@ -98,3 +100,5 @@ CAS_REDIRECT_URL = '/'
 
 # CORS settings
 CORS_ORIGIN_ALLOW_ALL = True
+
+cache.clear()

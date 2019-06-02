@@ -1,8 +1,6 @@
 '''Provide API views for training_program module.'''
 import django_filters
 from django.core.cache import cache
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 from rest_framework.decorators import action
 from rest_framework import views, viewsets, status
 from rest_framework.response import Response
@@ -14,9 +12,12 @@ import training_program.models
 import training_program.serializers
 from training_program.services import ProgramService
 from infra.mixins import MultiSerializerActionClassMixin
+from drf_cache.mixins import DRFCacheMixin
 
 
-class ProgramViewSet(MultiSerializerActionClassMixin, viewsets.ModelViewSet):
+class ProgramViewSet(DRFCacheMixin,
+                     MultiSerializerActionClassMixin,
+                     viewsets.ModelViewSet):
     '''Create API views for Progarm.'''
     queryset = (
         training_program.models.Program.objects.all()
@@ -38,10 +39,6 @@ class ProgramViewSet(MultiSerializerActionClassMixin, viewsets.ModelViewSet):
     perms_map = {
         'get_group_programs': ['%(app_label)s.view_%(model_name)s']
     }
-
-    @method_decorator(cache_page(60))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
 
     @action(detail=False, url_path='group-programs', url_name='group')
     def get_group_programs(self, request):
@@ -67,7 +64,3 @@ class ProgramCategoryView(views.APIView):
             ]
             cache.set(cache_key, program_categories, 10 * 60)
         return Response(program_categories, status=status.HTTP_200_OK)
-
-    @method_decorator(cache_page(60))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)

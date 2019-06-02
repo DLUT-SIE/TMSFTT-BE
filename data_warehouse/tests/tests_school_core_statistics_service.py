@@ -28,10 +28,6 @@ class TestSchoolCoreStatisticsService(TestCase):
         self.assertIsInstance(data, dict)
         self.assertEqual(data['available_to_enroll'], num_events)
 
-        new_data = SchoolCoreStatisticsService.get_events_statistics()
-        self.assertIsInstance(new_data, dict)
-        self.assertEqual(data['timestamp'], new_data['timestamp'])
-
     @patch('django.utils.timezone.now')
     @patch(
         'data_warehouse.services.school_core_statistics_service'
@@ -78,10 +74,6 @@ class TestSchoolCoreStatisticsService(TestCase):
             num_records_added_in_current_month)
         self.assertAlmostEqual(
             data['num_average_records'], num_average_records)
-
-        new_data = SchoolCoreStatisticsService.get_records_statistics()
-        self.assertIsInstance(new_data, dict)
-        self.assertEqual(data['timestamp'], new_data['timestamp'])
 
     @patch('django.utils.timezone.now')
     def test_get_department_records_statistics(self, mocked_now):
@@ -132,12 +124,6 @@ class TestSchoolCoreStatisticsService(TestCase):
             self.assertEqual(item['num_users'], expected_item[1])
             self.assertEqual(item['num_records'], expected_item[2])
 
-        new_data = (
-            SchoolCoreStatisticsService.get_department_records_statistics()
-        )
-        self.assertIsInstance(new_data, dict)
-        self.assertEqual(data['timestamp'], new_data['timestamp'])
-
     @patch('django.utils.timezone.now')
     def test_get_monthly_added_records_statistics(self, mocked_now):
         '''Should return records statistics for latest 12 months.'''
@@ -171,9 +157,3 @@ class TestSchoolCoreStatisticsService(TestCase):
         self.assertIsInstance(data, dict)
         self.assertEqual(data['months'], months)
         self.assertEqual(data['records'], records)
-
-        new_data = (
-            SchoolCoreStatisticsService.get_monthly_added_records_statistics()
-        )
-        self.assertIsInstance(new_data, dict)
-        self.assertEqual(data['timestamp'], new_data['timestamp'])
