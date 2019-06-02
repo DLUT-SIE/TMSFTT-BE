@@ -189,7 +189,7 @@ class TestCampusEventSerializer(TestCase):
         program = mommy.make(Program, name="名师面对面")
         serializer = CampusEventSerializer(context=context)
         with self.assertRaisesMessage(serializers.ValidationError,
-                                      '您无权修改培训活动！'):
+                                      '您无权创建培训活动！'):
             serializer.validate_program(program)
 
     def test_validate_has_permission_program(self):

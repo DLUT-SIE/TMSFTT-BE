@@ -118,12 +118,12 @@ class CampusEventSerializer(serializers.ModelSerializer):
         return data
 
     def validate_program(self, program):
-        '''Forbid creat and update event if program is wrong.'''
+        '''Forbid update and create event if program is wrong.'''
         if self.instance and self.instance.program != program:
-            raise serializers.ValidationError("你无权创建培训活动！")
+            raise serializers.ValidationError("你无权修改培训活动！")
         if not self.context['request'].user.has_perm(
                 'training_program.change_program', program):
-            raise serializers.ValidationError('您无权修改培训活动！')
+            raise serializers.ValidationError('您无权创建培训活动！')
         return program
 
     def create(self, validated_data):
