@@ -149,7 +149,7 @@ class TestEnrollmentSerializer(TestCase):
         '''Should invoke EnrollmentService to create instance.'''
         serializer = EnrollmentSerailizer()
         request = Mock()
-        serializer._context = {
+        serializer._context = {  # pylint: disable=protected-access
             'request': request
         }
         data = {'user': 123}
