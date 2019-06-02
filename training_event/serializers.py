@@ -117,6 +117,15 @@ class CampusEventSerializer(serializers.ModelSerializer):
                 '活动已被学校管理员审核，不可修改')
         return data
 
+    def validate_program(self, program):
+        '''Forbid update and create event if program is wrong.'''
+        if self.instance and self.instance.program != program:
+            raise serializers.ValidationError("你无权修改培训活动！")
+        if not self.context['request'].user.has_perm(
+                'training_program.change_program', program):
+            raise serializers.ValidationError('您无权创建培训活动！')
+        return program
+
     def create(self, validated_data):
         '''Create event and event coefficient.'''
         coefficients = validated_data.pop('coefficients')
