@@ -313,7 +313,11 @@ class AggregateDataService:
         data = TrainingHoursStatisticsService.get_training_hours_data(
             request.user, start_time, end_time)
         file_path = TableExportService.export_training_hours(data)
-        return file_path, '培训学时与工作量表.xls'
+        __end_time = end_time if end_time is not None else now()
+        __start_time = start_time if start_time is not None else now()
+        __department_name = request.user.administrative_department.name
+        prefix = f'{__start_time.year}至{__end_time.year}-{__department_name}'
+        return file_path, f'{prefix}-培训学时与工作量表.xls'
 
     @classmethod
     @admin_required()
@@ -352,6 +356,7 @@ class AggregateDataService:
             start_time.strftime('%Y-%m-%d'), end_time.strftime('%Y-%m-%d'))
         return file_path, file_name
 
+    # pylint: disable=R0914
     @classmethod
     @admin_required()
     def table_coverage_statistics(cls, context):
@@ -380,7 +385,20 @@ class AggregateDataService:
         }
         file_path = TableExportService.export_traning_coverage_summary(
             grouped_records)
-        return file_path, '专任教师培训覆盖率.xls'
+        __department_name = (
+            request.user.administrative_department
+            .name if department_id is None else Department.objects.filter(
+                id=department_id)[0].name
+            )
+        __end_time = end_time if end_time is not None else now()
+        __start_time = start_time if start_time is not None else now()
+        __program_name = '全部培训项目' if program_id is None else (
+            Program.objects.filter(id=program_id)[0].name)
+        prefix = (
+            f'{__start_time.year}至{__end_time.year}-{__department_name}-'
+            f'{__program_name}'
+            )
+        return file_path, f'{prefix}-专任教师培训覆盖率.xls'
 
     @classmethod
     @admin_required()
@@ -388,12 +406,12 @@ class AggregateDataService:
         '''培训记录反馈导出'''
         request = context.get('request')
         program_id = context.get('program_id', None)
-        deparment_id = context.get('department_id', None)
-        if not deparment_id:
+        department_id = context.get('department_id', None)
+        if not department_id:
             program_ids = [program_id]
         else:
             program_ids = Program.objects.filter(
-                department_id=deparment_id).values_list('id', flat=True)
+                department_id=department_id).values_list('id', flat=True)
         feedbacks = CampusEventFeedbackService.get_feedbacks(
             request.user, program_ids)
         # prepare data to be written in excel.
@@ -414,7 +432,11 @@ class AggregateDataService:
                 }
             )
         file_path = TableExportService.export_training_feedback(data)
-        return file_path, '培训反馈表.xls'
+        program_names = Program.objects.filter(
+            id__in=program_ids).values_list('name', flat=True)[:3]
+        program_names = '-'.join(program_names)
+        prefix = f'{program_names}等培训项目'
+        return file_path, f'{prefix}-培训反馈表.xls'
 
     @classmethod
     def table_training_records(cls, context):
@@ -473,8 +495,12 @@ class AggregateDataService:
             group_users = cls.get_group_users(context)
             data.append(group_users)
         file_path = TableExportService.export_teacher_statistics(data)
-        return file_path, '专任教师表.xls'
+        __department_name = '大连理工大学' if department_id == 0 else (
+            user.administrative_department.name)
+        prefix = f'{__department_name}'
+        return file_path, f'{prefix}-专任教师情况表.xls'
 
+    # pylint: disable=R0914
     @classmethod
     @admin_required()
     def table_training_summary(cls, context):
@@ -502,7 +528,12 @@ class AggregateDataService:
             group_records = cls.get_group_records(context)
             data.append(group_records)
         file_path = TableExportService.export_training_summary(data)
-        return file_path, '培训总体情况表.xls'
+        __department_name = '大连理工大学' if department_id == 0 else (
+            user.administrative_department.name)
+        __end_time = end_time if end_time is not None else now()
+        __start_time = start_time if start_time is not None else now()
+        prefix = f'{__start_time.year}至{__end_time.year}-{__department_name}'
+        return file_path, f'{prefix}-培训总体情况表.xls'
 
     @classmethod
     def attendance_sheet(cls, context):
