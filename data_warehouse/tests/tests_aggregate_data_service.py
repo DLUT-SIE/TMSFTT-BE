@@ -25,7 +25,10 @@ class TestAggregateDataService(TestCase):
     '''Test services provided by AggregateDataService.'''
     def setUp(self):
         self.dlut_group = mommy.make(Group, name="大连理工大学-管理员")
-        self.user = mommy.make(User)
+        self.user = mommy.make(
+            User,
+            administrative_department__name='test'
+            )
         self.user.groups.add(self.dlut_group)
         self.request = HttpRequest()
         self.request.user = self.user
