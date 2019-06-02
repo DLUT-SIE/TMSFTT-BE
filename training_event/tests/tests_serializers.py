@@ -148,6 +148,10 @@ class TestEnrollmentSerializer(TestCase):
             self, mocked_service):
         '''Should invoke EnrollmentService to create instance.'''
         serializer = EnrollmentSerailizer()
+        request = Mock()
+        serializer._context = {  # pylint: disable=protected-access
+            'request': request
+        }
         data = {'user': 123}
         serializer.create(data)
         mocked_service.create_enrollment.assert_called_with(data)
