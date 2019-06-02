@@ -493,4 +493,5 @@ class TableExportService:
                           fmt='%Y-%m-%d %H:%M'):
         '''write current time into given sheet.'''
         time_str = now().strftime(fmt)
-        sheet.write(row, col, f'{lable}:{time_str}')
+        sheet.write(row, col, f'{lable}')
+        sheet.write(row, col + 1, f'{time_str}')
