@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 
 from auth.services import PermissionService
+from infra.utils import prod_logger
 from infra.exceptions import BadRequest
 from training_record.models import (
     Record, RecordContent, RecordAttachment,
@@ -89,12 +90,17 @@ class RecordService:
                 PermissionService.assign_object_permissions(
                     user, record_attachment)
 
+            msg = (f'用户{user}创建了其参加'
+                   + f'{off_campus_event.name}({off_campus_event.id})活动的培训记录')
+            prod_logger.info(msg)
+
         return record
 
     # pylint: disable=invalid-name
     # pylint: disable=redefined-builtin
     # pylint: disable=unused-argument
     # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-locals
     @staticmethod
     def update_off_campus_record_from_raw_data(
             record, off_campus_event=None, user=None,
@@ -173,6 +179,11 @@ class RecordService:
                 )
                 PermissionService.assign_object_permissions(
                     user, record_content)
+
+            msg = (f'用户{user}修改了用户{record.user}参加'
+                   + f'{off_campus_event_instance.name}'
+                   + f'({off_campus_event_instance.id})活动的培训记录')
+            prod_logger.info(msg)
         return record
 
     # pylint: disable=too-many-locals
@@ -246,6 +257,9 @@ class RecordService:
                     event_coefficient=event_coefficient)
                 PermissionService.assign_object_permissions(user, record)
                 records.add(record)
+                msg = (f'管理员{user}创建了用户{record.user}参加'
+                       + f'{campus_event.name}({campus_event.id})活动的培训记录')
+            prod_logger.info(msg)
 
         return len(records)
 
