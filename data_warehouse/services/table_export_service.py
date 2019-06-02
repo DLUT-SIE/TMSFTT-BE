@@ -1,5 +1,6 @@
 '''表格导出服务'''
 import tempfile
+from django.utils.timezone import now
 import xlwt
 from infra.exceptions import BadRequest
 
@@ -13,11 +14,6 @@ class TableExportService:
     TEACHER_SHEET_NAME = '专任教师情况汇总'
     TEACHER_SUMMARY_SHEET_NAME = '培训总体情况汇总'
     ATTENDANCE_SHEET_NAME = '签到表'
-
-    @staticmethod
-    def export_staff_basic_info():
-        '''导出教职工表'''
-        # TODO
 
     # pylint: disable=R0914
     @staticmethod
@@ -70,6 +66,7 @@ class TableExportService:
         # 写入合计
         worksheet.write(2, 2, total)
         worksheet.write(2, 3, f'{100:.2f}')
+        TableExportService.__write_timestamp(worksheet, ptr_r, 0)
         _, file_path = tempfile.mkstemp()
         workbook.save(file_path)
         return file_path
@@ -157,6 +154,7 @@ class TableExportService:
         worksheet.write(2, 5, f'{100:.2f}')
 
         # 写入数据
+        TableExportService.__write_timestamp(worksheet, ptr_r, 0)
         _, file_path = tempfile.mkstemp()
         workbook.save(file_path)
         return file_path
@@ -262,6 +260,7 @@ class TableExportService:
         worksheet.write(1, 4, f'{percent:.2f}')
 
         # 写入数据
+        TableExportService.__write_timestamp(worksheet, ptr_r, 0)
         _, file_path = tempfile.mkstemp()
         workbook.save(file_path)
         return file_path
@@ -313,6 +312,7 @@ class TableExportService:
             ptr_r += 1
 
         # 写入数据
+        TableExportService.__write_timestamp(worksheet, ptr_r, 0)
         _, file_path = tempfile.mkstemp()
         workbook.save(file_path)
         return file_path
@@ -361,7 +361,9 @@ class TableExportService:
             worksheet.write(ptr_r, 4, item['feedback_user_name'], style)
             worksheet.write(ptr_r, 5, item['feedback_user_department'], style)
             worksheet.write(ptr_r, 6, item['feedback_user_email'], style)
+            ptr_r += 1
         # 写入数据
+        TableExportService.__write_timestamp(worksheet, ptr_r, 0)
         _, file_path = tempfile.mkstemp()
         workbook.save(file_path)
         return file_path
@@ -422,6 +424,7 @@ class TableExportService:
             worksheet.write(ptr_r, 6, item['status'], style)
             ptr_r += 1
         # 写入数据
+        TableExportService.__write_timestamp(worksheet, ptr_r, 0)
         _, file_path = tempfile.mkstemp()
         workbook.save(file_path)
         return file_path
@@ -480,6 +483,15 @@ class TableExportService:
                             style_value)
             ptr_r += 1
         # 写入数据
+        TableExportService.__write_timestamp(worksheet, ptr_r, 0)
         _, file_path = tempfile.mkstemp()
         workbook.save(file_path)
         return file_path
+
+    @staticmethod
+    def __write_timestamp(sheet, row, col, lable='生成时间',
+                          fmt='%Y-%m-%d %H:%M'):
+        '''write current time into given sheet.'''
+        time_str = now().strftime(fmt)
+        sheet.write(row, col, f'{lable}')
+        sheet.write(row, col + 1, f'{time_str}')
