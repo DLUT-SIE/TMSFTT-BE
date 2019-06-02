@@ -366,10 +366,11 @@ class TestCampusEventFeedbackViewSet(APITestCase):
     def test_create_campus_event_feedback(self):
         '''CampusEventFeedback should be created by POST request.'''
         url = reverse('campuseventfeedback-list')
-        off_campus_event = mommy.make(training_event.models.OffCampusEvent)
+        campus_event = mommy.make(
+            training_event.models.CampusEvent, name='123')
         record = mommy.make(
             Record,
-            off_campus_event=off_campus_event,
+            campus_event=campus_event,
             status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
         data = {
             'record': record.id,

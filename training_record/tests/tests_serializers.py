@@ -69,6 +69,12 @@ class TestCampusEventFeedbackSerializer(TestCase):
         '''Should create feedback'''
         serializer = CampusEventFeedbackSerializer()
 
+        request = Mock()
+        request.user = Mock()
+        context = {
+            'request': request
+        }
+        serializer = CampusEventFeedbackSerializer(context=context)
         serializer.create({})
 
         mocked_service.create_feedback.assert_called()

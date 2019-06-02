@@ -480,24 +480,21 @@ class TestRecordService(TestCase):
 
         self.assertEqual(result.status, Record.STATUS_CLOSED)
 
-    # pylint: disable=unused-variable
     def test_get_number_of_records_without_feedback(self):
         '''Should return the count of records which requiring feedback'''
         user = mommy.make(get_user_model())
         off_campus_event0 = mommy.make(OffCampusEvent)
         off_campus_event1 = mommy.make(OffCampusEvent)
-        campus_event = mommy.make(CampusEvent)
-        record0 = mommy.make(Record, user=user,
-                             off_campus_event=off_campus_event0)
-        record1 = mommy.make(Record, user=user,  # noqa
-                             off_campus_event=off_campus_event1)
-        record2 = mommy.make(Record, user=user,  # noqa
+        campus_event = mommy.make(CampusEvent, name='123')
+        mommy.make(Record, user=user, off_campus_event=off_campus_event0)
+        mommy.make(Record, user=user, off_campus_event=off_campus_event1)
+        record2 = mommy.make(Record, user=user,
                              campus_event=campus_event,)
-        CampusEventFeedbackService.create_feedback(record0, '123')
+        CampusEventFeedbackService.create_feedback(user, record2, '123')
 
         result = RecordService.get_number_of_records_without_feedback(user)
 
-        self.assertEqual(result, 1)
+        self.assertEqual(result, 0)
 
 
 class TestCampusEventFeedbackService(TestCase):
@@ -506,7 +503,7 @@ class TestCampusEventFeedbackService(TestCase):
         '''Should create feedback and update the status.'''
         campus_event = mommy.make(CampusEvent)
         record = mommy.make(Record, campus_event=campus_event)
-        CampusEventFeedbackService.create_feedback(record, '123')
+        CampusEventFeedbackService.create_feedback(record.user, record, '123')
         record = Record.objects.get(pk=record.id)
 
         self.assertEqual(CampusEventFeedback.objects.all().count(), 1)

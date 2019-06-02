@@ -259,7 +259,7 @@ class RecordService:
                 records.add(record)
                 msg = (f'管理员{user}创建了用户{record.user}参加'
                        + f'{campus_event.name}({campus_event.id})活动的培训记录')
-            prod_logger.info(msg)
+                prod_logger.info(msg)
 
         return len(records)
 
@@ -409,7 +409,7 @@ class RecordService:
 class CampusEventFeedbackService:
     '''Provide services for CampusEventFeedback.'''
     @staticmethod
-    def create_feedback(record, content):
+    def create_feedback(user, record, content):
         '''Create feedback for campus-event and update the status
         of the related-record to be STATUS_FEEDBACK_SUBMITTED.'''
         related_record = Record.objects.get(pk=record.id)
@@ -418,4 +418,8 @@ class CampusEventFeedbackService:
                                                           content=content)
             related_record.status = Record.STATUS_FEEDBACK_SUBMITTED
             related_record.save()
+            msg = (f'用户{user}提交了用户{record.user}参加'
+                   + f'{record.campus_event.name}'
+                   + f'({record.campus_event.id})活动的培训反馈')
+            prod_logger.info(msg)
         return feedback
