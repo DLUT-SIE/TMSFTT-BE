@@ -52,6 +52,11 @@ class TestCampusEventViewSet(APITestCase):
     def test_create_campus_event(self):
         '''CampusEvent should be created by POST request.'''
         program = mommy.make(training_program.models.Program)
+        group = mommy.make(Group, name="创建权限")
+        user = self.user
+        user.groups.add(group)
+        assign_perm('training_program.change_program', group)
+        assign_perm('training_program.change_program', group, program)
         url = reverse('campusevent-list')
         name = 'event'
         time = now()
