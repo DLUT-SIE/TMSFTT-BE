@@ -194,7 +194,7 @@ class RecordService:
 
     # pylint: disable=too-many-locals
     @staticmethod
-    def create_campus_records_from_excel(file):
+    def create_campus_records_from_excel(file, admin):
         '''Create training records of campus training event.
 
         Parameters
@@ -230,6 +230,11 @@ class RecordService:
                 campus_event = CampusEvent.objects.get(pk=event_id)
             except Exception:
                 raise BadRequest('编号为{}的活动不存在'.format(event_id))
+
+            if not admin.has_perm(
+                    'training_event.change_campusevent', campus_event):
+                raise BadRequest('您没有批量创建培训记录的权限')
+
             # get coefficient from sheet
             coefficients = {
                 x.get_role_display(): x
