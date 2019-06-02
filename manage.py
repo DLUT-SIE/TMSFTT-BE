@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 import os
 import sys
+import logging
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'test':
         os.environ['DJANGO_SETTINGS_MODULE'] = 'TMSFTT.settings_ci'
+        logging.disable(logging.WARN)
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'TMSFTT.settings_dev')
     try:
         from django.core.management import execute_from_command_line
