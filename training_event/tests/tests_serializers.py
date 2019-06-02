@@ -12,6 +12,7 @@ from training_event.serializers import (
     CampusEventSerializer,
     ReadOnlyCampusEventSerializer)
 from training_event.models import CampusEvent
+from training_program.models import Program
 
 
 class TestCampusEventSerializer(TestCase):
@@ -139,6 +140,74 @@ class TestCampusEventSerializer(TestCase):
         }
         serializer.update(1, data)
         mocked_service.update_campus_event.assert_called()
+
+    def test_validate_updata_right_program(self):
+        '''
+        Should skip tests when updata if progrma is right
+        '''
+        program = mommy.make(Program, name="名师讲坛")
+        event = mommy.make(CampusEvent, program=program)
+        request = Mock()
+        user = Mock()
+        request.user = user
+        context = {
+            'request': request
+        }
+        program1 = mommy.make(Program, name="名师面对面")
+        serializer = CampusEventSerializer(event, context=context)
+        with self.assertRaises(serializers.ValidationError):
+            serializer.validate_program(program1)
+
+    def test_validate_update_wrong_program(self):
+        '''
+        Should raise ValidationError when update if program is wrong
+        '''
+        program = mommy.make(Program, name="名师讲坛")
+        event = mommy.make(CampusEvent, program=program)
+        request = Mock()
+        user = Mock()
+        request.user = user
+        context = {
+            'request': request
+        }
+        serializer = CampusEventSerializer(event, context=context)
+        data = serializer.validate_program(program)
+        self.assertEqual(data.name, "名师讲坛")
+
+    def test_validate_no_permission_program(self):
+        '''
+        Should raise ValidationError if
+        user doesn't have permission to change program.
+        '''
+        request = Mock()
+        user = Mock()
+        user.has_perm = Mock(return_value=False)
+        request.user = user
+        context = {
+            'request': request
+        }
+        program = mommy.make(Program, name="名师面对面")
+        serializer = CampusEventSerializer(context=context)
+        with self.assertRaisesMessage(serializers.ValidationError,
+                                      '您无权修改培训活动！'):
+            serializer.validate_program(program)
+
+    def test_validate_has_permission_program(self):
+        '''
+        Should return prorgram if user
+        has permission to change program.
+        '''
+        request = Mock()
+        user = Mock()
+        user.has_perm = Mock(return_value=True)
+        request.user = user
+        context = {
+            'request': request
+        }
+        program = mommy.make(Program, name="名师面对面")
+        serializer = CampusEventSerializer(context=context)
+        data = serializer.validate_program(program)
+        self.assertEqual(data.name, "名师面对面")
 
 
 class TestEnrollmentSerializer(TestCase):
