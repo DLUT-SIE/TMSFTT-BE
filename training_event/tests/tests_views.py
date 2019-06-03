@@ -239,6 +239,8 @@ class TestEnrollmentViewSet(APITestCase):
     def test_create_enrollment(self):
         '''Enrollment should be created by POST request.'''
         campus_event = mommy.make(training_event.models.CampusEvent)
+        campus_event.deadline = now().replace(year=2020)
+        campus_event.save()
         url = reverse('enrollment-list')
         data = {
             'campus_event': campus_event.pk,
