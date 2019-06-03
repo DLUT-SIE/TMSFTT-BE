@@ -66,33 +66,15 @@ class TestRecordService(TestCase):
     def test_create_off_campus_record_no_event_data(self):
         '''Should raise ValueError if no off-campus event data.'''
         with self.assertRaisesMessage(
-                BadRequest, '校外培训活动数据格式无效'):
+                BadRequest, '数据格式无效'):
             RecordService.create_off_campus_record_from_raw_data({})
 
     def test_create_off_campus_record_no_user(self):
         '''Should raise ValueError if no user.'''
         with self.assertRaisesMessage(
-                BadRequest, '用户无效'):
+                BadRequest, '数据格式无效'):
             RecordService.create_off_campus_record_from_raw_data(
                 {'off_campus_event': 1})
-
-    def test_create_off_campus_record_no_contents_and_attachments(self):
-        '''Should skip extra creation if no contents or no attachments.'''
-        user = mommy.make(User)
-
-        data = {
-            'off_campus_event': self.off_campus_event,
-            'user': user,
-            'role': EventCoefficient.ROLE_EXPERT,
-        }
-        RecordService.create_off_campus_record_from_raw_data(data)
-
-        self.assertEqual(
-            RecordContent.objects.all().count(), 0,
-        )
-        self.assertEqual(
-            RecordAttachment.objects.all().count(), 0,
-        )
 
     def test_create_off_campus_records_no_role(self):
         '''Should raise ValueError if no role.'''
@@ -105,22 +87,7 @@ class TestRecordService(TestCase):
             'attachments': self.attachments,
         }
         with self.assertRaisesMessage(
-                BadRequest, '参与方式无效'):
-            RecordService.create_off_campus_record_from_raw_data(data)
-
-    def test_create_off_campus_records_bad_role(self):
-        '''Should raise ValueError if no role.'''
-        user = mommy.make(User)
-
-        data = {
-            'off_campus_event': self.off_campus_event,
-            'user': user,
-            'contents': self.contents,
-            'attachments': self.attachments,
-            'role': 1433223,
-        }
-        with self.assertRaisesMessage(
-                BadRequest, '参与方式无效'):
+                BadRequest, '数据格式无效'):
             RecordService.create_off_campus_record_from_raw_data(data)
 
     def test_create_off_campus_record(self):
@@ -146,36 +113,9 @@ class TestRecordService(TestCase):
     def test_update_off_campus_record_no_event_data(self):
         '''Should raise ValueError if no off-campus event data.'''
         with self.assertRaisesMessage(
-                BadRequest, '校外培训活动数据格式无效'):
+                BadRequest, '数据格式无效'):
             RecordService.update_off_campus_record_from_raw_data(
                 self.record, {}, {})
-
-    def test_update_off_campus_record_no_contents_and_attachments(self):
-        '''Should skip extra creation if no contents or no attachments.'''
-        user = mommy.make(User)
-
-        request = Mock()
-        request.user = user
-        context = {
-            'request': request,
-        }
-        data = {
-            'off_campus_event': self.off_campus_event_data,
-            'user': user,
-            'contents': None,
-            'attachments': None,
-            'role': EventCoefficient.ROLE_EXPERT,
-        }
-        RecordService.update_off_campus_record_from_raw_data(
-            self.record, data, context
-        )
-
-        self.assertEqual(
-            RecordContent.objects.all().count(), 0,
-        )
-        self.assertEqual(
-            RecordAttachment.objects.all().count(), 0,
-        )
 
     def test_update_off_campus_record_too_much_attachments(self):
         '''BadRequest should be raised if attachments is too much'''
@@ -223,26 +163,6 @@ class TestRecordService(TestCase):
                 self.off_campus_event_instance, data, context
             )
 
-    def test_update_off_campus_record_bad_event_data(self):
-        '''Should raise ValueError if not found event.'''
-        user = mommy.make(User)
-
-        request = Mock()
-        request.user = user
-        context = {
-            'request': request,
-        }
-        data = {
-            'off_campus_event': None,
-            'user': user,
-            'contents': self.contents,
-            'attachments': self.attachments,
-            'role': EventCoefficient.ROLE_EXPERT,
-        }
-        with self.assertRaisesMessage(BadRequest, '校外培训活动数据格式无效'):
-            RecordService.update_off_campus_record_from_raw_data(
-                self.record, data, context)
-
     def test_update_off_campus_records_no_role(self):
         '''Should raise ValueError if no role.'''
         user = mommy.make(User)
@@ -259,28 +179,7 @@ class TestRecordService(TestCase):
             'attachments': self.attachments,
         }
         with self.assertRaisesMessage(
-                BadRequest, '参与方式无效'):
-            RecordService.update_off_campus_record_from_raw_data(
-                self.record, data, context)
-
-    def test_update_off_campus_records_bad_role(self):
-        '''Should raise ValueError if no role.'''
-        user = mommy.make(User)
-
-        request = Mock()
-        request.user = user
-        context = {
-            'request': request,
-        }
-        data = {
-            'off_campus_event': self.off_campus_event_data,
-            'user': user,
-            'contents': self.contents,
-            'attachments': self.attachments,
-            'role': 1433223,
-        }
-        with self.assertRaisesMessage(
-                BadRequest, '参与方式无效'):
+                BadRequest, '数据格式无效'):
             RecordService.update_off_campus_record_from_raw_data(
                 self.record, data, context)
 
