@@ -72,7 +72,7 @@ class TestRecordViewSet(APITestCase):
             training_record.models.Record.objects.get().off_campus_event.id,
             event.id)
         self.assertEqual(
-            training_record.models.Record.objects.get().user.id, user.id)
+            training_record.models.Record.objects.get().user.id, self.user.id)
 
     def test_list_record(self):
         '''Record list should be accessed by GET request.'''
@@ -178,6 +178,8 @@ class TestRecordViewSet(APITestCase):
         PermissionService.assign_object_permissions(self.user, record)
         url = reverse('record-detail', args=(record.pk,))
         data = {'off_campus_event': json.dumps(off_campus_event_data),
+                'contents': [],
+                'attachments': [],
                 'role': EventCoefficient.ROLE_PARTICIPATOR,
                 'user': self.user.id}
 

@@ -37,10 +37,9 @@ class TestProgram(APITestCase):
     def test_create_program(self):
         '''Program should be created by POST request.'''
         url = reverse('program-list')
-        department = mommy.make(auth.models.Department)
 
         name = 'program'
-        data = {'name': name, 'department': department.id,
+        data = {'name': name, 'department': self.depart.id,
                 'category': (
                     training_program.models.Program.PROGRAM_CATEGORY_TRAINING)}
 
@@ -96,12 +95,12 @@ class TestProgram(APITestCase):
         name0 = 'program0'
         name1 = 'program1'
         category = training_program.models.Program.PROGRAM_CATEGORY_TRAINING
-        department = mommy.make(auth.models.Department)
-        program = mommy.make(training_program.models.Program, name=name0)
+        program = mommy.make(training_program.models.Program, name=name0,
+                             department=self.depart)
         PermissionService.assign_object_permissions(self.user, program)
         url = reverse('program-detail', args=(program.pk, ))
         data = {'name': name1, 'category': category,
-                'department': department.id}
+                'department': self.depart.id}
 
         response = self.client.patch(url, data, format='json')
 

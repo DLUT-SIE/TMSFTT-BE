@@ -77,7 +77,7 @@ class TestRecordWriteSerializer(TestCase):
         with self.assertRaisesMessage(
                 serializers.ValidationError,
                 '在此状态下您无法更改'):
-            serializer.validate('')
+            serializer.validate({'user': user})
 
 
 class TestCampusEventFeedbackSerializer(TestCase):
