@@ -33,33 +33,24 @@ class RecordService:
                     OffCampusEvent.
                 user: User
                     The user of which the record is related to.
-                contents(optional): list of dict
+                contents: list of dict
                     Every dict of this list should have full information needed
                     to create a RecordContent.
-                attachments(optional): list of InMemoryFile
-
+                attachments: list of InMemoryFile
                 role: number
                     The role of the user.
         Returns
         -------
         record: Record
         '''
-        off_campus_event = data.get('off_campus_event', None)
-        user = data.get('user', None)
-        contents = data.get('contents', None)
-        attachments = data.get('attachments', None)
-        role = data.get('role', None)
-        if off_campus_event is None:
-            raise BadRequest('校外培训活动数据格式无效')
-        if user is None or not isinstance(user, User):
-            raise BadRequest('用户无效')
-        if contents is None:
-            contents = []
-        if attachments is None:
-            attachments = []
-        if role not in [
-                role for (role, _) in EventCoefficient.ROLE_CHOICES]:
-            raise BadRequest('参与方式无效')
+        try:
+            off_campus_event = data['off_campus_event']
+            user = data['user']
+            contents = data['contents']
+            attachments = data['attachments']
+            role = data['role']
+        except Exception:
+            raise BadRequest('数据格式无效')
 
         with transaction.atomic():
             off_campus_event = OffCampusEvent.objects.create(
@@ -116,10 +107,12 @@ class RecordService:
                     OffCampusEvent.
                 user: User
                     The user of which the record is related to.
-                contents(optional): list of dict
+                contents: list of dict
                     Every dict of this list should have full information needed
                     to create a RecordContent.
-                attachments(optional): list of InMemoryFile
+                attachments: list of InMemoryFile
+                role: number
+                    The role of the user.
 
         context:dict
             this dict should have information of user who sent request
@@ -127,21 +120,16 @@ class RecordService:
         -------
         record: Record
         '''
-        off_campus_event = data.get('off_campus_event', None)
-        user = data.get('user', None)
-        contents = data.get('contents', None)
-        attachments = data.get('attachments', None)
-        role = data.get('role', None)
+        try:
+            off_campus_event = data['off_campus_event']
+            user = data['user']
+            contents = data['contents']
+            attachments = data['attachments']
+            role = data['role']
+        except Exception:
+            raise BadRequest('数据格式无效')
+
         off_campus_event_data = off_campus_event
-        if off_campus_event_data is None:
-            raise BadRequest('校外培训活动数据格式无效')
-        if contents is None:
-            contents = []
-        if attachments is None:
-            attachments = []
-        if role not in [
-                role for (role, _) in EventCoefficient.ROLE_CHOICES]:
-            raise BadRequest('参与方式无效')
 
         with transaction.atomic():
             # get the record to be updated
@@ -190,13 +178,12 @@ class RecordService:
             record.status = Record.STATUS_SUBMITTED
             post_status = record.status
             record.save()
-            if pre_status != post_status:
-                StatusChangeLog.objects.create(
-                    record=record,
-                    pre_status=pre_status,
-                    post_status=post_status,
-                    time=now(),
-                    user=user,)
+            StatusChangeLog.objects.create(
+                record=record,
+                pre_status=pre_status,
+                post_status=post_status,
+                time=now(),
+                user=user,)
 
             request_user = context['request'].user
             msg = (f'用户{request_user}修改了用户{user}参加'
