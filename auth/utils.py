@@ -189,7 +189,7 @@ def assign_model_perms_for_department(department):
         },
         # Record
         Record: {
-            '管理员': ['batchadd', 'view', 'review'],
+            '管理员': ['batchadd', 'view', 'review', 'change'],
             '专任教师': [],
         },
         RecordContent: {

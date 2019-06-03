@@ -370,7 +370,7 @@ def assign_model_perms_for_special_groups():
         },
         # Record
         Record: {
-            '管理员': ['batchadd', 'view', 'review'],
+            '管理员': ['batchadd', 'view', 'review', 'change'],
             '专任教师': [],
             '个人权限': ['add', 'view', 'change'],
         },
