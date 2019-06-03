@@ -240,6 +240,9 @@ class TestRecordService(TestCase):
         sheet.write(3, 5, '6')
         work_book.save(tup[1])
         user = mommy.make(User)
+        context = {
+            'user': user,
+        }
         assign_perm('training_event.change_campusevent',
                     user, self.campus_event)
         mommy.make(EventCoefficient,
@@ -253,7 +256,7 @@ class TestRecordService(TestCase):
         with self.assertRaisesMessage(
                 BadRequest,
                 '第4行，编号为{}的用户不存在'.format(self.user.id+1)):
-            RecordService.create_campus_records_from_excel(excel, user)
+            RecordService.create_campus_records_from_excel(excel, context)
 
     def test_create_campus_records_with_bad_role(self):
         '''Should raise Error if get bad role.'''
@@ -264,6 +267,9 @@ class TestRecordService(TestCase):
         sheet.write(3, 2, self.user.id)
         sheet.write(3, 5, '6')
         user = mommy.make(User)
+        context = {
+            'user': user,
+        }
         assign_perm('training_event.change_campusevent',
                     user, self.campus_event)
         mommy.make(EventCoefficient,
@@ -279,7 +285,7 @@ class TestRecordService(TestCase):
         with self.assertRaisesMessage(
                 BadRequest,
                 '第4行，不存在的参与形式'):
-            RecordService.create_campus_records_from_excel(excel, user)
+            RecordService.create_campus_records_from_excel(excel, context)
 
     def test_create_campus_records(self):
         '''Should return the number of created records.'''
@@ -291,6 +297,9 @@ class TestRecordService(TestCase):
         sheet.write(3, 4, '参与')
         sheet.write(3, 5, '6')
         user = mommy.make(User)
+        context = {
+            'user': user,
+        }
         assign_perm('training_event.change_campusevent',
                     user, self.campus_event)
         mommy.make(EventCoefficient,
@@ -303,7 +312,7 @@ class TestRecordService(TestCase):
         with open(tup[0], 'rb') as work_book:
             excel = work_book.read()
 
-        count = RecordService.create_campus_records_from_excel(excel, user)
+        count = RecordService.create_campus_records_from_excel(excel, context)
         self.assertEqual(count, 1)
 
     def test_department_admin_review_no_record(self):

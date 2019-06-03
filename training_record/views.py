@@ -126,8 +126,11 @@ class RecordViewSet(DRFCacheMixin,
     def batch_submit(self, request):
         '''Return count of records which are created.'''
         excel = request.FILES.get('file').read()
+        context = {
+            'user': request.user,
+        }
         count = RecordService.create_campus_records_from_excel(
-            excel, request.user)
+            excel, context)
         return Response({'count': count}, status=status.HTTP_201_CREATED)
 
     @decorators.action(detail=False, methods=['GET'],
