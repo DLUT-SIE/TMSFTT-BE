@@ -231,7 +231,8 @@ class RecordService:
             except Exception:
                 raise BadRequest('编号为{}的活动不存在'.format(event_id))
 
-            if not context['user'].has_perm(
+            admin = context['user']
+            if not admin.has_perm(
                     'training_event.change_campusevent', campus_event):
                 raise BadRequest('您没有为对应培训活动创建培训记录的权限')
 
@@ -268,6 +269,10 @@ class RecordService:
                     event_coefficient=event_coefficient)
                 PermissionService.assign_object_permissions(user, record)
                 records.add(record)
+
+                msg = (f'管理员{admin}创建了用户{record.user}参加'
+                       + f'{campus_event.name}({campus_event.id})活动的培训记录')
+                prod_logger.info(msg)
 
         return len(records)
 
@@ -417,7 +422,7 @@ class RecordService:
 class CampusEventFeedbackService:
     '''Provide services for CampusEventFeedback.'''
     @staticmethod
-    def create_feedback(record, content):
+    def create_feedback(user, record, content):
         '''Create feedback for campus-event and update the status
         of the related-record to be STATUS_FEEDBACK_SUBMITTED.'''
         related_record = Record.objects.get(pk=record.id)
@@ -426,4 +431,9 @@ class CampusEventFeedbackService:
                                                           content=content)
             related_record.status = Record.STATUS_FEEDBACK_SUBMITTED
             related_record.save()
+
+            msg = (f'用户{user}提交了用户{record.user}参加'
+                   + f'{record.campus_event.name}'
+                   + f'({record.campus_event.id})活动的培训反馈')
+            prod_logger.info(msg)
         return feedback
