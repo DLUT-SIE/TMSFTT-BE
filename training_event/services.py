@@ -1,6 +1,6 @@
 '''Provide services of training event module.'''
 from django.db import transaction
-
+from django.utils.timezone import now
 from infra.utils import prod_logger
 from infra.exceptions import BadRequest
 from training_event.models import CampusEvent, Enrollment, EventCoefficient
@@ -122,6 +122,8 @@ class EnrollmentService:
             # Lock the event until the end of the transaction
             event = CampusEvent.objects.select_for_update().get(
                 id=enrollment_data['campus_event'].id)
+            if now() > event.deadline:
+                raise BadRequest('报名时间已过')
             if event.num_enrolled >= event.num_participants:
                 raise BadRequest('报名人数已满')
 

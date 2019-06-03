@@ -1,6 +1,7 @@
 '''Unit tests for training_event services.'''
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
+from django.utils.timezone import now
 from django.test import TestCase
 from django.http import HttpRequest
 from model_mommy import mommy
@@ -99,8 +100,18 @@ class TestEnrollmentService(TestCase):
         assign_perm('training_event.add_enrollment', self.group)
         assign_perm('training_event.delete_enrollment', self.group)
 
+    def test_create_enrollment_event_expired(self):
+        '''Should raise BadRequest if event expired.'''
+        self.event.deadline = now().replace(year=2018)
+        self.event.save()
+        with self.assertRaisesMessage(
+                BadRequest, '报名时间已过'):
+            EnrollmentService.create_enrollment(self.data)
+
     def test_create_enrollment_no_more_head_counts(self):
         '''Should raise BadRequest if no more head counts for CampusEvent.'''
+        self.event.deadline = now().replace(year=2028)
+        self.event.save()
         with self.assertRaisesMessage(
                 BadRequest, '报名人数已满'):
             EnrollmentService.create_enrollment(self.data)
@@ -108,6 +119,7 @@ class TestEnrollmentService(TestCase):
     def test_create_enrollment_user_in_data(self):
         '''Should create enrollment.'''
         self.event.num_participants = 10
+        self.event.deadline = now().replace(year=2028)
         self.event.save()
         EnrollmentService.create_enrollment(self.data)
 

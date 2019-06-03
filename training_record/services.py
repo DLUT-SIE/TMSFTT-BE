@@ -47,7 +47,7 @@ class RecordService:
             off_campus_event = data['off_campus_event']
             user = data['user']
             contents = data['contents']
-            attachments = data['attachments']
+            attachments = data.get('attachments', [])
             role = data['role']
         except Exception:
             raise BadRequest('数据格式无效')
@@ -124,7 +124,7 @@ class RecordService:
             off_campus_event = data['off_campus_event']
             user = data['user']
             contents = data['contents']
-            attachments = data['attachments']
+            attachments = data.get('attachments', [])
             role = data['role']
         except Exception:
             raise BadRequest('数据格式无效')
