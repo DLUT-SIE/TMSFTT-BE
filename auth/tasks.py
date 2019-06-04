@@ -124,14 +124,12 @@ def _update_from_teacher_information(dwid_to_department,
             department = department.super_department
         handler(Group.objects.get(
             name=f'{department.name}-专任教师'))
-
     try:
         for raw_user in raw_users:
             user, created = User.all_objects.get_or_create(
                 username=raw_user.zgh)
             if created:
                 user.set_unusable_password()
-
             user.first_name = raw_user.jsxm
             if raw_user.xy not in dwid_to_department:
                 warn_msg = (
@@ -147,7 +145,6 @@ def _update_from_teacher_information(dwid_to_department,
                     department_id_to_administrative[user.department.id]
                 )
                 update_user_groups(user, user.groups.add)
-
             user.gender = User.GENDER_CHOICES_MAP.get(
                 raw_user.get_xb_display(), User.GENDER_UNKNOWN)
             user.age = 0

@@ -26,6 +26,11 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
         cls.dlut_id = '10141'
         cls.num_departments = 10
         cls.num_teachers = 10
+        cls.dlut = Department.objects.create(raw_department_id=cls.dlut_id,
+                                             name=cls.dlut_name)
+        cls.dlut_set = set()
+        cls.dlut_group = Group.objects.create(name=f'{cls.dlut_name}-专任教师')
+        cls.dlut_set.add(cls.dlut_group)
 
     @patch('auth.tasks.prod_logger')
     @patch('auth.tasks._update_from_department_information')
@@ -103,15 +108,13 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
             name=f'Department{idx}') for idx in range(1,
                                                       1 +
                                                       self.num_departments)]
-
         for department in departments:
-            department.super_department = department
+            department.super_department = self.dlut
             group_names = [f'{department.name}-管理员',
                            f'{department.name}-专任教师']
             for group_name in group_names:
                 Group.objects.get_or_create(name=group_name)
             department.save()
-
         departments[0].super_department = departments[1]
         departments[1].super_department = departments[2]
         departments[0].save()
@@ -138,13 +141,12 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
                      for idx in range(1, 1 + self.num_teachers)]
         _update_from_teacher_information(dwid_to_department,
                                          department_id_to_administrative)
-
         users = User.objects.exclude(
             username='AnonymousUser').order_by('username')
         self.assertEqual(len(users), self.num_teachers)
 
         groups = users[0].groups.all()
-        self.assertEqual(set(groups), groups_set)
+        self.assertEqual(set(groups) - self.dlut_set, groups_set)
 
         for raw_user, user in zip(raw_users, users):
             self.assertEqual(user.first_name, raw_user.jsxm)
