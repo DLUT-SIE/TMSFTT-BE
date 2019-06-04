@@ -476,7 +476,7 @@ class TestRecordService(TestCase):
         context = {
             'request': request,
         }
-        CampusEventFeedbackService.create_feedback(context, record0, '123')
+        CampusEventFeedbackService.create_feedback(record0, '123', context)
 
         result = RecordService.get_number_of_records_without_feedback(user)
 
@@ -495,7 +495,7 @@ class TestCampusEventFeedbackService(TestCase):
         context = {
             'request': request,
         }
-        CampusEventFeedbackService.create_feedback(context, record, '123')
+        CampusEventFeedbackService.create_feedback(record, '123', context)
         record = Record.objects.get(pk=record.id)
 
         self.assertEqual(CampusEventFeedback.objects.all().count(), 1)

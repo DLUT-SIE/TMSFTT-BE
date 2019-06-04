@@ -257,8 +257,10 @@ class RecordService:
                 except Exception:
                     raise BadRequest('第{}行，编号为{}的用户不存在'.format(
                         index + 1, user_id))
+
                 if user in users:
-                    continue
+                    raise Exception('第{}行，编号为{}的用户重复'.format(
+                        index + 1, user_id))
                 users.add(user)
 
                 role_str = sheet.cell(index, 4).value
@@ -426,7 +428,7 @@ class RecordService:
 class CampusEventFeedbackService:
     '''Provide services for CampusEventFeedback.'''
     @staticmethod
-    def create_feedback(context, record, content):
+    def create_feedback(record, content, context):
         '''Create feedback for campus-event and update the status
         of the related-record to be STATUS_FEEDBACK_SUBMITTED.'''
         related_record = Record.objects.get(pk=record.id)
