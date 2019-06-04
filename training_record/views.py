@@ -79,7 +79,17 @@ class RecordViewSet(DRFCacheMixin,
         '''Return all offCampusRecords for admin'''
         queryset = self.filter_queryset(self.get_queryset()).filter(
             off_campus_event__isnull=False,
-        )
+            ).extra(select={
+                'is_status_submitted':
+                f'status={Record.STATUS_SUBMITTED}'}).order_by(
+                    '-is_status_submitted', '-create_time')
+        if request.user.is_department_admin:
+            return self._get_paginated_response(queryset)
+        queryset = queryset.extra(select={
+            'is_status_department_admin_approved':
+            f'status={Record.STATUS_DEPARTMENT_ADMIN_APPROVED}'}).order_by(
+                '-is_status_department_admin_approved',
+                '-create_time')
         return self._get_paginated_response(queryset)
 
     @decorators.action(detail=False, methods=['GET'], url_path='reviewed')

@@ -20,7 +20,12 @@ class ReviewNoteSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         record = data.get('record')
-        if not self.context['request'].user.has_perm(
-                'training_record.change_record', record):
+        user_permission = self.context['request'].user.has_perm(
+            'training_record.change_record', record
+        )
+        admin_permission = self.context['request'].user.has_perm(
+            'training_record.review_record', record
+        )
+        if not (user_permission or admin_permission):
             raise serializers.ValidationError('您无权添加审核提示！')
         return data
