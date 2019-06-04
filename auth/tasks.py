@@ -16,6 +16,7 @@ from infra.utils import prod_logger
 DLUT_ID = '10141'
 DLUT_NAME = '大连理工大学'
 
+
 def _update_from_department_information():
     '''Scan table DepartmentInformation and update related tables.'''
     prod_logger.info('开始扫描并更新部门信息')
