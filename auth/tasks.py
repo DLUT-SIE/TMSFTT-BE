@@ -86,8 +86,8 @@ def _update_from_department_information():
                 updated = True
             if updated:
                 department.save()
-            if (department.super_department == dlut or
-                    department.super_department.super_department == dlut):
+            if dlut in (department.super_department,
+                        department.super_department.super_department):
                 # 校区和二级部门的administrative为本身
                 department_id_to_administrative[department.id] = department
             else:
@@ -96,13 +96,13 @@ def _update_from_department_information():
                     department.super_department
                 )
     except Exception:
-        prod_logger.exception(f'{raw_department.dwid}:{raw_department.dwmc}')
+        prod_logger.exception(raw_department.dwid)
     department_id_to_administrative = update_administrative(
         department_id_to_administrative)
     for raw_department in raw_departments:
         department, created = Department.objects.get_or_create(
-                raw_department_id=raw_department.dwid,
-                defaults={'name': raw_department.dwmc})
+            raw_department_id=raw_department.dwid,
+            defaults={'name': raw_department.dwmc})
         dwid_to_department[raw_department.dwid] = department
 
     prod_logger.info('部门信息更新完毕')
@@ -166,12 +166,9 @@ def _update_from_teacher_information(dwid_to_department,
             user.teaching_type = raw_user.get_rjlx_display()
             user.cell_phone_number = raw_user.sjh
             user.email = raw_user.yxdz
-
             user.save()
-    except Exception as e:
-        prod_logger.exception(
-            f'{raw_user.zgh}:{raw_user.jsxm}:{raw_user.get_xb_display()}')
-        prod_logger.exception(e)
+    except Exception:
+        prod_logger.exception(raw_user.zgh)
     prod_logger.info('用户信息更新完毕')
 
 
