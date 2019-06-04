@@ -15,12 +15,7 @@ from infra.utils import prod_logger
 
 DLUT_ID = '10141'
 DLUT_NAME = '大连理工大学'
-MAIN_CAMPUS_ID = '000001'
-MAIN_NAME = '凌水主校区'
-DEVELOPMENT_ID = '000002'
-DEVELOPMENT_NAME = '开发区校区'
-PJ_ID = '000003'
-PJ_NAME = '盘锦校区'
+
 
 
 def _update_from_department_information():
