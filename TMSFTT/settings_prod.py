@@ -34,7 +34,7 @@ SECRET_KEY = get_secret_from_file('SECRET_KEY_FILE')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', 'test.feingst.com', 'ttms.dlut.edu.cn']
+ALLOWED_HOSTS = ['localhost', 'test.feingst.com', 'ctfdpeixun.dlut.edu.cn']
 INTERNAL_IPS = ['127.0.0.1']
 
 # Database
