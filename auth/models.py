@@ -121,6 +121,7 @@ class User(AbstractUser):
         verbose_name='手机号', max_length=20, blank=True, null=True)
 
     objects = ActiveUserManager()
+    all_objects = UserManager()
 
     def __str__(self):
         return self.username
