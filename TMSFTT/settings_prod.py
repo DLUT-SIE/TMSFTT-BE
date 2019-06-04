@@ -34,7 +34,7 @@ SECRET_KEY = get_secret_from_file('SECRET_KEY_FILE')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', 'test.feingst.com']
+ALLOWED_HOSTS = ['localhost', 'test.feingst.com', 'ttms.dlut.edu.cn']
 INTERNAL_IPS = ['127.0.0.1']
 
 # Database
@@ -129,7 +129,7 @@ MEDIA_ROOT = '/protected-files/'
 MEDIA_URL = '/media/'
 
 # CAS dev settings
-CAS_SERVER_URL = 'https://test.feingst.com/mock-cas/'
+CAS_SERVER_URL = 'https://sso.dlut.edu.cn/cas/'
 CAS_IGNORE_REFERER = True
 CAS_REDIRECT_URL = '/'
 
