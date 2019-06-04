@@ -212,6 +212,7 @@ class RecordService:
         '''
 
         records = set()
+        users = set()
 
         try:
             # get information
@@ -256,6 +257,9 @@ class RecordService:
                 except Exception:
                     raise BadRequest('第{}行，编号为{}的用户不存在'.format(
                         index + 1, user_id))
+                if user in users:
+                    continue
+                users.add(user)
 
                 role_str = sheet.cell(index, 4).value
                 event_coefficient = coefficients.get(role_str, None)
@@ -270,7 +274,7 @@ class RecordService:
                 PermissionService.assign_object_permissions(user, record)
                 records.add(record)
 
-                msg = (f'管理员{admin}创建了用户{record.user}参加'
+                msg = (f'管理员{admin}创建了用户{user}参加'
                        + f'{campus_event.name}({campus_event.id})活动的培训记录')
                 prod_logger.info(msg)
 
@@ -422,7 +426,7 @@ class RecordService:
 class CampusEventFeedbackService:
     '''Provide services for CampusEventFeedback.'''
     @staticmethod
-    def create_feedback(user, record, content):
+    def create_feedback(context, record, content):
         '''Create feedback for campus-event and update the status
         of the related-record to be STATUS_FEEDBACK_SUBMITTED.'''
         related_record = Record.objects.get(pk=record.id)
@@ -432,6 +436,7 @@ class CampusEventFeedbackService:
             related_record.status = Record.STATUS_FEEDBACK_SUBMITTED
             related_record.save()
 
+            user = context['request'].user
             msg = (f'用户{user}提交了用户{record.user}参加'
                    + f'{record.campus_event.name}'
                    + f'({record.campus_event.id})活动的培训反馈')
