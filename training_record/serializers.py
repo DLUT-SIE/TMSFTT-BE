@@ -54,9 +54,8 @@ class CampusEventFeedbackSerializer(serializers.ModelSerializer):
         fields = ('id', 'create_time', 'record', 'content')
 
     def create(self, validated_data):
-        user = self.context['request'].user
         return CampusEventFeedbackService.create_feedback(
-            user, **validated_data)
+            self.context, **validated_data)
 
     def validate(self, data):
         record = data.get('record')

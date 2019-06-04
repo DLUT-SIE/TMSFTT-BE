@@ -471,7 +471,12 @@ class TestRecordService(TestCase):
         mommy.make(Record, user=user, off_campus_event=off_campus_event1)
         record0 = mommy.make(Record, user=user,
                              campus_event=campus_event)
-        CampusEventFeedbackService.create_feedback(user, record0, '123')
+        request = Mock()
+        request.user = user
+        context = {
+            'request': request,
+        }
+        CampusEventFeedbackService.create_feedback(context, record0, '123')
 
         result = RecordService.get_number_of_records_without_feedback(user)
 
@@ -482,9 +487,15 @@ class TestCampusEventFeedbackService(TestCase):
     '''Test services provided by CampusEventFeedbackService.'''
     def test_create_feedback(self):
         '''Should create feedback and update the status.'''
+        user = mommy.make(get_user_model())
         campus_event = mommy.make(CampusEvent, name='q34')
         record = mommy.make(Record, campus_event=campus_event)
-        CampusEventFeedbackService.create_feedback(record.user, record, '123')
+        request = Mock()
+        request.user = user
+        context = {
+            'request': request,
+        }
+        CampusEventFeedbackService.create_feedback(context, record, '123')
         record = Record.objects.get(pk=record.id)
 
         self.assertEqual(CampusEventFeedback.objects.all().count(), 1)
