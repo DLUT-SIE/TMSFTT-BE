@@ -70,6 +70,8 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
     @patch('auth.tasks.prod_logger')
     def test_update_from_department_information(self, _):
         '''Should update department from department information.'''
+        mommy.make(DepartmentInformation,
+                   dwid=self.dlut_id, dwmc=self.dlut_name)
         infos = [mommy.make(DepartmentInformation,
                             dwid=f'{idx}',
                             dwmc=f'Department{idx}',
@@ -81,7 +83,6 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
         dwid_to_department, department_id_to_administrative = (
             _update_from_department_information()
         )
-
         departments = Department.objects.exclude(
             raw_department_id=self.dlut_id).order_by('raw_department_id')
         self.assertEqual(len(departments), self.num_departments)

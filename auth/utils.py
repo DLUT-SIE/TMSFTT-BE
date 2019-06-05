@@ -128,7 +128,7 @@ class ChoiceConverter:
         value: str
             The value to the key.
         '''
-        return cls._get_mapping_key_to_value().get(key, 'unknown')
+        return cls._get_mapping_key_to_value().get(key, '未知')
 
 
 class EducationBackgroundConverter(ChoiceConverter):
