@@ -17,13 +17,24 @@ DLUT_ID = '10141'
 DLUT_NAME = '大连理工大学'
 
 
+def update_user_groups(handler, trace_department):
+    '''增删某一群用户的department链上的group'''
+    dlut_id = '10141'
+    dlut, _ = Department.objects.get_or_create(raw_department_id=dlut_id)
+    while trace_department != dlut:
+        handler(Group.objects.get(
+            name=f'{trace_department.name}-专任教师'))
+        trace_department = trace_department.super_department
+    handler(Group.objects.get(
+        name=f'{trace_department.name}-专任教师'))
+
+
 def _update_from_department_information():
     '''Scan table DepartmentInformation and update related tables.'''
     prod_logger.info('开始扫描并更新部门信息')
     # 校区初始化
-    DepartmentInformation.objects.get_or_create(dwid=DLUT_ID,
-                                                dwmc=DLUT_NAME)
     dlut, _ = Department.objects.get_or_create(raw_department_id=DLUT_ID)
+
     if dlut.name is None or dlut.name != DLUT_NAME:
         dlut.name = DLUT_NAME
         dlut.save()
@@ -71,9 +82,16 @@ def _update_from_department_information():
                     defaults={'name': super_department_name}
                 )
                 update_group_and_perms(super_department, created)
+                # 将老师从原有group中删除
+                if department.super_department:
+                    for teacher in User.objects.filter(
+                            department=department.super_department):
+                        update_user_groups(teacher.groups.remove,
+                                           department.super_department)
+                        update_user_groups(teacher.groups.add,
+                                           super_department)
                 department.super_department = super_department
                 updated = True
-
             # 同步单位类型
             if department.department_type != raw_department.dwlx:
                 department.department_type = raw_department.dwlx
@@ -114,16 +132,6 @@ def _update_from_teacher_information(dwid_to_department,
     '''Scan table TeacherInformation and update related tables.'''
     prod_logger.info('开始扫描并更新用户信息')
     raw_users = TeacherInformation.objects.all()
-    dlut, _ = Department.objects.get_or_create(raw_department_id=DLUT_ID)
-
-    def update_user_groups(user, handler):
-        department = user.department
-        while department != dlut:
-            handler(Group.objects.get(
-                name=f'{department.name}-专任教师'))
-            department = department.super_department
-        handler(Group.objects.get(
-            name=f'{department.name}-专任教师'))
     try:
         for raw_user in raw_users:
             user, created = User.all_objects.get_or_create(
@@ -139,12 +147,12 @@ def _update_from_teacher_information(dwid_to_department,
                 prod_logger.warning(warn_msg)
             elif user.department != dwid_to_department.get(raw_user.xy):
                 if user.department:
-                    update_user_groups(user, user.groups.remove)
+                    update_user_groups(user.groups.remove, user.department)
                 user.department = dwid_to_department.get(raw_user.xy)
                 user.administrative_department = (
                     department_id_to_administrative[user.department.id]
                 )
-                update_user_groups(user, user.groups.add)
+                update_user_groups(user.groups.add, user.department)
             user.gender = User.GENDER_CHOICES_MAP.get(
                 raw_user.get_xb_display(), User.GENDER_UNKNOWN)
             user.age = 0
