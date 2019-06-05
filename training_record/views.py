@@ -81,14 +81,33 @@ class RecordViewSet(DRFCacheMixin,
             off_campus_event__isnull=False,
             ).extra(select={
                 'is_status_submitted':
-                f'status={Record.STATUS_SUBMITTED}'}).order_by(
-                    '-is_status_submitted', '-create_time')
+                f'status={Record.STATUS_SUBMITTED}'
+                }).extra(select={
+                    'is_status_department_admin_approved':
+                    f'status={Record.STATUS_DEPARTMENT_ADMIN_APPROVED}'
+                }).extra(select={
+                    'is_status_department_admin_rejected':
+                    f'status={Record.STATUS_DEPARTMENT_ADMIN_REJECTED}'
+                }).order_by(
+                    '-is_status_submitted',
+                    '-is_status_department_admin_approved',
+                    '-is_status_department_admin_rejected',
+                    '-create_time')
         if request.user.is_department_admin:
             return self._get_paginated_response(queryset)
         queryset = queryset.extra(select={
             'is_status_department_admin_approved':
-            f'status={Record.STATUS_DEPARTMENT_ADMIN_APPROVED}'}).order_by(
+            f'status={Record.STATUS_DEPARTMENT_ADMIN_APPROVED}'
+            }).extra(select={
+                'is_status_school_admin_approved':
+                f'status={Record.STATUS_SCHOOL_ADMIN_APPROVED}'
+            }).extra(select={
+                'is_status_school_admin_rejected':
+                f'status={Record.STATUS_SCHOOL_ADMIN_REJECTED}'
+            }).order_by(
                 '-is_status_department_admin_approved',
+                '-is_status_school_admin_approved',
+                '-is_status_school_admin_rejected',
                 '-create_time')
         return self._get_paginated_response(queryset)
 
