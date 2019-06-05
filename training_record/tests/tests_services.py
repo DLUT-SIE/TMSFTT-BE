@@ -323,7 +323,7 @@ class TestRecordService(TestCase):
                             status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
         user = mommy.make(get_user_model())
         with self.assertRaisesMessage(
-                BadRequest, '无此培训记录！'):
+                BadRequest, '无此培训记录'):
             RecordService.department_admin_review(record.id, True, user)
 
     def test_department_admin_review_no_permission(self):
@@ -334,7 +334,7 @@ class TestRecordService(TestCase):
                             status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
         user = mommy.make(get_user_model())
         with self.assertRaisesMessage(
-                BadRequest, '无权更改！'):
+                BadRequest, '无权更改'):
             RecordService.department_admin_review(record.id, True, user)
 
     def test_department_admin_review_no_request_data(self):
@@ -345,7 +345,7 @@ class TestRecordService(TestCase):
                             status=Record.STATUS_SUBMITTED)
         user = mommy.make(get_user_model())
         with self.assertRaisesMessage(
-                BadRequest, '请求无效！'):
+                BadRequest, '请求无效'):
             RecordService.department_admin_review(record.id, None, user)
 
     def test_department_admin_review_approve(self):
@@ -380,7 +380,7 @@ class TestRecordService(TestCase):
                             status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
         user = mommy.make(get_user_model())
         with self.assertRaisesMessage(
-                BadRequest, '无此培训记录！'):
+                BadRequest, '无此培训记录'):
             RecordService.school_admin_review(record.id, True, user)
 
     def test_school_admin_review_no_permission(self):
@@ -391,7 +391,7 @@ class TestRecordService(TestCase):
                             status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
         user = mommy.make(get_user_model())
         with self.assertRaisesMessage(
-                BadRequest, '无权更改！'):
+                BadRequest, '无权更改'):
             RecordService.school_admin_review(record.id, True, user)
 
     def test_school_admin_review_no_request_data(self):
@@ -402,7 +402,7 @@ class TestRecordService(TestCase):
                             status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
         user = mommy.make(get_user_model())
         with self.assertRaisesMessage(
-                BadRequest, '请求无效！'):
+                BadRequest, '请求无效'):
             RecordService.school_admin_review(record.id, None, user)
 
     def test_school_admin_review_approve(self):
@@ -435,7 +435,7 @@ class TestRecordService(TestCase):
                             status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
         user = mommy.make(get_user_model())
         with self.assertRaisesMessage(
-                BadRequest, '无此培训记录！'):
+                BadRequest, '无此培训记录'):
             RecordService.close_record(record.id, user)
 
     def test_close_record_no_permission(self):
@@ -446,7 +446,7 @@ class TestRecordService(TestCase):
                             status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
         user = mommy.make(get_user_model())
         with self.assertRaisesMessage(
-                BadRequest, '无权更改！'):
+                BadRequest, '无权更改'):
             RecordService.close_record(record.id, user)
 
     def test_close_record_succeed(self):
