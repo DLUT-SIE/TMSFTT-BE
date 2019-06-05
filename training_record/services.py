@@ -308,13 +308,13 @@ class RecordService:
                       .select_for_update()
                       .filter(pk=record_id, campus_event__isnull=True))
             if len(record) != 1:
-                raise BadRequest('无此培训记录！')
+                raise BadRequest('无此培训记录')
             record = record[0]
             if record.status != Record.STATUS_SUBMITTED:
-                raise BadRequest('无权更改！')
+                raise BadRequest('无权更改')
             pre_status = record.status
             if is_approved is None:
-                raise BadRequest('请求无效！')
+                raise BadRequest('请求无效')
             if is_approved:
                 record.status = Record.STATUS_DEPARTMENT_ADMIN_APPROVED
             else:
@@ -355,13 +355,13 @@ class RecordService:
                       .select_for_update()
                       .filter(pk=record_id, campus_event__isnull=True))
             if len(record) != 1:
-                raise BadRequest('无此培训记录！')
+                raise BadRequest('无此培训记录')
             record = record[0]
             if record.status != Record.STATUS_DEPARTMENT_ADMIN_APPROVED:
-                raise BadRequest('无权更改！')
+                raise BadRequest('无权更改')
             pre_status = record.status
             if is_approved is None:
-                raise BadRequest('请求无效！')
+                raise BadRequest('请求无效')
             if is_approved:
                 record.status = Record.STATUS_SCHOOL_ADMIN_APPROVED
             else:
@@ -400,11 +400,11 @@ class RecordService:
                       .select_for_update()
                       .filter(pk=record_id, campus_event__isnull=True))
             if len(record) != 1:
-                raise BadRequest('无此培训记录！')
+                raise BadRequest('无此培训记录')
             record = record[0]
             if ((record.status == Record.STATUS_SCHOOL_ADMIN_APPROVED) |
                     (record.status == Record.STATUS_CLOSED)):
-                raise BadRequest('无权更改！')
+                raise BadRequest('无权更改')
             pre_status = record.status
             record.status = Record.STATUS_CLOSED
             post_status = record.status
