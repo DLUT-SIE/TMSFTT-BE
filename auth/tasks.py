@@ -17,11 +17,9 @@ DLUT_ID = '10141'
 DLUT_NAME = '大连理工大学'
 
 
-def update_user_groups(handler, trace_department):
+def update_user_groups(handler, trace_department, dlut):
     '''增删某一群用户的department链上的group'''
-    dlut_id = '10141'
-    dlut, _ = Department.objects.get_or_create(raw_department_id=dlut_id)
-    while trace_department != dlut:
+    while trace_department.raw_department_id != dlut.raw_department_id:
         handler(Group.objects.get(
             name=f'{trace_department.name}-专任教师'))
         trace_department = trace_department.super_department
@@ -30,11 +28,15 @@ def update_user_groups(handler, trace_department):
 
 
 def _update_from_department_information():
+    # pylint: disable=R0912
+    # pylint: disable=R0915
+    # pylint: disable=R1702
+    # pylint: disable=R0914
     '''Scan table DepartmentInformation and update related tables.'''
     prod_logger.info('开始扫描并更新部门信息')
     # 校区初始化
-    dlut, _ = Department.objects.get_or_create(raw_department_id=DLUT_ID)
-
+    dlut, _ = Department.objects.get_or_create(raw_department_id=DLUT_ID,
+                                               defaults={'name': DLUT_NAME})
     if dlut.name is None or dlut.name != DLUT_NAME:
         dlut.name = DLUT_NAME
         dlut.save()
@@ -64,6 +66,16 @@ def _update_from_department_information():
         if created:
             assign_model_perms_for_department(department)
 
+    def remove_related_department_group(super_department, childs):
+        # 将当前department的所有叶子结点返回
+        child_departments = Department.child_departments.all()
+        if child_departments:
+            for child_department in child_departments:
+                childs.extend(
+                    remove_related_department_group(child_department, childs))
+        else:
+            childs.extend([super_department])
+        return childs
     try:
         for raw_department in raw_departments:
             department, created = Department.objects.get_or_create(
@@ -84,12 +96,15 @@ def _update_from_department_information():
                 update_group_and_perms(super_department, created)
                 # 将老师从原有group中删除
                 if department.super_department:
-                    for teacher in User.objects.filter(
-                            department=department.super_department):
-                        update_user_groups(teacher.groups.remove,
-                                           department.super_department)
-                        update_user_groups(teacher.groups.add,
-                                           super_department)
+                    child_departments = remove_related_department_group(
+                        department.super_department, [])
+                    for department in child_departments:
+                        teachers = User.objects.filter(department=department)
+                        for teacher in teachers:
+                            update_user_groups(teacher.groups.remove,
+                                               department, dlut)
+                            teacher.department = None
+                            teacher.save()
                 department.super_department = super_department
                 updated = True
             # 同步单位类型
@@ -131,6 +146,8 @@ def _update_from_teacher_information(dwid_to_department,
                                      department_id_to_administrative):
     '''Scan table TeacherInformation and update related tables.'''
     prod_logger.info('开始扫描并更新用户信息')
+    dlut, _ = Department.objects.get_or_create(raw_department_id=DLUT_ID,
+                                               defaults={'name': DLUT_NAME})
     raw_users = TeacherInformation.objects.all()
     try:
         for raw_user in raw_users:
@@ -147,12 +164,13 @@ def _update_from_teacher_information(dwid_to_department,
                 prod_logger.warning(warn_msg)
             elif user.department != dwid_to_department.get(raw_user.xy):
                 if user.department:
-                    update_user_groups(user.groups.remove, user.department)
+                    update_user_groups(user.groups.remove, user.department,
+                                       dlut)
                 user.department = dwid_to_department.get(raw_user.xy)
                 user.administrative_department = (
                     department_id_to_administrative[user.department.id]
                 )
-                update_user_groups(user.groups.add, user.department)
+                update_user_groups(user.groups.add, user.department, dlut)
             user.gender = User.GENDER_CHOICES_MAP.get(
                 raw_user.get_xb_display(), User.GENDER_UNKNOWN)
             user.age = 0
