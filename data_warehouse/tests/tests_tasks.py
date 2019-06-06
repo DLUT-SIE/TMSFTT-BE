@@ -56,7 +56,7 @@ class TestTasks(TestCase):
         )
         skip_users = [u.id for u in users[:num_active_users]]
         mocked_check.side_effect = [
-            (i < num_active_users, {}) for i in range(num_users)] 
+            (i < num_active_users, {}) for i in range(num_users)]
 
         send_mail_to_inactive_users(skip_users=skip_users)
         mocked_send_mail.assert_called()
