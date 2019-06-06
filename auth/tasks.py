@@ -8,7 +8,7 @@ from django.utils.dateparse import parse_datetime
 from django.utils.timezone import make_aware, now
 from django.contrib.auth.models import Group
 from auth.models import (
-    User, Department, DepartmentInformation, TeacherInformation)
+    User, Department, DepartmentInformation, TeacherInformation, UserGroup)
 from auth.utils import assign_model_perms_for_department
 
 from infra.utils import prod_logger
@@ -97,11 +97,10 @@ def _update_from_department_information():
                         department.super_department)
                     for department in child_departments:
                         teachers = User.objects.filter(department=department)
-                        for teacher in teachers:
-                            update_user_groups(teacher.groups.remove,
-                                               department, dlut)
-                            teacher.department = None
-                            teacher.save()
+                        UserGroup.objects.filter(
+                            user__in=teachers,
+                            group__name__endswith='-专任教师').delete()
+                        teachers.update(department=None)
                 department.super_department = super_department
                 updated = True
             # 同步单位类型
@@ -124,9 +123,9 @@ def _update_from_department_information():
                 department_id_to_administrative[department.id] = (
                     department.super_department
                 )
-    except Exception:
-        prod_logger.exception('部门信息更新失败,单位号:%s',
-                              raw_department.dwid)
+    except Exception as exc:
+        prod_logger.exception('部门信息更新失败,单位号:%s, excepiton:%s',
+                              raw_department.dwid, exc)
         raise
     department_id_to_administrative = update_administrative(
         department_id_to_administrative)
@@ -148,12 +147,10 @@ def _update_from_teacher_information(dwid_to_department,
     dlut, _ = Department.objects.get_or_create(raw_department_id=DLUT_ID,
                                                defaults={'name': DLUT_NAME})
     raw_users = TeacherInformation.objects.all()
-    print(raw_users)
     try:
         for raw_user in raw_users:
             user, created = User.all_objects.get_or_create(
                 username=raw_user.zgh)
-            print('+'*100)
             if created:
                 user.set_unusable_password()
             user.first_name = raw_user.jsxm
@@ -196,8 +193,9 @@ def _update_from_teacher_information(dwid_to_department,
             user.cell_phone_number = raw_user.sjh
             user.email = raw_user.yxdz
             user.save()
-    except Exception:
-        prod_logger.exception('用户信息更新失败,职工号:%s', raw_user.zgh)
+    except Exception as exc:
+        prod_logger.exception('用户信息更新失败,职工号:%s, exception:%s',
+                              raw_user.zgh, exc)
         raise
     prod_logger.info('用户信息更新完毕')
 
