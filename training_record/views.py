@@ -170,10 +170,6 @@ class RecordAttachmentViewSet(DRFCacheMixin,
         auth.permissions.DjangoObjectPermissions,
     )
 
-    def perform_destroy(self, instance):
-        # TODO: Destroy is allowed only when user has change access to record
-        instance.delete()
-
 
 class StatusChangeLogViewSet(DRFCacheMixin,
                              viewsets.ReadOnlyModelViewSet):

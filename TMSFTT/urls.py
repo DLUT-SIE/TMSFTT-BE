@@ -43,7 +43,4 @@ if settings.DEBUG:
         path('api/', include_docs_urls(title='TMSFTT APIs')),
     ]
     urlpatterns.extend(DEBUG_URLPATTERNS)
-
-# TODO(youchen): Remove mock-cas
-if 'mock_cas' in settings.INSTALLED_APPS:
     urlpatterns.append(path('mock-cas/', include('mock_cas.urls')))

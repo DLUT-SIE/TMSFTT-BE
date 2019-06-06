@@ -15,11 +15,6 @@ def get_secret_from_file(file_env_name, default=None):
     with open(path) as f:
         return f.read().strip()
 
-# TODO(youchen): Remove mock_cas app
-DEV_INSTALLED_APPS = [
-    'mock_cas',
-]
-INSTALLED_APPS.extend(DEV_INSTALLED_APPS)
 
 # Middlewares
 MIDDLEWARE.extend([
@@ -141,11 +136,6 @@ CAS_REDIRECT_URL = '/'
 # CORS settings
 CORS_ORIGIN_ALLOW_ALL = True
 
-
-# HTTPS
-# TODO(youchen): Enable HTTPS secure
-CSRF_COOKIE_SECURE = False
-SESSION_COOKIE_SECURE = False
 
 # Celery settings
 CELERY_BROKER_URL = 'redis://redis:6379'
