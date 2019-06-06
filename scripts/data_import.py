@@ -29,7 +29,8 @@ from auth.models import User, Department
 from auth.utils import (
     assign_perm, GenderConverter, TenureStatusConverter,
     EducationBackgroundConverter, TechnicalTitleConverter,
-    TeachingTypeConverter, assign_model_perms_for_department
+    TeachingTypeConverter, assign_model_perms_for_department,
+    get_model_perms,
 )
 from auth.services import PermissionService
 from training_program.models import Program
@@ -83,8 +84,8 @@ def get_dlut_department():
 def get_dlut_admin():
     department = get_dlut_department()
     user, created = User.objects.get_or_create(
-        username='admin',
-        first_name='管理员',
+        username='tmsftt-admin',
+        first_name='系统管理员',
         department=department,
         administrative_department=department
     )
@@ -344,63 +345,41 @@ def read_teachers_information(
 
 
 def assign_model_perms_for_special_groups():
-    model_perms = {
+    model_perms = get_model_perms()
+    patch_for_model_perms = {
         Notification: {
-            '管理员': [],
-            '专任教师': [],
             '个人权限': ['view'],
-        },
-        # Program
-        Program: {
-            '管理员': ['add', 'view', 'change', 'delete'],
-            '专任教师': ['view'],
-            '个人权限': [],
         },
         # Event
         CampusEvent: {
-            '管理员': ['add', 'view', 'change', 'delete'],
             '大连理工大学-管理员': ['add', 'view', 'change', 'delete', 'review'],
-            '专任教师': ['view'],
-            '个人权限': [],
         },
         Enrollment: {
-            '管理员': [],
-            '专任教师': [],
             '个人权限': ['add', 'delete'],
         },
         # Record
         Record: {
-            '管理员': ['batchadd', 'view', 'review', 'change'],
-            '专任教师': [],
             '个人权限': ['add', 'view', 'change'],
         },
         RecordContent: {
-            '管理员': ['view'],
-            '专任教师': [],
             '个人权限': ['view'],
         },
         RecordAttachment: {
-            '管理员': ['view'],
-            '专任教师': [],
             '个人权限': ['view', 'delete'],
         },
         CampusEventFeedback: {
-            '管理员': [],
-            '专任教师': [],
             '个人权限': ['add'],
         },
         # Review
         ReviewNote: {
-            '管理员': ['add', 'view'],
-            '专任教师': [],
             '个人权限': ['add', 'view'],
         },
         SecureFile: {
-            '管理员': ['view'],
-            '专任教师': [],
             '个人权限': ['view'],
         },
     }
+    for model_class, perms_dict in patch_for_model_perms.items():
+        model_perms[model_class].update(perms_dict)
     dlut_department = get_dlut_department()
     dlut_admin_group = get_dlut_admin_group()
     personal_permissions_group = get_personal_permissions_group()
@@ -425,14 +404,13 @@ def assign_model_perms():
         x.raw_department_id: x
         for x in Department.objects.all().exclude(name='大连理工大学')
     }
-    assign_model_perms_for_special_groups()
     for department in tqdm(departments.values()):
         assign_model_perms_for_department(department)
 
 
 def populate_initial_data():
     site_data = {
-        'domain': 'tmsftt.local',
+        'domain': 'ctfdpeixun.dlut.edu.cn',
         'name': '大连理工大学专任教师教学培训管理系统'
     }
     site, created = Site.objects.get_or_create(
@@ -449,6 +427,7 @@ def populate_initial_data():
         defaults={'first_name': '系统通知'}
     )
     user.set_unusable_password()
+    assign_model_perms_for_special_groups()
 
 
 @transaction.atomic
@@ -484,5 +463,8 @@ def populate(base='~/Desktop/TMSFTT'):
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         populate()
+    elif len(sys.argv) == 2 and sys.argv[1] == 'initial':
+        with transaction.atomic():
+            populate_initial_data()
     else:
         populate(sys.argv[1])

@@ -156,9 +156,8 @@ class TeachingTypeConverter(ChoiceConverter):
     mapping_name = 'teaching_type'
 
 
-# pylint: disable=too-many-locals
-def assign_model_perms_for_department(department):
-    '''Assign default model permissions for department groups.'''
+def get_model_perms():
+    '''Get perms map for models.'''
     from infra.models import Notification
     from training_program.models import Program
     from training_event.models import CampusEvent, Enrollment
@@ -168,7 +167,7 @@ def assign_model_perms_for_department(department):
     from training_review.models import ReviewNote
     from secure_file.models import SecureFile
 
-    model_perms = {
+    return {
         Notification: {
             '管理员': [],
             '专任教师': [],
@@ -214,6 +213,13 @@ def assign_model_perms_for_department(department):
             '专任教师': [],
         },
     }
+
+
+# pylint: disable=too-many-locals
+def assign_model_perms_for_department(department):
+    '''Assign default model permissions for department groups.'''
+    model_perms = get_model_perms()
+
     for model_class, perm_pairs in model_perms.items():
         for role, perms in perm_pairs.items():
             group = Group.objects.get(name=f'{department.name}-{role}')
