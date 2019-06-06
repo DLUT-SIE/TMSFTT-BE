@@ -166,12 +166,10 @@ def _update_from_teacher_information(dwid_to_department,
                 )
                 if created or user.department:
                     prod_logger.warning(warn_msg)
-
                 UserGroup.objects.filter(
                     user=user,
                     group__name__endswith='-专任教师').delete()
                 user.department = None
-                
             elif user.department != dwid_to_department.get(raw_user.xy):
                 if user.department:
                     update_user_groups(user.groups.remove, user.department,
