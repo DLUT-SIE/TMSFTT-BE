@@ -118,6 +118,11 @@ LOGGING = {
     }
 }
 
+# A list of all the people who get code error notifications.
+ADMINS = [
+
+]
+
 
 # DRF settings
 REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = (
