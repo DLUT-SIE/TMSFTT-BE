@@ -159,12 +159,10 @@ def _update_from_teacher_information(dwid_to_department,
                     f'职工号为{user.username}的教师'
                     f'使用了一个系统中不存在的学院{raw_user.xy}'
                 )
-                unexist_department = user.department
+                UserGroup.objects.filter(
+                    user__in=user,
+                    group__name__endswith='-专任教师').delete()
                 user.department = None
-                teachers = User.objects.filter(department=unexist_department)
-                for teacher in teachers:
-                    update_user_groups(teacher.groups.remove, user.department,
-                                       dlut)
                 prod_logger.warning(warn_msg)
             elif user.department != dwid_to_department.get(raw_user.xy):
                 if user.department:
