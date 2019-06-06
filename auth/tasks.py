@@ -100,8 +100,8 @@ def _update_from_department_information():
                 if department.super_department:
                     child_departments = find_all_child_department(
                         department.super_department)
-                    for department in child_departments:
-                        teachers = User.objects.filter(department=department)
+                    for child in child_departments:
+                        teachers = User.objects.filter(department=child)
                         UserGroup.objects.filter(
                             user__in=teachers,
                             group__name__endswith='-专任教师').delete()
