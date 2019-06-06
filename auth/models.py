@@ -118,7 +118,7 @@ class User(AbstractUser):
     teaching_type = models.CharField(
         verbose_name='任教类型', max_length=40, blank=True, null=True)
     cell_phone_number = models.CharField(
-        verbose_name='手机号', max_length=40, blank=True, null=True)
+        verbose_name='手机号', max_length=20, blank=True, null=True)
 
     objects = ActiveUserManager()
 
@@ -217,9 +217,9 @@ class TeacherInformation(models.Model):
                               db_column='ZYJSZC', blank=True, null=True)
     rjlx = models.CharField(verbose_name='任教类型', max_length=40,
                             db_column='RJLX', blank=True, null=True)
-    yxdz = models.CharField(verbose_name='邮箱地址', max_length=40,
+    yxdz = models.CharField(verbose_name='邮箱地址', max_length=50,
                             db_column='YXDZ', blank=True, null=True)
-    sjh = models.CharField(verbose_name='手机号', max_length=40,
+    sjh = models.CharField(verbose_name='手机号', max_length=20,
                            db_column='SJH', blank=True, null=True)
 
     def save(self, *args, **kwargs):
