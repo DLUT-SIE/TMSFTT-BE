@@ -84,8 +84,11 @@ def _update_from_department_information():
             if (department.super_department is None or
                     department.super_department.raw_department_id !=
                     raw_department.lsdw):
-                super_department_name = DepartmentInformation.objects.get(
-                    dwid=raw_department.lsdw).dwmc
+                # DepartmentInformation中不含大连理工大学
+                super_department_name = DLUT_NAME
+                if raw_department.lsdw != DLUT_ID:
+                    super_department_name = DepartmentInformation.objects.get(
+                        dwid=raw_department.lsdw).dwmc
                 super_department, created = Department.objects.get_or_create(
                     raw_department_id=raw_department.lsdw,
                     defaults={'name': super_department_name}
