@@ -5,7 +5,7 @@ from celery import shared_task
 
 from django.db import transaction
 from django.utils.dateparse import parse_datetime
-from django.utils.timezone import make_aware, now
+from django.utils.timezone import make_aware, make_naive, now
 from django.contrib.auth.models import Group
 from auth.models import (
     User, Department, DepartmentInformation, TeacherInformation, UserGroup)
@@ -183,7 +183,7 @@ def _update_from_teacher_information(dwid_to_department,
             user.age = 0
             if raw_user.csrq:
                 birthday = datetime.strptime(raw_user.csrq, '%Y-%m-%d')
-                user.age = (now() - birthday).days // 365
+                user.age = (make_naive(now()) - birthday).days // 365
             if raw_user.rxsj and user.onboard_time != raw_user.rxsj:
                 user.onboard_time = make_aware(
                     parse_datetime(f'{raw_user.rxsj}T12:00:00'))
