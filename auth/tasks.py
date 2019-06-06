@@ -182,8 +182,7 @@ def _update_from_teacher_information(dwid_to_department,
                 raw_user.get_xb_display(), User.GENDER_UNKNOWN)
             user.age = 0
             if raw_user.csrq:
-                birthday = make_aware(
-                    datetime.strptime(raw_user.csrq, '%Y-%m-%d'))
+                birthday = datetime.strptime(raw_user.csrq, '%Y-%m-%d')
                 user.age = (now() - birthday).days // 365
             if raw_user.rxsj and user.onboard_time != raw_user.rxsj:
                 user.onboard_time = make_aware(
