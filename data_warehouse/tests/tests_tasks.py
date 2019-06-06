@@ -22,13 +22,16 @@ class TestTasks(TestCase):
     @patch('data_warehouse.tasks.AggregateDataService.personal_summary',
            lambda _: {})
     @patch('data_warehouse.tasks.send_mass_mail')
-    def test_send_mail_to_inactive_users(self, mocked_send_mail):
+    @patch('data_warehouse.tasks.check_user_activity')
+    def test_send_mail_to_inactive_users(self, mocked_check, mocked_send_mail):
         '''Should check users' activities and send mails'''
+        num_users = 20
         users = mommy.make(
             User,
             teaching_type='专任教师',
-            _quantity=20,
+            _quantity=num_users,
         )
+        mocked_check.side_effect = [(False, {}) for _ in range(num_users)]
 
         send_mail_to_inactive_users()
         mocked_send_mail.assert_called()
@@ -40,14 +43,20 @@ class TestTasks(TestCase):
     @patch('data_warehouse.tasks.AggregateDataService.personal_summary',
            lambda _: {})
     @patch('data_warehouse.tasks.send_mass_mail')
-    def test_send_mail_to_inactive_users_skip_users(self, mocked_send_mail):
+    @patch('data_warehouse.tasks.check_user_activity')
+    def test_send_mail_to_inactive_users_skip_users(
+            self, mocked_check, mocked_send_mail):
         '''Should check users' activities and send mails (skip users)'''
+        num_users = 20
+        num_active_users = 10
         users = mommy.make(
             User,
             teaching_type='专任教师',
-            _quantity=20,
+            _quantity=num_users,
         )
-        skip_users = [u.id for u in users[:10]]
+        skip_users = [u.id for u in users[:num_active_users]]
+        mocked_check.side_effect = [
+            (i < num_active_users, {}) for i in range(num_users)] 
 
         send_mail_to_inactive_users(skip_users=skip_users)
         mocked_send_mail.assert_called()

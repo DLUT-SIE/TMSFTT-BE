@@ -24,6 +24,37 @@ def generate_user_rankings():
     UserRankingService.generate_user_rankings()
 
 
+def check_user_activity(user, start_time, end_time):
+    '''
+    Return whether the user is an active participant along
+    with his/her statistics.
+
+    Parameters
+    ----------
+    user: User
+        The user to be checked.
+    start_time: datetime
+        The start time of data for aggregation.
+    end_time: datetime
+        The end time of data for aggregation.
+
+    Return
+    ------
+    is_active: bool
+        Whether the user is an active partcipant.
+    statistics: dict
+        Detailed statistics about the user.
+    '''
+    context = {
+        'user': user,
+        'start_time': start_time.strftime('%Y-%m-%dT%H:%M'),
+        'end_time': end_time.strftime('%Y-%m-%dT%H:%M'),
+    }
+    data = AggregateDataService.personal_summary(context)
+    # TODO: Replace with more reasonable settings
+    return True, data
+
+
 @shared_task
 def send_mail_to_inactive_users(skip_users=None):
     '''Send emails to inactive users to encourage them to be active.
@@ -40,37 +71,11 @@ def send_mail_to_inactive_users(skip_users=None):
     end_time = now()
     start_time = end_time.replace(year=end_time.year-1)
 
-    def check_user_activity(user):
-        '''
-        Return whether the user is an active participant along
-        with his/her statistics.
-
-        Parameters
-        ----------
-        user: User
-            The user to be checked.
-
-        Return
-        ------
-        is_active: bool
-            Whether the user is an active partcipant.
-        statistics: dict
-            Detailed statistics about the user.
-        '''
-        context = {
-            'user': user,
-            'start_time': start_time.strftime('%Y-%m-%dT%H:%M'),
-            'end_time': end_time.strftime('%Y-%m-%dT%H:%M'),
-        }
-        data = AggregateDataService.personal_summary(context)
-        # TODO: Replace with more reasonable settings
-        return False, data
-
     users = UserService.get_full_time_teachers()
     mails = []
 
     for user in tqdm(users):
-        is_active, data = check_user_activity(user)
+        is_active, data = check_user_activity(user, start_time, end_time)
         if not is_active:
             if user.id in skip_users:
                 msg = (
