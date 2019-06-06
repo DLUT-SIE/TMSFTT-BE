@@ -1,4 +1,5 @@
 '''Celery tasks.'''
+import logging
 from datetime import datetime
 
 from celery import shared_task
@@ -206,6 +207,7 @@ def _update_from_teacher_information(dwid_to_department,
 @transaction.atomic()
 def update_teachers_and_departments_information():
     '''Scan table TBL_DW_INFO and TBL_JB_INFO, update related tables.'''
+    prod_logger.setLevel(logging.WARNING)
     dwid_to_department, department_id_to_administrative = (
         _update_from_department_information()
     )
