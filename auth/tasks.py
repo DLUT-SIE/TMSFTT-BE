@@ -160,7 +160,7 @@ def _update_from_teacher_information(dwid_to_department,
                     f'使用了一个系统中不存在的学院{raw_user.xy}'
                 )
                 UserGroup.objects.filter(
-                    user__in=user,
+                    user=user,
                     group__name__endswith='-专任教师').delete()
                 user.department = None
                 prod_logger.warning(warn_msg)
