@@ -88,6 +88,8 @@ def _update_from_department_information():
                     raw_department.lsdw):
                 # DepartmentInformation中不含大连理工大学
                 super_department_name = DLUT_NAME
+                if not raw_department.lsdw:
+                    raw_department.lsdw = DLUT_ID
                 if raw_department.lsdw != DLUT_ID:
                     super_department_name = DepartmentInformation.objects.get(
                         dwid=raw_department.lsdw).dwmc
@@ -194,7 +196,7 @@ def _update_from_teacher_information(dwid_to_department,
             user.technical_title = raw_user.get_zyjszc_display()
             user.teaching_type = raw_user.get_rjlx_display()
             user.cell_phone_number = raw_user.sjh
-            user.email = raw_user.yxdz
+            user.email = raw_user.yxdz if raw_user.yxdz else ''
             user.save()
     except Exception as exc:
         prod_logger.exception('用户信息更新失败,职工号:%s, exception:%s',
