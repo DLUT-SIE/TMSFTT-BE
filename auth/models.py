@@ -201,8 +201,8 @@ class TeacherInformation(models.Model):
                            db_column='ZGH', primary_key=True)
     jsxm = models.CharField(verbose_name='教师姓名', max_length=100,
                             db_column='JSXM', blank=True, null=True)
-    nl = models.CharField(verbose_name='年龄', max_length=10,
-                          db_column='NL', blank=True, null=True)
+    csrq = models.CharField(verbose_name='出生日期', max_length=10,
+                            db_column='CSRQ', blank=True, null=True)
     xb = models.CharField(verbose_name='性别', max_length=10,
                           db_column='XB', blank=True, null=True)
     xy = models.CharField(verbose_name='学院', max_length=10,
@@ -221,6 +221,8 @@ class TeacherInformation(models.Model):
                             db_column='YXDZ', blank=True, null=True)
     sjh = models.CharField(verbose_name='手机号', max_length=20,
                            db_column='SJH', blank=True, null=True)
+    bzhzt = models.CharField(verbose_name='博士后在站状态', max_length=4,
+                             db_column='BZHZT', blank=True, null=True)
 
     def save(self, *args, **kwargs):
         raise Exception('该表状态为只读')

@@ -1,8 +1,11 @@
 '''Unit tests for Celery tasks.'''
+from datetime import datetime
 from unittest.mock import patch, Mock
+
 from django.test import TestCase
 from django.db import models
 from django.contrib.auth.models import Group
+from django.utils.timezone import now, make_aware
 from model_mommy import mommy
 
 from auth.models import (
@@ -93,6 +96,7 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
     @patch('auth.tasks.prod_logger')
     def test_update_from_teacher_information(self, _):
         '''Should update user from teacher information.'''
+        # pylint: disable=too-many-locals
 
         departments = [mommy.make(
             Department, id=idx, raw_department_id=idx,
@@ -123,9 +127,12 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
         department_id_to_administrative[departments[1].id] = departments[2]
 
         dwid_to_department = {f'{dep.id}': dep for dep in departments}
+        csrq = '1980-01-01'
+        birthday = make_aware(datetime.strptime(csrq, '%Y-%m-%d'))
+        age = (now() - birthday).days // 365
         raw_users = [mommy.make(
             TeacherInformation, zgh=f'2{idx:02d}', jsxm=f'name{idx}',
-            nl=f'{idx}', xb='1', yxdz='asdf@123.com',
+            csrq=csrq, xb='1', yxdz='asdf@123.com',
             xy=f'{departments[idx - 1].raw_department_id}',
             rxsj='2019-12-01', rzzt='11', xl='14', zyjszc='061', rjlx='12')
                      for idx in range(1, 1 + self.num_teachers)]
@@ -147,7 +154,7 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
             self.assertEqual(
                 user.gender,
                 User.GENDER_CHOICES_MAP[raw_user.get_xb_display()])
-            self.assertEqual(user.age, int(raw_user.nl))
+            self.assertEqual(user.age, age)
             self.assertEqual(user.tenure_status, raw_user.get_rzzt_display())
             self.assertEqual(user.education_background,
                              raw_user.get_xl_display())
