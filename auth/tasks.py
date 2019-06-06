@@ -2,6 +2,7 @@
 from datetime import datetime
 
 from celery import shared_task
+from tqdm import tqdm
 
 from django.db import transaction
 from django.utils.dateparse import parse_datetime
@@ -74,7 +75,7 @@ def _update_from_department_information():
             childs.extend([super_department])
         return childs
     try:
-        for raw_department in raw_departments:
+        for raw_department in tqdm(raw_departments):
             department, created = Department.objects.get_or_create(
                 raw_department_id=raw_department.dwid,
                 defaults={'name': raw_department.dwmc})
@@ -151,7 +152,7 @@ def _update_from_teacher_information(dwid_to_department,
                                                defaults={'name': DLUT_NAME})
     raw_users = TeacherInformation.objects.all()
     try:
-        for raw_user in raw_users:
+        for raw_user in tqdm(raw_users):
             user, created = User.all_objects.get_or_create(
                 username=raw_user.zgh)
             if created:
