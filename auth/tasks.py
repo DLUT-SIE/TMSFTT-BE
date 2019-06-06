@@ -66,7 +66,7 @@ def _update_from_department_information():
     def find_all_child_department(super_department):
         # 将当前department的所有叶子结点返回
         childs = []
-        child_departments = Department.child_departments.all()
+        child_departments = super_department.child_departments.all()
         if child_departments:
             for child_department in child_departments:
                 childs.extend(find_all_child_department(child_department))
