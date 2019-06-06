@@ -51,19 +51,36 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
             dwid_to_department, department_id_to_administrative)
         mocked_prod_logger.exception.assert_not_called()
 
+    @patch('auth.tasks.Group.objects.get_or_create')
     @patch('auth.tasks.prod_logger')
-    @patch('auth.tasks._update_from_department_information')
-    @patch('auth.tasks._update_from_teacher_information')
-    def test_logging_if_update_failed(
-            self, _, mocked_department_update_func, mocked_prod_logger):
+    @patch('auth.models.DepartmentInformation.save', models.Model.save)
+    def test_logging_if_department_update_failed(
+            self, mocked_prod_logger, mocked_get_or_create):
         '''Should call update functions.'''
-        mocked_department_update_func.side_effect = Exception('Oops')
+        depart = DepartmentInformation.objects.create(dwid='123', dwmc='123')
+        mocked_get_or_create.side_effect = Exception('Oops')
+        with self.assertRaises(Exception):
+            _update_from_department_information()
 
-        update_teachers_and_departments_information()
-
-        mocked_department_update_func.assert_called()
         mocked_prod_logger.exception.assert_called_with(
-            '教师信息或部门信息更新失败')
+            '部门信息更新失败,单位号:%s', depart.dwid)
+
+    @patch('auth.tasks.User.all_objects.get_or_create')
+    @patch('auth.tasks.prod_logger')
+    @patch('auth.models.TeacherInformation.save', models.Model.save)
+    def test_logging_if_teacher_update_failed(
+            self, mocked_prod_logger, mocked_get_or_create):
+        '''Should call update functions.'''
+        mocked_get_or_create.side_effect = Exception('Oops')
+        user = TeacherInformation.objects.create(zgh='123')
+        departments = [mommy.make(
+            Department, raw_department_id=idx,
+            name=f'Department{idx}') for idx in range(1, 5)]
+        with self.assertRaises(Exception):
+            _update_from_teacher_information(
+                {f'{departments[0].id}': departments[0]}, {1: departments[1]})
+        mocked_prod_logger.exception.assert_called_with(
+            '用户信息更新失败,职工号:%s', user.zgh)
 
     @patch('auth.models.DepartmentInformation.save',
            models.Model.save)
@@ -83,6 +100,10 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
         dwid_to_department, department_id_to_administrative = (
             _update_from_department_information()
         )
+        print('a'*100)
+        print(dwid_to_department)
+        print('a'*100)
+        print(department_id_to_administrative)
         departments = Department.objects.exclude(
             raw_department_id=self.dlut_id).order_by('raw_department_id')
         self.assertEqual(len(departments), self.num_departments)

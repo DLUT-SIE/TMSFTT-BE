@@ -37,9 +37,6 @@ def _update_from_department_information():
     # 校区初始化
     dlut, _ = Department.objects.get_or_create(raw_department_id=DLUT_ID,
                                                defaults={'name': DLUT_NAME})
-    if dlut.name is None or dlut.name != DLUT_NAME:
-        dlut.name = DLUT_NAME
-        dlut.save()
     raw_departments = DepartmentInformation.objects.exclude(dwid=DLUT_ID)
     dwid_to_department = {}
     department_id_to_administrative = {}
@@ -66,13 +63,13 @@ def _update_from_department_information():
         if created:
             assign_model_perms_for_department(department)
 
-    def remove_related_department_group(super_department, childs):
+    def find_all_child_department(super_department):
         # 将当前department的所有叶子结点返回
+        childs = []
         child_departments = Department.child_departments.all()
         if child_departments:
             for child_department in child_departments:
-                childs.extend(
-                    remove_related_department_group(child_department, childs))
+                childs.extend(find_all_child_department(child_department))
         else:
             childs.extend([super_department])
         return childs
@@ -96,8 +93,8 @@ def _update_from_department_information():
                 update_group_and_perms(super_department, created)
                 # 将老师从原有group中删除
                 if department.super_department:
-                    child_departments = remove_related_department_group(
-                        department.super_department, [])
+                    child_departments = find_all_child_department(
+                        department.super_department)
                     for department in child_departments:
                         teachers = User.objects.filter(department=department)
                         for teacher in teachers:
@@ -128,7 +125,9 @@ def _update_from_department_information():
                     department.super_department
                 )
     except Exception:
-        prod_logger.exception(raw_department.dwid)
+        prod_logger.exception('部门信息更新失败,单位号:%s',
+                              raw_department.dwid)
+        raise
     department_id_to_administrative = update_administrative(
         department_id_to_administrative)
     for raw_department in raw_departments:
@@ -149,10 +148,12 @@ def _update_from_teacher_information(dwid_to_department,
     dlut, _ = Department.objects.get_or_create(raw_department_id=DLUT_ID,
                                                defaults={'name': DLUT_NAME})
     raw_users = TeacherInformation.objects.all()
+    print(raw_users)
     try:
         for raw_user in raw_users:
             user, created = User.all_objects.get_or_create(
                 username=raw_user.zgh)
+            print('+'*100)
             if created:
                 user.set_unusable_password()
             user.first_name = raw_user.jsxm
@@ -161,6 +162,12 @@ def _update_from_teacher_information(dwid_to_department,
                     f'职工号为{user.username}的教师'
                     f'使用了一个系统中不存在的学院{raw_user.xy}'
                 )
+                unexist_department = user.department
+                user.department = None
+                teachers = User.objects.filter(department=unexist_department)
+                for teacher in teachers:
+                    update_user_groups(teacher.groups.remove, user.department,
+                                       dlut)
                 prod_logger.warning(warn_msg)
             elif user.department != dwid_to_department.get(raw_user.xy):
                 if user.department:
@@ -190,7 +197,8 @@ def _update_from_teacher_information(dwid_to_department,
             user.email = raw_user.yxdz
             user.save()
     except Exception:
-        prod_logger.exception(raw_user.zgh)
+        prod_logger.exception('用户信息更新失败,职工号:%s', raw_user.zgh)
+        raise
     prod_logger.info('用户信息更新完毕')
 
 
@@ -198,12 +206,9 @@ def _update_from_teacher_information(dwid_to_department,
 @transaction.atomic()
 def update_teachers_and_departments_information():
     '''Scan table TBL_DW_INFO and TBL_JB_INFO, update related tables.'''
-    try:
-        dwid_to_department, department_id_to_administrative = (
-            _update_from_department_information()
-        )
+    dwid_to_department, department_id_to_administrative = (
+        _update_from_department_information()
+    )
 
-        _update_from_teacher_information(dwid_to_department,
-                                         department_id_to_administrative)
-    except Exception:
-        prod_logger.exception('教师信息或部门信息更新失败')
+    _update_from_teacher_information(dwid_to_department,
+                                     department_id_to_administrative)
