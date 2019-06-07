@@ -19,6 +19,7 @@ INSTALLED_APPS.extend([
     'mock_cas',
 ])
 
+
 # Middlewares
 MIDDLEWARE.extend([
     'infra.middleware.OperationLogMiddleware',
@@ -32,7 +33,7 @@ SECRET_KEY = get_secret_from_file('SECRET_KEY_FILE')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', 'test.feingst.com', 'ctfdpeixun.dlut.edu.cn']
+ALLOWED_HOSTS = ['localhost', 'tmsftt.local', '10.7.23.14']
 INTERNAL_IPS = ['127.0.0.1']
 
 # Database
@@ -132,7 +133,7 @@ MEDIA_ROOT = '/protected-files/'
 MEDIA_URL = '/media/'
 
 # CAS dev settings
-CAS_SERVER_URL = 'https://localhost:8000/mock-cas/'
+CAS_SERVER_URL = 'http://localhost:8000/mock-cas/'
 CAS_IGNORE_REFERER = True
 CAS_REDIRECT_URL = '/'
 CAS_LOGOUT_COMPLETELY = True
