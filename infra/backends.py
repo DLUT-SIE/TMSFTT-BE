@@ -39,7 +39,7 @@ class SOAPEmailBackend(BaseEmailBackend):
             'sys_id': settings.SOAP_AUTH_SYS_ID,
             'module_id': settings.SOAP_AUTH_MODULE_ID,
             'secret_key': secret_key.decode(),
-            'interface_method': settings.SOAP_AUTH_INTERFACE_METHOD,
+            'interface_method': 'email',
 
             # Business-related
             # NOTE: recieve_person_info is the correct parameter name,
