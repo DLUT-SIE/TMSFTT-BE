@@ -97,6 +97,7 @@ MEDIA_URL = '/media/'
 CAS_SERVER_URL = 'http://localhost:8000/mock-cas/'
 CAS_IGNORE_REFERER = True
 CAS_REDIRECT_URL = '/'
+CAS_LOGOUT_COMPLETELY = True
 
 # CORS settings
 CORS_ORIGIN_ALLOW_ALL = True
