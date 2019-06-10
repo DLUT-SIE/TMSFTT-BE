@@ -182,8 +182,7 @@ JWT_AUTH_COOKIE = None
 # SOAP settings
 # TODO(youchen): Update to prod settings
 SOAP_BASE_URL = 'http://message.dlut.edu.cn/mp/service'
-SOAP_AUTH_TP_NAME = 'unknown'
-SOAP_AUTH_SYS_ID = 'unknown'
-SOAP_AUTH_MODULE_ID = 'unknown'
-SOAP_AUTH_SECRET_KEY = 'unknown'
-SOAP_AUTH_INTERFACE_METHOD = 'unknown'
+SOAP_AUTH_TP_NAME = 'ctfdpeixun'
+SOAP_AUTH_SYS_ID = 'mp'
+SOAP_AUTH_MODULE_ID = 'email'
+SOAP_AUTH_SECRET_KEY = get_secret_from_file('SOAP_AUTH_SECRET_KEY_FILE')
