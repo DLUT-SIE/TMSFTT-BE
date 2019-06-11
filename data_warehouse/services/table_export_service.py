@@ -469,8 +469,11 @@ class TableExportService:
         worksheet.write(ptr_r, 1, '院系', style)
         worksheet.write(ptr_r, 2, '工号', style)
         worksheet.write(ptr_r, 3, '姓名', style)
-        worksheet.write(ptr_r, 4, '参与形式', style)
-        worksheet.write(ptr_r, 5, '签到', style)
+        worksheet.write(ptr_r, 4, '电话', style)
+        worksheet.write(ptr_r, 5, '邮箱', style)
+        worksheet.write(ptr_r, 6, '职称', style)
+        worksheet.write(ptr_r, 7, '参与形式', style)
+        worksheet.write(ptr_r, 8, '签到', style)
         # 已报名用户数据
         ptr_r += 1
         for idx, item in enumerate(data):
@@ -481,6 +484,9 @@ class TableExportService:
             worksheet.write(ptr_r, 3,
                             item.user.first_name+item.user.last_name,
                             style_value)
+            worksheet.write(ptr_r, 4, item.user.cell_phone_number, style_value)
+            worksheet.write(ptr_r, 5, item.user.email, style_value)
+            worksheet.write(ptr_r, 6, item.user.technical_title, style_value)
             ptr_r += 1
         # 写入数据
         TableExportService.__write_timestamp(worksheet, ptr_r, 0)

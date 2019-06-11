@@ -246,24 +246,27 @@ class RecordService:
 
             # process the info of users
             for index in range(3, sheet.nrows):
-                isSigned = sheet.cell(index, 5).value
+                isSigned = sheet.cell(index, 8).value
                 if not isSigned:
                     continue
-
-                user_id = int(sheet.cell(index, 2).value)
+                val = sheet.cell(index, 2).value
+                if isinstance(val, str):
+                    username = val
+                else:
+                    username = f'{int(val)}'
 
                 try:
-                    user = User.objects.get(pk=user_id)
+                    user = User.objects.get(username=username)
                 except Exception:
-                    raise BadRequest('第{}行，编号为{}的用户不存在'.format(
-                        index + 1, user_id))
+                    raise BadRequest('第{}行，用户名为{}的用户不存在'.format(
+                        index + 1, username))
 
                 if user in users:
-                    raise Exception('第{}行，编号为{}的用户重复'.format(
-                        index + 1, user_id))
+                    raise Exception('第{}行，用户名为{}的用户重复'.format(
+                        index + 1, username))
                 users.add(user)
 
-                role_str = sheet.cell(index, 4).value
+                role_str = sheet.cell(index, 7).value
                 event_coefficient = coefficients.get(role_str, None)
                 if event_coefficient is None:
                     raise BadRequest('第{}行，不存在的参与形式'.format(
@@ -279,7 +282,6 @@ class RecordService:
                 msg = (f'管理员{admin}创建了用户{user}参加'
                        + f'{campus_event.name}({campus_event.id})活动的培训记录')
                 prod_logger.info(msg)
-
         return len(records)
 
     @staticmethod

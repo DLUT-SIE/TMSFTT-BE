@@ -236,8 +236,8 @@ class TestRecordService(TestCase):
         work_book = xlwt.Workbook()
         sheet = work_book.add_sheet(u'sheet1', cell_overwrite_ok=True)
         sheet.write(0, 1, self.campus_event.id)
-        sheet.write(3, 2, self.user.id+1)
-        sheet.write(3, 5, '6')
+        sheet.write(3, 2, 'not-exist')
+        sheet.write(3, 8, '6')
         work_book.save(tup[1])
         user = mommy.make(User)
         context = {
@@ -255,7 +255,7 @@ class TestRecordService(TestCase):
             excel = work_book.read()
         with self.assertRaisesMessage(
                 BadRequest,
-                '第4行，编号为{}的用户不存在'.format(self.user.id+1)):
+                '第4行，用户名为{}的用户不存在'.format('not-exist')):
             RecordService.create_campus_records_from_excel(excel, context)
 
     def test_create_campus_records_with_bad_role(self):
@@ -264,8 +264,8 @@ class TestRecordService(TestCase):
         work_book = xlwt.Workbook()
         sheet = work_book.add_sheet(u'sheet1', cell_overwrite_ok=True)
         sheet.write(0, 1, self.campus_event.id)
-        sheet.write(3, 2, self.user.id)
-        sheet.write(3, 5, '6')
+        sheet.write(3, 2, self.user.username)
+        sheet.write(3, 8, '6')
         user = mommy.make(User)
         context = {
             'user': user,
@@ -293,9 +293,9 @@ class TestRecordService(TestCase):
         work_book = xlwt.Workbook()
         sheet = work_book.add_sheet(u'sheet1', cell_overwrite_ok=True)
         sheet.write(0, 1, self.campus_event.id)
-        sheet.write(3, 2, self.user.id)
-        sheet.write(3, 4, '参与')
-        sheet.write(3, 5, '6')
+        sheet.write(3, 2, self.user.username)
+        sheet.write(3, 7, '参与')
+        sheet.write(3, 8, '6')
         user = mommy.make(User)
         context = {
             'user': user,

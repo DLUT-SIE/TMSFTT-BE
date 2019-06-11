@@ -349,7 +349,11 @@ class TestTableExportServices(TestCase):
                           department=department,
                           username='201581108',
                           first_name='event',
-                          last_name='event')
+                          last_name='event',
+                          email='a@a.com',
+                          cell_phone_number='123456789',
+                          technical_title='教授'
+                          )
         mock_data = [mommy.make(Enrollment, user=user, campus_event=event)]
 
         file_path = TableExportService.export_attendance_sheet(mock_data)
@@ -362,9 +366,15 @@ class TestTableExportServices(TestCase):
         self.assertEqual(sheet.cell_value(2, 1), '院系')
         self.assertEqual(sheet.cell_value(2, 2), '工号')
         self.assertEqual(sheet.cell_value(2, 3), '姓名')
-        self.assertEqual(sheet.cell_value(2, 4), '参与形式')
-        self.assertEqual(sheet.cell_value(2, 5), '签到')
+        self.assertEqual(sheet.cell_value(2, 4), '电话')
+        self.assertEqual(sheet.cell_value(2, 5), '邮箱')
+        self.assertEqual(sheet.cell_value(2, 6), '职称')
+        self.assertEqual(sheet.cell_value(2, 7), '参与形式')
+        self.assertEqual(sheet.cell_value(2, 8), '签到')
         self.assertEqual(sheet.cell_value(3, 0), 1)
         self.assertEqual(sheet.cell_value(3, 1), '大连理工大学')
         self.assertEqual(sheet.cell_value(3, 2), '201581108')
         self.assertEqual(sheet.cell_value(3, 3), 'eventevent')
+        self.assertEqual(sheet.cell_value(3, 4), '123456789')
+        self.assertEqual(sheet.cell_value(3, 5), 'a@a.com')
+        self.assertEqual(sheet.cell_value(3, 6), '教授')
