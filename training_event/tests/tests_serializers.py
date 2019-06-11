@@ -92,6 +92,7 @@ class TestCampusEventSerializer(TestCase):
         event = mommy.make(CampusEvent, reviewed=True)
         request = Mock()
         user = Mock()
+        user.is_school_admin = False
         request.user = user
         context = {
             'request': request

@@ -112,7 +112,9 @@ class CampusEventSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         '''Forbid update event if reviewed is true.'''
-        if self.instance and self.instance.reviewed:
+        if (self.instance
+                and self.instance.reviewed
+                and not self.context['request'].user.is_school_admin):
             raise serializers.ValidationError(
                 '活动已被学校管理员审核，不可修改')
         return data
