@@ -7,6 +7,12 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework_jwt.settings import api_settings
 
 
+class MockedCASLogoutView(APIView):
+    def get(self, request, *args, **kwargs):
+        print('CAS Logout!')
+        return Response({})
+
+
 class MockedCASLoginView(APIView):
     '''Provide a list of users can be authenticated as.'''
     renderer_classes = (TemplateHTMLRenderer,)
