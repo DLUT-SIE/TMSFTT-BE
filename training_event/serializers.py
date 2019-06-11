@@ -167,5 +167,15 @@ class EnrollmentSerailizer(HumanReadableValidationErrorMixin,
         fields = '__all__'
 
     def create(self, validated_data):
-        validated_data['user'] = self.context['request'].user
         return EnrollmentService.create_enrollment(validated_data)
+
+    def validate(self, data):
+        data['user'] = self.context['request'].user
+        existance = (
+            training_event.models.Enrollment.objects
+            .filter(user=data['user'], campus_event=data['campus_event'])
+            .exists()
+        )
+        if existance:
+            raise serializers.ValidationError('您已报名，请勿重复报名')
+        return data
