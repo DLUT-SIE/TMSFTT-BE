@@ -3,9 +3,11 @@ from rest_framework import serializers
 
 import training_review.models
 from training_review.services import ReviewNoteService
+from infra.mixins import HumanReadableValidationErrorMixin
 
 
-class ReviewNoteSerializer(serializers.ModelSerializer):
+class ReviewNoteSerializer(HumanReadableValidationErrorMixin,
+                           serializers.ModelSerializer):
     '''Indicate how to serialize ReviewNote instance.'''
     user_name = serializers.CharField(source='user.first_name', read_only=True)
 

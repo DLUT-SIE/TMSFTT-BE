@@ -1,12 +1,14 @@
 '''Define how to serialize our models.'''
 from rest_framework import serializers
 
+from infra.mixins import HumanReadableValidationErrorMixin
 from auth.models import Department
 from training_program.models import Program
 from training_program.services import ProgramService
 
 
-class ProgramSerializer(serializers.ModelSerializer):
+class ProgramSerializer(HumanReadableValidationErrorMixin,
+                        serializers.ModelSerializer):
     '''Indicate how to serialize Program instance.'''
 
     class Meta:

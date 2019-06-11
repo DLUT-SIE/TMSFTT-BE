@@ -10,18 +10,21 @@ from rest_framework_bulk import (
 
 import auth.models
 from auth.services import UserGroupService
+from infra.mixins import HumanReadableValidationErrorMixin
 
 User = get_user_model()
 
 
-class DepartmentSerializer(serializers.ModelSerializer):
+class DepartmentSerializer(HumanReadableValidationErrorMixin,
+                           serializers.ModelSerializer):
     '''Indicate how to serialize Department instance.'''
     class Meta:
         model = auth.models.Department
         fields = ('id', 'name')
 
 
-class PermissionSerializer(serializers.ModelSerializer):
+class PermissionSerializer(HumanReadableValidationErrorMixin,
+                           serializers.ModelSerializer):
     '''Indicate how to serialize Permission instance.'''
     label = serializers.CharField(source='name')
 
@@ -30,7 +33,8 @@ class PermissionSerializer(serializers.ModelSerializer):
         fields = ('id', 'codename', 'label')
 
 
-class GroupSerializer(serializers.ModelSerializer):
+class GroupSerializer(HumanReadableValidationErrorMixin,
+                      serializers.ModelSerializer):
     '''Indicate how to serialize Group instance.'''
 
     class Meta:
@@ -39,6 +43,7 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class GroupPermissionSerializer(BulkSerializerMixin,
+                                HumanReadableValidationErrorMixin,
                                 serializers.ModelSerializer):
     '''Indicate how to serialize GroupPermission instance.'''
 
@@ -48,7 +53,8 @@ class GroupPermissionSerializer(BulkSerializerMixin,
         list_serializer_class = BulkListSerializer
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(HumanReadableValidationErrorMixin,
+                     serializers.ModelSerializer):
     '''Indicate how to serialize User instance.'''
     department_str = serializers.CharField(
         source='department.name', read_only=True)
@@ -68,7 +74,8 @@ class UserSerializer(serializers.ModelSerializer):
                   'teaching_type', 'cell_phone_number')
 
 
-class UserGroupSerializer(serializers.ModelSerializer):
+class UserGroupSerializer(HumanReadableValidationErrorMixin,
+                          serializers.ModelSerializer):
     '''Indicate how to serialize UserGroup instance.'''
     user_first_name = serializers.CharField(
         source='user.first_name', read_only=True)

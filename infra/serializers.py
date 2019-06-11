@@ -2,9 +2,11 @@
 from rest_framework import serializers
 
 import infra.models
+from infra.mixins import HumanReadableValidationErrorMixin
 
 
-class NotificationSerializer(serializers.ModelSerializer):
+class NotificationSerializer(HumanReadableValidationErrorMixin,
+                             serializers.ModelSerializer):
     '''Indicate how to serialize Notification instance.'''
     sender = serializers.SlugRelatedField(
         read_only=True, slug_field='first_name'

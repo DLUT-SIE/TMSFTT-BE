@@ -5,10 +5,13 @@ import pytz
 from rest_framework import serializers
 from django.utils.timezone import now
 
+from infra.mixins import HumanReadableValidationErrorMixin
+
 # pylint: disable=W0223
 
 
-class BaseTableExportSerializer(serializers.Serializer):
+class BaseTableExportSerializer(HumanReadableValidationErrorMixin,
+                                serializers.Serializer):
     '''表格导出序列化器的基类'''
     table_type = serializers.IntegerField(required=True)
 
@@ -35,7 +38,8 @@ class TrainingFeedbackSerializer(BaseTableExportSerializer):
         return data
 
 
-class SummaryParametersSerializer(serializers.Serializer):
+class SummaryParametersSerializer(HumanReadableValidationErrorMixin,
+                                  serializers.Serializer):
     '''Serialize parameters for school summary and personal summary.'''
     start_time = serializers.DateTimeField(
         required=False, format=None,

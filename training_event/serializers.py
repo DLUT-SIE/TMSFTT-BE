@@ -1,12 +1,15 @@
 '''Define how to serialize our models.'''
-from rest_framework import serializers
 from django.utils.timezone import now
+from rest_framework import serializers
+
 import training_event.models
 from training_event.services import EnrollmentService, CampusEventService
+from infra.mixins import HumanReadableValidationErrorMixin
 from training_program.serializers import ReadOnlyProgramSerializer
 
 
-class EventCoefficientSerializer(serializers.ModelSerializer):
+class EventCoefficientSerializer(HumanReadableValidationErrorMixin,
+                                 serializers.ModelSerializer):
     '''Indicate how to serialize EventCoefficient instance.'''
     hours_option_str = serializers.CharField(
         source='get_hours_option_display',
@@ -25,7 +28,8 @@ class EventCoefficientSerializer(serializers.ModelSerializer):
                   'hours_option_str', 'workload_option_str', 'role_str')
 
 
-class ReadOnlyCampusEventSerializer(serializers.ModelSerializer):
+class ReadOnlyCampusEventSerializer(HumanReadableValidationErrorMixin,
+                                    serializers.ModelSerializer):
     '''Indicate how to serialize Campus Event instance for reading.'''
     expired = serializers.SerializerMethodField(read_only=True)
     enrolled = serializers.SerializerMethodField(read_only=True)
@@ -91,7 +95,8 @@ class BasicReadOnlyCampusEventSerializer(ReadOnlyCampusEventSerializer):
                   'deadline', 'description')
 
 
-class CampusEventSerializer(serializers.ModelSerializer):
+class CampusEventSerializer(HumanReadableValidationErrorMixin,
+                            serializers.ModelSerializer):
     '''Indicate how to serializer Campus Event instance.'''
     coefficients = serializers.ListField(
         write_only=True, child=serializers.JSONField())
@@ -143,14 +148,16 @@ class CampusEventSerializer(serializers.ModelSerializer):
                                                       self.context)
 
 
-class OffCampusEventSerializer(serializers.ModelSerializer):
+class OffCampusEventSerializer(HumanReadableValidationErrorMixin,
+                               serializers.ModelSerializer):
     '''Indicate how to serialize OffCampusEvent instance.'''
     class Meta:
         model = training_event.models.OffCampusEvent
         fields = '__all__'
 
 
-class EnrollmentSerailizer(serializers.ModelSerializer):
+class EnrollmentSerailizer(HumanReadableValidationErrorMixin,
+                           serializers.ModelSerializer):
     '''Indicate how to serialize Enrollment instance.'''
     user = serializers.PrimaryKeyRelatedField(allow_null=True,
                                               read_only=True)

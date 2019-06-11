@@ -8,6 +8,7 @@ from rest_framework_bulk import (
 )
 
 from infra.utils import format_file_size
+from infra.mixins import HumanReadableValidationErrorMixin
 from training_record.models import (
     Record,
     RecordAttachment,
@@ -28,6 +29,7 @@ from training_event.serializers import (
 
 
 class RecordContentSerializer(BulkSerializerMixin,
+                              HumanReadableValidationErrorMixin,
                               serializers.ModelSerializer):
     '''Indicate how to serialize RecordContent instance.'''
     class Meta:
@@ -37,6 +39,7 @@ class RecordContentSerializer(BulkSerializerMixin,
 
 
 class RecordAttachmentSerializer(BulkSerializerMixin,
+                                 HumanReadableValidationErrorMixin,
                                  serializers.ModelSerializer):
     '''Indicate how to serialize RecordAttachment instance.'''
     path = SecureFileField(perm_name='view_recordattachment')
@@ -47,7 +50,8 @@ class RecordAttachmentSerializer(BulkSerializerMixin,
         list_serializer_class = BulkListSerializer
 
 
-class CampusEventFeedbackSerializer(serializers.ModelSerializer):
+class CampusEventFeedbackSerializer(HumanReadableValidationErrorMixin,
+                                    serializers.ModelSerializer):
     '''Indicate how to serialize CampusEventFeedback instance.'''
     class Meta:
         model = CampusEventFeedback
@@ -65,7 +69,8 @@ class CampusEventFeedbackSerializer(serializers.ModelSerializer):
         return data
 
 
-class ReadOnlyRecordSerializer(serializers.ModelSerializer):
+class ReadOnlyRecordSerializer(HumanReadableValidationErrorMixin,
+                               serializers.ModelSerializer):
     '''Indicate how to serialize Record instance for reading.'''
     status_str = serializers.CharField(source='get_status_display',
                                        read_only=True)
@@ -98,7 +103,8 @@ class ReadOnlyRecordSerializer(serializers.ModelSerializer):
         return is_admin_allowed_operating(self.context['request'], obj)
 
 
-class RecordWriteSerializer(serializers.ModelSerializer):
+class RecordWriteSerializer(HumanReadableValidationErrorMixin,
+                            serializers.ModelSerializer):
     '''Indicate how to serialize Record instance.'''
     off_campus_event = serializers.JSONField(
         binary=True,
@@ -175,7 +181,8 @@ class RecordWriteSerializer(serializers.ModelSerializer):
         return data
 
 
-class StatusChangeLogSerializer(serializers.ModelSerializer):
+class StatusChangeLogSerializer(HumanReadableValidationErrorMixin,
+                                serializers.ModelSerializer):
     '''Indicate how to serialize StatusChangeLog instance.'''
     pre_status_str = serializers.CharField(source='get_pre_status_display')
     post_status_str = serializers.CharField(source='get_post_status_display')

@@ -1,4 +1,5 @@
 '''Mixin classes provided by infra module.'''
+from rest_framework import serializers
 
 
 class MultiSerializerActionClassMixin:
@@ -32,3 +33,29 @@ class MultiSerializerActionClassMixin:
         if serializer_cls is not None:
             return serializer_cls
         return super().get_serializer_class()
+
+
+class HumanReadableValidationErrorMixin:
+    '''Convert field name into human-readable labels in validation errors.
+    {
+        'name': ['Error']
+    }
+    =>
+    {
+        '项目名称': ['Error']
+    }
+    '''
+    def to_internal_value(self, data):
+        '''Convert field name into human-readable labels.'''
+        try:
+            return super().to_internal_value(data)
+        except serializers.ValidationError as exc:
+            fields_errors = exc.detail
+            human_readable_errors = {}
+            for field_name, errors in fields_errors.items():
+                if field_name not in self.fields:
+                    human_readable_errors[field_name] = errors
+                    continue
+                field = self.fields[field_name]
+                human_readable_errors[field.label] = errors
+            raise serializers.ValidationError(human_readable_errors)
