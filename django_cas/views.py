@@ -15,7 +15,6 @@ from django_cas.utils import (
     get_redirect_url,
     get_login_url,
     get_logout_url,
-    logout,
 )
 
 
@@ -74,8 +73,9 @@ class LogoutView(APIView):
 
     def get(self, request):
         '''Log a user out.'''
-        logout(request)
         next_page = request.GET.get('next', get_redirect_url(request))
         if settings.CAS_LOGOUT_COMPLETELY:
             next_page = get_logout_url(request, next_page)
-        return HttpResponseRedirect(next_page)
+        return Response({
+            'url': next_page
+        })

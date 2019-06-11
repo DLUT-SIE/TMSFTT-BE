@@ -125,8 +125,8 @@ class TestLogoutView(APITestCase):
 
         response = self.client.get(url, data=data)
 
-        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
-        self.assertEqual(response.url, next_page)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('url', response.data)
 
     @patch('django_cas.views.settings')
     @patch('django_cas.views.auth')
@@ -137,8 +137,8 @@ class TestLogoutView(APITestCase):
 
         response = self.client.get(url)
 
-        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
-        self.assertEqual(response.url, '/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('url', response.data)
 
     @patch('django_cas.views.get_logout_url')
     @patch('django_cas.views.settings')
@@ -151,5 +151,5 @@ class TestLogoutView(APITestCase):
 
         response = self.client.get(url)
 
-        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
-        self.assertEqual(response.url, '/cas-logout/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('url', response.data)
