@@ -70,6 +70,7 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     '''Class-based CAS logout view.'''
+    permission_classes = (permissions.AllowAny,)
 
     def get(self, request):
         '''Log a user out.'''
