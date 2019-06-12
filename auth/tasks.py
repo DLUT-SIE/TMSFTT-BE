@@ -151,12 +151,14 @@ def _update_from_teacher_information(dwid_to_department,
     prod_logger.info('开始扫描并更新用户信息')
     dlut, _ = Department.objects.get_or_create(raw_department_id=DLUT_ID,
                                                defaults={'name': DLUT_NAME})
+    personal_permission_group, _ = Group.objects.get_or_create(name='个人权限')
     raw_users = TeacherInformation.objects.all()
     try:
         for raw_user in raw_users:
             user, created = User.all_objects.get_or_create(
                 username=raw_user.zgh)
             if created:
+                user.groups.add(personal_permission_group)
                 user.set_unusable_password()
             user.first_name = raw_user.jsxm
             if raw_user.xy not in dwid_to_department:

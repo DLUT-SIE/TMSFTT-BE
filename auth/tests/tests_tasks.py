@@ -124,10 +124,9 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
         # pylint: disable=too-many-locals
 
         departments = [mommy.make(
-            Department, id=idx, raw_department_id=idx,
-            name=f'Department{idx}') for idx in range(1,
-                                                      1 +
-                                                      self.num_departments)]
+            Department, raw_department_id=f'{idx}',
+            name=f'Department{idx}') for idx in range(
+                1, 1 + self.num_departments)]
         for department in departments:
             department.super_department = self.dlut
             group_names = [f'{department.name}-管理员',
@@ -139,17 +138,19 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
         departments[1].super_department = departments[2]
         departments[0].save()
         departments[1].save()
-        groups_set = set()
+        groups_set = {Group.objects.get_or_create(name='个人权限')[0]}
         for idx in range(3):
             groups_set.add(
                 Group.objects.get(name=f'{departments[idx].name}-专任教师'))
         # 由于map是手动生成，mock时保证map中的链路在department自连接中存在
         department_id_to_administrative = {
-            dep.id: departments[dep.id - 1] for dep in departments}
-        department_id_to_administrative[departments[0].id] = departments[2]
+            dep.id: departments[idx]
+            for idx, dep in enumerate(departments)}
+        department_id_to_administrative[departments[0].id] = departments[1]
         department_id_to_administrative[departments[1].id] = departments[2]
 
-        dwid_to_department = {f'{dep.id}': dep for dep in departments}
+        dwid_to_department = {
+            f'{dep.raw_department_id}': dep for dep in departments}
         csrq = '1980-01-01'
         birthday = make_aware(datetime.strptime(csrq, '%Y-%m-%d'))
         age = (now() - birthday).days // 365
