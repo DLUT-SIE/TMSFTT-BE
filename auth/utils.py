@@ -222,7 +222,8 @@ def assign_model_perms_for_department(department):
 
     for model_class, perm_pairs in model_perms.items():
         for role, perms in perm_pairs.items():
-            group = Group.objects.get(name=f'{department.name}-{role}')
+            group = Group.objects.get(name=(
+                f'{department.name}-{department.raw_department_id}-{role}'))
             for perm in perms:
                 perm_name = (
                     f'{model_class._meta.app_label}.'

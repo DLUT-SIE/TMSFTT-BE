@@ -50,7 +50,9 @@ prod_logger.setLevel(logging.WARNING)
 
 cached_groups = {}
 def get_or_create_group(department, group_type):
-    group_name = f'{department.name}-{group_type}'
+    group_name = (
+        f'{department.name}-{department.raw_department_id}-{group_type}'
+    )
     if group_name not in cached_groups:
         group, _ = Group.objects.get_or_create(name=group_name)
         cached_groups[group_name] = group
@@ -307,11 +309,12 @@ def read_teachers_information(
         administrative_department = user.administrative_department
 
         while department != administrative_department:
-            handler(Group.objects.get(
-                name=f'{department.name}-专任教师'))
+            handler(Group.objects.get(name=(
+                f'{department.name}-{department.raw_department_id}-专任教师'))
+            )
             department = department.super_department
         handler(Group.objects.get(
-            name=f'{department.name}-专任教师'))
+            name=f'{department.name}-{department.raw_department_id}-专任教师'))
 
     for idx in tqdm(range(2, num_rows)):
         row = sheet.row_values(idx)

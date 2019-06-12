@@ -21,16 +21,19 @@ User = get_user_model()
 class TestRecordsStatisticsService(TestCase):
     '''Test services provided by RecordsStatisticsService.'''
     def setUp(self):
-        self.dlut_group = mommy.make(Group, name="大连理工大学-管理员")
+        self.dlut_group = mommy.make(Group, name="大连理工大学-10141-管理员")
         self.department_dlut = mommy.make(
             Department, name='大连理工大学', id=1,
+            raw_department_id='10141',
             create_time=now(), update_time=now())
         top_department = mommy.make(
             Department, name='凌水主校区',
+            raw_department_id='11',
             super_department=self.department_dlut,
             create_time=now(), update_time=now())
         self.department_art = mommy.make(
             Department, name='建筑与艺术学院', id=50,
+            raw_department_id='22',
             super_department=top_department,
             department_type='T3',
             create_time=now(), update_time=now())
@@ -103,8 +106,9 @@ class TestRecordsStatisticsService(TestCase):
             'start_time': '2019-01-01',
             'end_time': '2016-01-01'
         }
-        art_group = mommy.make(Group, name='建筑与艺术学院-管理员')
-        art_user = mommy.make(User)
+        art_group = mommy.make(Group, name='建筑与艺术学院-22-管理员')
+        art_user = mommy.make(
+            User, administrative_department=self.department_art)
         art_user.groups.add(art_group)
         with self.assertRaisesMessage(BadRequest, '错误的参数'):
             RecordsStatisticsService.get_records_by_time_department(

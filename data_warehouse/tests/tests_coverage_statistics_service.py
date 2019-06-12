@@ -24,6 +24,7 @@ class TestCoverageStatisticsService(TestCase):
             '管理学院'
             )
         cls.mock_depts = []
+        cls.dept_to_dwid = {}
         for raw_dept_id, dept_name in enumerate(cls.mock_dept_name):
             cls.mock_depts.append(
                 mommy.make(
@@ -32,6 +33,7 @@ class TestCoverageStatisticsService(TestCase):
                     raw_department_id=raw_dept_id
                 )
             )
+            cls.dept_to_dwid[dept_name] = raw_dept_id
         cls.mock_school = mommy.make(
             Department,
             name='大连理工大学',
@@ -125,11 +127,11 @@ class TestCoverageStatisticsService(TestCase):
         # mock校级管理员 & 创新创业学院管理员
         cls.super_admin_group = mommy.make(
             Group,
-            name='大连理工大学-管理员'
+            name=f'大连理工大学-999-管理员'
         )
         cls.sie_admin_group = mommy.make(
             Group,
-            name='创新创业学院-管理员'
+            name=f'创新创业学院-{cls.dept_to_dwid["创新创业学院"]}-管理员'
         )
         cls.school_admin = mommy.make(
             User,

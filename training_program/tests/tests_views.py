@@ -19,11 +19,14 @@ class TestProgram(APITestCase):
     '''Unit tests for Program view.'''
     @classmethod
     def setUpTestData(cls):
-        cls.depart = mommy.make(auth.models.Department, name="创新创业学院")
+        cls.depart = mommy.make(
+            auth.models.Department, name="创新创业学院",
+            raw_department_id='22')
         cls.dlut_depart = mommy.make(
-            auth.models.Department, name='大连理工大学')
+            auth.models.Department, name='大连理工大学',
+            raw_department_id='10141')
         cls.user = mommy.make(User, department=cls.depart)
-        cls.group = mommy.make(Group, name="创新创业学院-管理员")
+        cls.group = mommy.make(Group, name="创新创业学院-22-管理员")
         cls.user.groups.add(cls.group)
         mommy.make(Group, name="个人权限")
         assign_perm('training_program.add_program', cls.group)

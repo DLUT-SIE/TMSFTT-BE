@@ -124,7 +124,8 @@ class GroupService:
             search_list = list(Department.objects.filter(
                 super_department__in=[d.id for d in search_list]))
             departments.extend(search_list)
-        regex = '^({})'.format('|'.join(d.name for d in departments))
+        regex = '^({})'.format('|'.join(
+            f'{d.name}-{d.raw_department_id}-' for d in departments))
         return Group.objects.filter(name__regex=regex)
 
 

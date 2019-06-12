@@ -24,7 +24,7 @@ User = get_user_model()
 class TestAggregateDataService(TestCase):
     '''Test services provided by AggregateDataService.'''
     def setUp(self):
-        self.dlut_group = mommy.make(Group, name="大连理工大学-管理员")
+        self.dlut_group = mommy.make(Group, name="大连理工大学-10141-管理员")
         self.user = mommy.make(
             User,
             administrative_department__name='test'

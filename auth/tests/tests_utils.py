@@ -121,9 +121,9 @@ class TestChoiceConverter(TestCase):
         '''Should assign model perms to department groups.'''
         department = mommy.make(Department, name='A')
         teachers_group = Group.objects.create(
-            name=f'{department.name}-专任教师')
+            name=f'{department.name}-{department.raw_department_id}-专任教师')
         admins_group = Group.objects.create(
-            name=f'{department.name}-管理员')
+            name=f'{department.name}-{department.raw_department_id}-管理员')
 
         assign_model_perms_for_department(department)
 

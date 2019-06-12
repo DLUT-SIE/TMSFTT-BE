@@ -17,14 +17,14 @@ DLUT_ID = '10141'
 DLUT_NAME = '大连理工大学'
 
 
-def update_user_groups(handler, trace_department, dlut):
+def update_user_groups(handler, dep, dlut):
     '''增删某一群用户的department链上的group'''
-    while trace_department.raw_department_id != dlut.raw_department_id:
+    while dep.raw_department_id != dlut.raw_department_id:
         handler(Group.objects.get(
-            name=f'{trace_department.name}-专任教师'))
-        trace_department = trace_department.super_department
+            name=f'{dep.name}-{dep.raw_department_id}-专任教师'))
+        dep = dep.super_department
     handler(Group.objects.get(
-        name=f'{trace_department.name}-专任教师'))
+        name=f'{dep.name}-{dep.raw_department_id}-专任教师'))
 
 
 def _update_from_department_information():
@@ -56,8 +56,10 @@ def _update_from_department_information():
 
     def update_group_and_perms(department, created):
         # 同步group
-        group_names = [f'{department.name}-管理员',
-                       f'{department.name}-专任教师']
+        group_names = [
+            f'{department.name}-{department.raw_department_id}-管理员',
+            f'{department.name}-{department.raw_department_id}-专任教师',
+        ]
         for group_name in group_names:
             Group.objects.get_or_create(name=group_name)
         if created:
@@ -115,11 +117,14 @@ def _update_from_department_information():
 
             # 同步单位名称
             if department.name != raw_department.dwmc:
+                name_prefix = (
+                    f'{department.name}-{department.raw_department_id}-'
+                )
                 related_groups = Group.objects.filter(
-                    name__startswith=f'{department.name}-')
+                    name__startswith=name_prefix)
                 for group in related_groups:
-                    _, suffix = group.name.split('-')
-                    group.name = f'{raw_department.dwmc}-{suffix}'
+                    _, dwid, suffix = group.name.split('-')
+                    group.name = f'{raw_department.dwmc}-{dwid}-{suffix}'
                     group.save()
                 department.name = raw_department.dwmc
                 updated = True

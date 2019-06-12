@@ -29,7 +29,8 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
         cls.dlut = Department.objects.create(raw_department_id=cls.dlut_id,
                                              name=cls.dlut_name)
         cls.dlut_set = set()
-        cls.dlut_group = Group.objects.create(name=f'{cls.dlut_name}-专任教师')
+        cls.dlut_group = Group.objects.create(
+            name=f'{cls.dlut_name}-{cls.dlut_id}-专任教师')
         cls.dlut_set.add(cls.dlut_group)
 
     @patch('auth.tasks.prod_logger')
@@ -129,8 +130,9 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
                 1, 1 + self.num_departments)]
         for department in departments:
             department.super_department = self.dlut
-            group_names = [f'{department.name}-管理员',
-                           f'{department.name}-专任教师']
+            group_names = [
+                f'{department.name}-{department.raw_department_id}-管理员',
+                f'{department.name}-{department.raw_department_id}-专任教师']
             for group_name in group_names:
                 Group.objects.get_or_create(name=group_name)
             department.save()
@@ -140,8 +142,9 @@ class TestUpdateTeachersAndDepartmentsInformation(TestCase):
         departments[1].save()
         groups_set = {Group.objects.get_or_create(name='个人权限')[0]}
         for idx in range(3):
-            groups_set.add(
-                Group.objects.get(name=f'{departments[idx].name}-专任教师'))
+            groups_set.add(Group.objects.get(name=(
+                f'{departments[idx].name}-{departments[idx].raw_department_id}'
+                '-专任教师')))
         # 由于map是手动生成，mock时保证map中的链路在department自连接中存在
         department_id_to_administrative = {
             dep.id: departments[idx]

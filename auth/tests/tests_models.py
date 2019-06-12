@@ -44,7 +44,7 @@ class TestUser(TestCase):
     def test_is_school_admin(self):
         '''Should return True if user is a school admin.'''
         user = mommy.make(auth.models.User)
-        group = mommy.make(Group, name="大连理工大学-管理员")
+        group = mommy.make(Group, name="大连理工大学-10141-管理员")
         user.groups.add(group)
 
         self.assertFalse(user.is_teacher)
@@ -53,10 +53,12 @@ class TestUser(TestCase):
 
     def test_check_department_admin(self):
         '''Should return True if user is a exact department admin.'''
-        department1 = mommy.make(Department, name="创新创业学院")
-        department2 = mommy.make(Department, name="机械工程学院")
+        department1 = mommy.make(Department, raw_department_id='11',
+                                 name="创新创业学院")
+        department2 = mommy.make(Department, raw_department_id='22',
+                                 name="机械工程学院")
         user = mommy.make(auth.models.User)
-        group = mommy.make(Group, name="创新创业学院-管理员")
+        group = mommy.make(Group, name="创新创业学院-11-管理员")
         user.groups.add(group)
 
         self.assertTrue(user.check_department_admin(department1))

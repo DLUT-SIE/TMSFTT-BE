@@ -140,11 +140,13 @@ class User(AbstractUser):
     def is_school_admin(self):
         '''Field to indicate whether the user is a superadmin.'''
         return self.is_staff or self.is_superuser or self.groups.filter(
-            name='大连理工大学-管理员').exists()
+            name='大连理工大学-10141-管理员').exists()
 
     def check_department_admin(self, department):
         '''check department admin.'''
-        return self.groups.filter(name=f'{department.name}-管理员').exists()
+        return self.groups.filter(
+            name=(f'{department.name}-{department.raw_department_id}-管理员')
+        ).exists()
 
 
 class UserGroup(models.Model):

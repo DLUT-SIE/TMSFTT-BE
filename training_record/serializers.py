@@ -139,6 +139,7 @@ class RecordWriteSerializer(HumanReadableValidationErrorMixin,
                   'attachments', 'feedback', 'role')
 
     def validate_off_campus_event(self, data):
+        '''Use serializer to validate off_campus_event.'''
         off_campus_event_serializer = OffCampusEventSerializer(data=data)
         off_campus_event_serializer.is_valid(raise_exception=True)
         return off_campus_event_serializer.validated_data
