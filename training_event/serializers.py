@@ -136,6 +136,8 @@ class CampusEventSerializer(HumanReadableValidationErrorMixin,
     def create(self, validated_data):
         '''Create event and event coefficient.'''
         coefficients = validated_data.pop('coefficients')
+        if self.context['request'].user.is_school_admin:
+            validated_data['reviewed'] = True
         return CampusEventService.create_campus_event(
             validated_data, coefficients, self.context)
 
