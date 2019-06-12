@@ -2,7 +2,7 @@
 import tempfile
 import xlrd
 
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 
@@ -195,6 +195,8 @@ class RecordService:
         return record
 
     # pylint: disable=too-many-locals
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-statements
     @staticmethod
     def create_campus_records_from_excel(file, context):
         '''Create training records of campus training event.
@@ -223,70 +225,78 @@ class RecordService:
                 work_book.write(file)
             # open excel and get the first sheet
             sheet = xlrd.open_workbook(tup[1]).sheet_by_index(0)
-        except Exception:
+
+            with transaction.atomic():
+                # get event from sheet
+                event_id = int(sheet.cell(0, 1).value)
+                try:
+                    campus_event = CampusEvent.objects.get(pk=event_id)
+                except Exception:
+                    raise BadRequest('编号为{}的活动不存在'.format(event_id))
+
+                if not campus_event.reviewed:
+                    raise BadRequest('培训活动还未经学校管理员审核')
+
+                admin = context['user']
+                if not admin.has_perm(
+                        'training_event.change_campusevent', campus_event):
+                    raise BadRequest('您没有为对应培训活动创建培训记录的权限')
+
+                # get coefficient from sheet
+                coefficients = {
+                    x.get_role_display(): x
+                    for x in EventCoefficient.objects.filter(
+                        campus_event_id=event_id)
+                }
+
+                # process the info of users
+                for index in range(3, sheet.nrows):
+                    isSigned = sheet.cell(index, 8).value
+                    if not isSigned:
+                        continue
+                    val = sheet.cell(index, 2).value
+                    if isinstance(val, str):
+                        username = val
+                    else:
+                        username = f'{int(val)}'
+
+                    try:
+                        user = User.objects.get(username=username)
+                    except Exception:
+                        raise BadRequest('第{}行，用户名为{}的用户不存在'.format(
+                            index + 1, username))
+
+                    if user in users:
+                        raise BadRequest('第{}行，用户名为{}的用户重复'.format(
+                            index + 1, username))
+                    users.add(user)
+
+                    role_str = sheet.cell(index, 7).value
+                    event_coefficient = coefficients.get(role_str, None)
+                    if event_coefficient is None:
+                        raise BadRequest('第{}行，不存在的参与形式'.format(
+                            index + 1))
+                    try:
+                        record = Record.objects.create(
+                            campus_event=campus_event, user=user,
+                            status=Record.STATUS_FEEDBACK_REQUIRED,
+                            event_coefficient=event_coefficient)
+                    except IntegrityError:
+                        raise BadRequest('第{}行，已经存在用户名为{}的用户参加该活动的培训记录'.format(
+                            index + 1, username))
+
+                    PermissionService.assign_object_permissions(user, record)
+                    records.add(record)
+
+                    msg = (f'管理员{admin}创建了用户{user}参加'
+                           + f'{campus_event.name}({campus_event.id})活动的培训记录')
+                    prod_logger.info(msg)
+
+        except Exception as exc:
+            if isinstance(exc, (BadRequest, IntegrityError)):
+                raise
             raise BadRequest('无效的表格')
 
-        with transaction.atomic():
-            # get event from sheet
-            event_id = int(sheet.cell(0, 1).value)
-            try:
-                campus_event = CampusEvent.objects.get(pk=event_id)
-            except Exception:
-                raise BadRequest('编号为{}的活动不存在'.format(event_id))
-
-            if not campus_event.reviewed:
-                raise BadRequest('培训活动还未经学校管理员审核')
-
-            admin = context['user']
-            if not admin.has_perm(
-                    'training_event.change_campusevent', campus_event):
-                raise BadRequest('您没有为对应培训活动创建培训记录的权限')
-
-            # get coefficient from sheet
-            coefficients = {
-                x.get_role_display(): x
-                for x in EventCoefficient.objects.filter(
-                    campus_event_id=event_id)
-            }
-
-            # process the info of users
-            for index in range(3, sheet.nrows):
-                isSigned = sheet.cell(index, 8).value
-                if not isSigned:
-                    continue
-                val = sheet.cell(index, 2).value
-                if isinstance(val, str):
-                    username = val
-                else:
-                    username = f'{int(val)}'
-
-                try:
-                    user = User.objects.get(username=username)
-                except Exception:
-                    raise BadRequest('第{}行，用户名为{}的用户不存在'.format(
-                        index + 1, username))
-
-                if user in users:
-                    raise Exception('第{}行，用户名为{}的用户重复'.format(
-                        index + 1, username))
-                users.add(user)
-
-                role_str = sheet.cell(index, 7).value
-                event_coefficient = coefficients.get(role_str, None)
-                if event_coefficient is None:
-                    raise BadRequest('第{}行，不存在的参与形式'.format(
-                        index + 1))
-
-                record = Record.objects.create(
-                    campus_event=campus_event, user=user,
-                    status=Record.STATUS_FEEDBACK_REQUIRED,
-                    event_coefficient=event_coefficient)
-                PermissionService.assign_object_permissions(user, record)
-                records.add(record)
-
-                msg = (f'管理员{admin}创建了用户{user}参加'
-                       + f'{campus_event.name}({campus_event.id})活动的培训记录')
-                prod_logger.info(msg)
         return len(records)
 
     @staticmethod
