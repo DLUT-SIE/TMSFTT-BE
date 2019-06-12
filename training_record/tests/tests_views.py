@@ -187,7 +187,9 @@ class TestRecordViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_department_admin_review(self):
+    @patch('training_record.services.NotificationService'
+           '.send_system_notification')
+    def test_department_admin_review(self, _):
         '''Should call department_admin_review.'''
         off_campus_event = mommy.make(training_event.models.OffCampusEvent)
         record = mommy.make(training_record.models.Record,
@@ -207,7 +209,9 @@ class TestRecordViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    def test_school_admin_review(self):
+    @patch('training_record.services.NotificationService'
+           '.send_system_notification')
+    def test_school_admin_review(self, _):
         '''Should call department_admin_review.'''
         off_campus_event = mommy.make(training_event.models.OffCampusEvent)
         record = mommy.make(training_record.models.Record,
@@ -227,7 +231,9 @@ class TestRecordViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    def test_close_record(self):
+    @patch('training_record.services.NotificationService'
+           '.send_system_notification')
+    def test_close_record(self, _):
         '''Should call close_record.'''
         off_campus_event = mommy.make(training_event.models.OffCampusEvent)
         record = mommy.make(training_record.models.Record,

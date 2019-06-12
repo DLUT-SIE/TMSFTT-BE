@@ -20,9 +20,11 @@ class TestCampusEventViewSet(APITestCase):
     '''Unit tests for CampusEvent view.'''
     @classmethod
     def setUpTestData(cls):
-        cls.depart = mommy.make(auth.models.Department, name="创新创业学院")
+        cls.depart = mommy.make(
+            auth.models.Department, name="创新创业学院",
+            raw_department_id='22')
         cls.user = mommy.make(User, department=cls.depart)
-        cls.group = mommy.make(Group, name="创新创业学院-管理员")
+        cls.group = mommy.make(Group, name="创新创业学院-22-管理员")
         cls.user.groups.add(cls.group)
         mommy.make(Group, name="个人权限")
         assign_perm('training_event.add_campusevent', cls.group)

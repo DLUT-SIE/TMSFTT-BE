@@ -37,7 +37,7 @@ def admin_required(mode='admin'):
                 if not user.is_school_admin:
                     raise BadRequest('你不是校级管理员。')
             elif mode == 'admin':
-                if not user.is_school_admin or not user.is_department_admin:
+                if not user.is_school_admin and not user.is_department_admin:
                     raise BadRequest('你不是管理员。')
             else:
                 raise ValueError('装饰器参数错误，mode只能是school_admin'

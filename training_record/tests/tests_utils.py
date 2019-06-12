@@ -55,24 +55,20 @@ class TestIsUserAllowedOperating(TestCase):
     def test_user_can_operate(self):
         '''User should be allowed to operate.'''
         user = Mock()
-        request = Mock()
-        request.user = user
         record = Mock()
         record.user = user
         record.status = models.Record.STATUS_SUBMITTED
 
-        self.assertEqual(is_user_allowed_operating(request, record), True)
+        self.assertEqual(is_user_allowed_operating(user, record), True)
 
     def test_user_can_not_operate(self):
         '''User should not be allowed to operate.'''
         user = Mock()
-        request = Mock()
-        request.user = user
         record = Mock()
         record.user = user
         record.status = models.Record.STATUS_CLOSED
 
-        self.assertEqual(is_user_allowed_operating(request, record), False)
+        self.assertEqual(is_user_allowed_operating(user, record), False)
 
 
 class TestIsAdminAllowedOperating(TestCase):
@@ -80,51 +76,43 @@ class TestIsAdminAllowedOperating(TestCase):
     def test_department_admin_can_operate(self):
         '''Department admin should be allowed to operate.'''
         user = Mock()
-        request = Mock()
-        request.user = user
-        request.user.is_department_admin = True
-        request.user.is_school_admin = False
+        user.is_department_admin = True
+        user.is_school_admin = False
         record = Mock()
         record.status = models.Record.STATUS_SUBMITTED
 
         self.assertEqual(
-            is_admin_allowed_operating(request, record), True)
+            is_admin_allowed_operating(user, record), True)
 
     def test_department_admin_can_not_operate(self):
         '''Department admin should not be allowed to operate.'''
         user = Mock()
-        request = Mock()
-        request.user = user
-        request.user.is_department_admin = True
-        request.user.is_school_admin = False
+        user.is_department_admin = True
+        user.is_school_admin = False
         record = Mock()
         record.status = models.Record.STATUS_SCHOOL_ADMIN_APPROVED
 
         self.assertEqual(
-            is_admin_allowed_operating(request, record), False)
+            is_admin_allowed_operating(user, record), False)
 
     def test_school_admin_can_operate(self):
         '''School admin should be allowed to operate.'''
         user = Mock()
-        request = Mock()
-        request.user = user
-        request.user.is_school_admin = True
-        request.user.is_department_admin = False
+        user.is_school_admin = True
+        user.is_department_admin = False
         record = Mock()
         record.status = models.Record.STATUS_DEPARTMENT_ADMIN_APPROVED
 
         self.assertEqual(
-            is_admin_allowed_operating(request, record), True)
+            is_admin_allowed_operating(user, record), True)
 
     def test_school_admin_can_not_operate(self):
         '''School admin should not be allowed to operate.'''
         user = Mock()
-        request = Mock()
-        request.user = user
-        request.user.is_school_admin = True
-        request.user.is_department_admin = False
+        user.is_school_admin = True
+        user.is_department_admin = False
         record = Mock()
         record.status = models.Record.STATUS_SUBMITTED
 
         self.assertEqual(
-            is_admin_allowed_operating(request, record), False)
+            is_admin_allowed_operating(user, record), False)

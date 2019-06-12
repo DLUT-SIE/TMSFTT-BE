@@ -97,7 +97,7 @@ def get_dlut_admin():
     return user
 
 def get_dlut_admin_group():
-    return Group.objects.get_or_create(name='大连理工大学-管理员')[0]
+    return Group.objects.get_or_create(name='大连理工大学-10141-管理员')[0]
 
 
 def get_personal_permissions_group():
@@ -466,8 +466,12 @@ def populate(base='~/Desktop/TMSFTT'):
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         populate()
-    elif len(sys.argv) == 2 and sys.argv[1] == 'initial':
+    elif len(sys.argv) == 2:
+        cmd = sys.argv[1]
         with transaction.atomic():
-            populate_initial_data()
+            if cmd == 'initial':
+                populate_initial_data()
+            elif cmd =='special_model_perms':
+                assign_model_perms_for_special_groups()
     else:
         populate(sys.argv[1])

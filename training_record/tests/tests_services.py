@@ -1,7 +1,7 @@
 '''Unit tests for training_record services.'''
 import io
 import tempfile
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import xlwt
 
 from django.test import TestCase
@@ -337,19 +337,12 @@ class TestRecordService(TestCase):
                 BadRequest, '无权更改'):
             RecordService.department_admin_review(record.id, True, user)
 
-    def test_department_admin_review_no_request_data(self):
-        '''Should raise BadRequest if request data not has approve field.'''
-        off_campus_event = mommy.make(OffCampusEvent)
-        record = mommy.make(Record,
-                            off_campus_event=off_campus_event,
-                            status=Record.STATUS_SUBMITTED)
-        user = mommy.make(get_user_model())
-        with self.assertRaisesMessage(
-                BadRequest, '请求无效'):
-            RecordService.department_admin_review(record.id, None, user)
-
-    def test_department_admin_review_approve(self):
+    @patch('training_record.services.NotificationService'
+           '.send_system_notification')
+    @patch('training_record.services.is_admin_allowed_operating')
+    def test_department_admin_review_approve(self, mocked_allow, _):
         '''Should change the status of off-campus training record.'''
+        mocked_allow.return_value = True
         off_campus_event = mommy.make(OffCampusEvent)
         record = mommy.make(Record,
                             off_campus_event=off_campus_event,
@@ -360,8 +353,12 @@ class TestRecordService(TestCase):
         self.assertEqual(result.status,
                          Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
 
-    def test_department_admin_review_reject(self):
+    @patch('training_record.services.NotificationService'
+           '.send_system_notification')
+    @patch('training_record.services.is_admin_allowed_operating')
+    def test_department_admin_review_reject(self, mocked_allow, _):
         '''Should change the status of off-campus training record.'''
+        mocked_allow.return_value = True
         off_campus_event = mommy.make(OffCampusEvent)
         record = mommy.make(Record,
                             off_campus_event=off_campus_event,
@@ -402,11 +399,15 @@ class TestRecordService(TestCase):
                             status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
         user = mommy.make(get_user_model())
         with self.assertRaisesMessage(
-                BadRequest, '请求无效'):
+                BadRequest, '无权更改'):
             RecordService.school_admin_review(record.id, None, user)
 
-    def test_school_admin_review_approve(self):
+    @patch('training_record.services.NotificationService'
+           '.send_system_notification')
+    @patch('training_record.services.is_admin_allowed_operating')
+    def test_school_admin_review_approve(self, mocked_allow, _):
         '''Should change the status of off-campus training record.'''
+        mocked_allow.return_value = True
         off_campus_event = mommy.make(OffCampusEvent)
         record = mommy.make(Record,
                             off_campus_event=off_campus_event,
@@ -416,8 +417,12 @@ class TestRecordService(TestCase):
 
         self.assertEqual(result.status, Record.STATUS_SCHOOL_ADMIN_APPROVED)
 
-    def test_school_admin_review_reject(self):
+    @patch('training_record.services.NotificationService'
+           '.send_system_notification')
+    @patch('training_record.services.is_admin_allowed_operating')
+    def test_school_admin_review_reject(self, mocked_allow, _):
         '''Should change the status of off-campus training record.'''
+        mocked_allow.return_value = True
         off_campus_event = mommy.make(OffCampusEvent)
         record = mommy.make(Record,
                             off_campus_event=off_campus_event,
@@ -438,18 +443,9 @@ class TestRecordService(TestCase):
                 BadRequest, '无此培训记录'):
             RecordService.close_record(record.id, user)
 
-    def test_close_record_no_permission(self):
-        '''Should raise BadRequest if no enough permission.'''
-        off_campus_event = mommy.make(OffCampusEvent)
-        record = mommy.make(Record,
-                            off_campus_event=off_campus_event,
-                            status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
-        user = mommy.make(get_user_model())
-        with self.assertRaisesMessage(
-                BadRequest, '无权更改'):
-            RecordService.close_record(record.id, user)
-
-    def test_close_record_succeed(self):
+    @patch('training_record.services.NotificationService'
+           '.send_system_notification')
+    def test_close_record_succeed(self, _):
         '''Should close the off-campus training record.'''
         off_campus_event = mommy.make(OffCampusEvent)
         record = mommy.make(Record,

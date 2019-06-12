@@ -48,7 +48,7 @@ class TestUser(TestCase):
         user.groups.add(group)
 
         self.assertFalse(user.is_teacher)
-        self.assertTrue(user.is_department_admin)
+        self.assertFalse(user.is_department_admin)
         self.assertTrue(user.is_school_admin)
 
     def test_check_department_admin(self):

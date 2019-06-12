@@ -143,7 +143,7 @@ class CampusEventSerializer(HumanReadableValidationErrorMixin,
 
     def update(self, instance, validated_data):
         '''Update event and event coefficient.'''
-        coefficients = validated_data.pop('coefficients')
+        coefficients = validated_data.pop('coefficients', [])
         return CampusEventService.update_campus_event(instance,
                                                       validated_data,
                                                       coefficients,

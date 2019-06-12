@@ -8,11 +8,13 @@ from django.utils.timezone import now
 
 from auth.services import PermissionService
 from infra.utils import prod_logger
+from infra.services import NotificationService
 from infra.exceptions import BadRequest
 from training_record.models import (
     Record, RecordContent, RecordAttachment,
     CampusEventFeedback, StatusChangeLog
 )
+from training_record.utils import is_admin_allowed_operating
 from training_event.models import OffCampusEvent, CampusEvent, EventCoefficient
 
 
@@ -312,14 +314,12 @@ class RecordService:
                       .objects
                       .select_for_update()
                       .filter(pk=record_id, campus_event__isnull=True))
-            if len(record) != 1:
+            if not record:
                 raise BadRequest('无此培训记录')
             record = record[0]
-            if record.status != Record.STATUS_SUBMITTED:
+            if not is_admin_allowed_operating(user, record):
                 raise BadRequest('无权更改')
             pre_status = record.status
-            if is_approved is None:
-                raise BadRequest('请求无效')
             if is_approved:
                 record.status = Record.STATUS_DEPARTMENT_ADMIN_APPROVED
             else:
@@ -332,6 +332,11 @@ class RecordService:
                 time=now(),
                 user=user)
             record.save()
+            msg = (
+                '您有一条培训记录已被院系管理员审核，'
+                f'当前状态：{record.get_status_display()}'
+            )
+            NotificationService.send_system_notification(record.user, msg)
         return record
 
     @staticmethod
@@ -359,14 +364,12 @@ class RecordService:
                       .objects
                       .select_for_update()
                       .filter(pk=record_id, campus_event__isnull=True))
-            if len(record) != 1:
+            if not record:
                 raise BadRequest('无此培训记录')
             record = record[0]
-            if record.status != Record.STATUS_DEPARTMENT_ADMIN_APPROVED:
+            if not is_admin_allowed_operating(user, record):
                 raise BadRequest('无权更改')
             pre_status = record.status
-            if is_approved is None:
-                raise BadRequest('请求无效')
             if is_approved:
                 record.status = Record.STATUS_SCHOOL_ADMIN_APPROVED
             else:
@@ -379,6 +382,11 @@ class RecordService:
                 time=now(),
                 user=user)
             record.save()
+            msg = (
+                '您有一条培训记录已被学校管理员审核，'
+                f'当前状态：{record.get_status_display()}'
+            )
+            NotificationService.send_system_notification(record.user, msg)
         return record
 
     @staticmethod
@@ -404,12 +412,9 @@ class RecordService:
                       .objects
                       .select_for_update()
                       .filter(pk=record_id, campus_event__isnull=True))
-            if len(record) != 1:
+            if not record:
                 raise BadRequest('无此培训记录')
             record = record[0]
-            if ((record.status == Record.STATUS_SCHOOL_ADMIN_APPROVED) |
-                    (record.status == Record.STATUS_CLOSED)):
-                raise BadRequest('无权更改')
             pre_status = record.status
             record.status = Record.STATUS_CLOSED
             post_status = record.status
@@ -420,6 +425,8 @@ class RecordService:
                 time=now(),
                 user=user)
             record.save()
+            msg = '您有一条培训记录已被关闭，该记录将无法再进行后续流程。'
+            NotificationService.send_system_notification(record.user, msg)
         return record
 
     @staticmethod

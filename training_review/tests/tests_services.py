@@ -18,9 +18,10 @@ User = get_user_model()
 class TestReviewNoteService(APITestCase):
     '''Test services provided by ReviewNoteService.'''
     def setUp(self):
-        depart = mommy.make(Department, name="创新创业学院")
+        depart = mommy.make(Department, name="创新创业学院",
+                            raw_department_id='222')
         group1 = mommy.make(Group, name="个人权限")
-        group2 = mommy.make(Group, name="创新创业学院-管理员")
+        group2 = mommy.make(Group, name="创新创业学院-222-管理员")
         off_campus_event_instance = mommy.make(OffCampusEvent)
         self.user1 = mommy.make(User, department=depart)
         self.user2 = mommy.make(User)

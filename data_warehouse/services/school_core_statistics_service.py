@@ -34,7 +34,8 @@ class SchoolCoreStatisticsService:
         res = {
             'timestamp': current_time,
             'available_to_enroll': (
-                CampusEvent.objects.filter(deadline__gt=current_time).count()
+                CampusEvent.objects.filter(
+                    deadline__gt=current_time, reviewed=True).count()
             ),
         }
         cache.set(cache_key, res, 8 * 3600)

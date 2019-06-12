@@ -134,7 +134,11 @@ class User(AbstractUser):
     @property
     def is_department_admin(self):
         '''Field to indicate whether the user is a department admin.'''
-        return self.groups.filter(name__endswith='管理员').exists()
+        return (
+            self.groups
+            .exclude(name='大连理工大学-10141-管理员')
+            .filter(name__endswith='管理员').exists()
+        )
 
     @property
     def is_school_admin(self):

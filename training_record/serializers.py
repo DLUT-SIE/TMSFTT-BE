@@ -96,11 +96,11 @@ class ReadOnlyRecordSerializer(HumanReadableValidationErrorMixin,
 
     def get_allow_actions_from_user(self, obj):
         '''Get status of whether ordinary user can edit record or not.'''
-        return is_user_allowed_operating(self.context['request'], obj)
+        return is_user_allowed_operating(self.context['request'].user, obj)
 
     def get_allow_actions_from_admin(self, obj):
         '''Get status of whether department admin can review or not.'''
-        return is_admin_allowed_operating(self.context['request'], obj)
+        return is_admin_allowed_operating(self.context['request'].user, obj)
 
 
 class RecordWriteSerializer(HumanReadableValidationErrorMixin,
@@ -159,9 +159,11 @@ class RecordWriteSerializer(HumanReadableValidationErrorMixin,
             return data
 
         data['user'] = self.instance.user
-        if (is_user_allowed_operating(self.context['request'], self.instance)
-                or is_admin_allowed_operating(
-                    self.context['request'], self.instance)):
+        allowed = is_user_allowed_operating(
+            self.context['request'].user, self.instance)
+        allowed = allowed or is_admin_allowed_operating(
+            self.context['request'].user, self.instance)
+        if allowed:
             return data
         raise serializers.ValidationError('在此状态下您无法更改')
 

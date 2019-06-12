@@ -60,18 +60,21 @@ class TestPermissionService(TestCase):
 
     def test_assign_object_permissions(self):
         '''Should True if user has permissions of the related project.'''
-        department_school = mommy.make(Department, name="大连理工大学")
+        department_school = mommy.make(
+            Department, name="大连理工大学", raw_department_id='10141')
         department_admin = mommy.make(
-            Department, name="创新创业学院", super_department=department_school)
+            Department, name="创新创业学院",
+            raw_department_id='22',
+            super_department=department_school)
 
         user = mommy.make(User, department=department_admin)
         group = mommy.make(Group, name="个人权限")
 
-        group_school = mommy.make(Group, name="大连理工大学-管理员")
+        group_school = mommy.make(Group, name="大连理工大学-10141-管理员")
         user_school = mommy.make(User)
         user_school.groups.add(group_school)
 
-        group_admin = mommy.make(Group, name="创新创业学院-管理员")
+        group_admin = mommy.make(Group, name="创新创业学院-22-管理员")
         user_admin = mommy.make(User)
         user_admin.groups.add(group_admin)
 

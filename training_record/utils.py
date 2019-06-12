@@ -14,7 +14,7 @@ def infer_attachment_type(fname):
     return record_models.RecordAttachment.ATTACHMENT_TYPE_OTHERS
 
 
-def is_user_allowed_operating(request, obj):
+def is_user_allowed_operating(user, obj):
     '''Check if users can operate.'''
     import training_record.models as record_models
     user_action_status = (
@@ -22,28 +22,28 @@ def is_user_allowed_operating(request, obj):
         record_models.Record.STATUS_DEPARTMENT_ADMIN_REJECTED,
         record_models.Record.STATUS_SCHOOL_ADMIN_REJECTED
     )
-    return request.user == obj.user and obj.status in user_action_status
+    return user == obj.user and obj.status in user_action_status
 
 
-def is_admin_allowed_operating(request, obj):
+def is_admin_allowed_operating(user, obj):
     '''Check if admin can operate.'''
     import training_record.models as record_models
-    department_admin_action_status = (
+    department_admin_action_status = {
         record_models.Record.STATUS_SUBMITTED,
         record_models.Record.STATUS_DEPARTMENT_ADMIN_APPROVED,
         record_models.Record.STATUS_DEPARTMENT_ADMIN_REJECTED
-    )
-    school_admin_action_status = (
+    }
+    school_admin_action_status = {
         record_models.Record.STATUS_DEPARTMENT_ADMIN_APPROVED,
         record_models.Record.STATUS_SCHOOL_ADMIN_APPROVED,
         record_models.Record.STATUS_SCHOOL_ADMIN_REJECTED
-    )
+    }
     is_department_admin_allowed = (
-        request.user.is_department_admin
+        user.is_department_admin
         and (obj.status in department_admin_action_status)
     )
     is_school_admin_allowed = (
-        request.user.is_school_admin
+        user.is_school_admin
         and (obj.status in school_admin_action_status)
     )
     return is_department_admin_allowed or is_school_admin_allowed
