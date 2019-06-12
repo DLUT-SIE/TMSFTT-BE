@@ -24,13 +24,14 @@ class ProgramSerializer(HumanReadableValidationErrorMixin,
 
     def validate_department(self, department):
         '''Forbid illegal create of department.'''
+        # Override department for school admin.
+        if self.context['request'].user.is_school_admin:
+            department = Department.objects.get(name='大连理工大学')
         if self.instance is not None:
             if department.id != self.instance.department.id:
                 raise serializers.ValidationError('不可以修改培训项目的院系')
         if self.instance is None:
-            if self.context['request'].user.is_school_admin:
-                department = Department.objects.get(name='大连理工大学')
-            elif not self.context['request'].user.check_department_admin(
+            if not self.context['request'].user.check_department_admin(
                     department):
                 raise serializers.ValidationError('无效的院系')
         return department

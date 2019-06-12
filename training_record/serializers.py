@@ -110,22 +110,26 @@ class RecordWriteSerializer(HumanReadableValidationErrorMixin,
         binary=True,
         write_only=True,
         required=True,
+        label='校外培训活动',
     )
     contents = serializers.ListField(
         child=serializers.JSONField(binary=True),
         write_only=True,
         required=False,
+        label='培训记录内容',
     )
     attachments = serializers.ListField(
         child=serializers.FileField(),
         write_only=True,
         required=False,
+        label='培训记录附件',
     )
     feedback = serializers.PrimaryKeyRelatedField(read_only=True)
     role = serializers.ChoiceField(
         choices=EventCoefficient.ROLE_CHOICES,
         write_only=True,
         default=EventCoefficient.ROLE_PARTICIPATOR,
+        label='角色身份',
     )
 
     class Meta:
@@ -133,6 +137,11 @@ class RecordWriteSerializer(HumanReadableValidationErrorMixin,
         fields = ('id', 'create_time', 'update_time', 'campus_event',
                   'off_campus_event', 'user', 'status', 'contents',
                   'attachments', 'feedback', 'role')
+
+    def validate_off_campus_event(self, data):
+        off_campus_event_serializer = OffCampusEventSerializer(data=data)
+        off_campus_event_serializer.is_valid(raise_exception=True)
+        return off_campus_event_serializer.validated_data
 
     def create(self, validated_data):
         return RecordService.create_off_campus_record_from_raw_data(
