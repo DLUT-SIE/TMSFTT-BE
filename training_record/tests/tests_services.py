@@ -42,7 +42,7 @@ class TestRecordService(TestCase):
             {'content_type': x[0], 'content': 'abc'}
             for x in RecordContent.CONTENT_TYPE_CHOICES]
 
-        cls.campus_event = mommy.make(CampusEvent)
+        cls.campus_event = mommy.make(CampusEvent, reviewed=True)
         cls.user = mommy.make(User)
         cls.group = mommy.make(Group, name="个人权限")
         cls.user.groups.add(cls.group)

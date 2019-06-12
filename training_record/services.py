@@ -232,6 +232,9 @@ class RecordService:
             except Exception:
                 raise BadRequest('编号为{}的活动不存在'.format(event_id))
 
+            if not campus_event.reviewed:
+                raise BadRequest('培训活动还未经学校管理员审核')
+
             admin = context['user']
             if not admin.has_perm(
                     'training_event.change_campusevent', campus_event):

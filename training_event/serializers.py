@@ -171,6 +171,8 @@ class EnrollmentSerailizer(HumanReadableValidationErrorMixin,
 
     def validate(self, data):
         data['user'] = self.context['request'].user
+        if not data['campus_event'].reviewed:
+            raise serializers.ValidationError('不能报名未经审核的培训活动')
         existance = (
             training_event.models.Enrollment.objects
             .filter(user=data['user'], campus_event=data['campus_event'])
