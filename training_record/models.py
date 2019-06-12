@@ -31,7 +31,7 @@ class Record(models.Model):
     class Meta:
         verbose_name = '培训记录'
         verbose_name_plural = '培训记录'
-        unique_together = (('user', 'campus_event'),)
+        unique_together = (('user', 'campus_event', 'off_campus_event'),)
         default_permissions = ()
         permissions = (
             ('add_record', '允许添加培训记录'),
