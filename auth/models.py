@@ -46,7 +46,7 @@ class Department(models.Model):
 
     raw_department_id = models.CharField(
         verbose_name='单位原始ID', max_length=20, unique=True)
-    name = models.CharField(verbose_name='院系', max_length=50, unique=True)
+    name = models.CharField(verbose_name='院系', max_length=50)
     super_department = models.ForeignKey(
         'self', verbose_name='所属机构', blank=True, null=True,
         related_name='child_departments', on_delete=models.PROTECT)
