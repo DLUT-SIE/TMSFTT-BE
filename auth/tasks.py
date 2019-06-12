@@ -115,6 +115,12 @@ def _update_from_department_information():
 
             # 同步单位名称
             if department.name != raw_department.dwmc:
+                related_groups = Group.objects.filter(
+                    name__startswith=f'{department.name}-')
+                for group in related_groups:
+                    _, suffix = group.name.split('-')
+                    group.name = f'{raw_department.dwmc}-{suffix}'
+                    group.save()
                 department.name = raw_department.dwmc
                 updated = True
             if updated:
