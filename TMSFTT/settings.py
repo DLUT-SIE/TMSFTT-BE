@@ -86,6 +86,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'infra.paginations.LimitOffsetPagination',
     'PAGE_SIZE': 10,
     'HTML_SELECT_CUTOFF': 100,
+    'DATETIME_FORMAT': '%Y年%m月%d日 %H:%M:%S',
+    'DATETIME_INPUT_FORMATS': ['%Y年%m月%d日 %H:%M:%S', 'iso-8601'],
 }
 
 ROOT_URLCONF = 'TMSFTT.urls'
