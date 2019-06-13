@@ -134,7 +134,7 @@ class RecordWriteSerializer(HumanReadableValidationErrorMixin,
 
     class Meta:
         model = Record
-        fields = ('id', 'create_time', 'update_time', 'campus_event',
+        fields = ('id', 'create_time', 'update_time',
                   'off_campus_event', 'user', 'status', 'contents',
                   'attachments', 'feedback', 'role')
 
