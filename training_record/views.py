@@ -9,6 +9,10 @@ import auth.permissions
 import training_record.models
 import training_record.filters
 from training_record.models import Record
+from training_record.utils import (
+    get_department_admin_actionable_status,
+    get_school_admin_actionable_status,
+)
 from training_record.services import RecordService
 from training_record.serializers import (CampusEventFeedbackSerializer,
                                          RecordWriteSerializer,
@@ -77,9 +81,15 @@ class RecordViewSet(DRFCacheMixin,
                        url_path='list-records-for-review')
     def list_records_for_review(self, request):
         '''Return all offCampusRecords for admin'''
-        queryset = self.filter_queryset(self.get_queryset()).filter(
-            off_campus_event__isnull=False,
-            ).extra(select={
+        queryset = (
+            self.filter_queryset(self.get_queryset())
+            .filter(off_campus_event__isnull=False)
+        )
+        if request.user.is_department_admin:
+            queryset = queryset.filter(
+                status__in=get_department_admin_actionable_status(),
+            )
+            queryset = queryset.extra(select={
                 'is_status_submitted':
                 f'status={Record.STATUS_SUBMITTED}',
                 'is_status_department_admin_rejected':
@@ -91,8 +101,10 @@ class RecordViewSet(DRFCacheMixin,
                     '-is_status_department_admin_rejected',
                     '-is_status_department_admin_approved',
                     '-create_time')
-        if request.user.is_department_admin:
             return self._get_paginated_response(queryset)
+        queryset = queryset.filter(
+            status__in=get_school_admin_actionable_status(),
+        )
         queryset = queryset.extra(select={
             'is_status_department_admin_approved':
             f'status={Record.STATUS_DEPARTMENT_ADMIN_APPROVED}',

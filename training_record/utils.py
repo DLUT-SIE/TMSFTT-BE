@@ -25,19 +25,36 @@ def is_user_allowed_operating(user, obj):
     return user == obj.user and obj.status in user_action_status
 
 
-def is_admin_allowed_operating(user, obj):
-    '''Check if admin can operate.'''
+def get_department_admin_actionable_status():
+    '''
+    Return status set that department admin can review records with status
+    in this set.
+    '''
     import training_record.models as record_models
-    department_admin_action_status = {
+    return {
         record_models.Record.STATUS_SUBMITTED,
         record_models.Record.STATUS_DEPARTMENT_ADMIN_APPROVED,
         record_models.Record.STATUS_DEPARTMENT_ADMIN_REJECTED
     }
-    school_admin_action_status = {
+
+
+def get_school_admin_actionable_status():
+    '''
+    Return status set that school admin can review records with status
+    in this set.
+    '''
+    import training_record.models as record_models
+    return {
         record_models.Record.STATUS_DEPARTMENT_ADMIN_APPROVED,
         record_models.Record.STATUS_SCHOOL_ADMIN_APPROVED,
         record_models.Record.STATUS_SCHOOL_ADMIN_REJECTED
     }
+
+
+def is_admin_allowed_operating(user, obj):
+    '''Check if admin can operate.'''
+    department_admin_action_status = get_department_admin_actionable_status()
+    school_admin_action_status = get_school_admin_actionable_status()
     is_department_admin_allowed = (
         user.is_department_admin
         and (obj.status in department_admin_action_status)

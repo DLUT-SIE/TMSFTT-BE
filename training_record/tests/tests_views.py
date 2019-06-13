@@ -117,7 +117,9 @@ class TestRecordViewSet(APITestCase):
             off_campus_event = mommy.make(training_event.models.OffCampusEvent)
             record = mommy.make(
                 Record,
-                off_campus_event=off_campus_event,)
+                off_campus_event=off_campus_event,
+                status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED,
+                )
             PermissionService.assign_object_permissions(self.user, record)
 
         response = self.client.get(url)
