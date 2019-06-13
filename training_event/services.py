@@ -206,3 +206,23 @@ class EnrollmentService:
 
         return {event: enrolled_data[event] if event in enrolled_data else None
                 for event in events}
+
+    @staticmethod
+    def get_enrollments(event_id, context=None):
+        '''get matched enrollments'''
+        event = CampusEvent.objects.filter(id=event_id)
+        if not event:
+            raise BadRequest('未找到对应培训活动')
+        event = event[0]
+        user = context['user']
+        if not user.has_perm('training_event.change_campusevent', event):
+            msg = (
+                f'用户 {user.username}({user.first_name}) '
+                f'查询不具有权限的校内培训活动 {event.id} 的报名信息失败。'
+            )
+            prod_logger.info(msg)
+            raise BadRequest('您无权查询该活动的报名信息')
+        return Enrollment.objects.filter(
+            campus_event_id=event_id).select_related(
+                'user__department', 'campus_event'
+            )

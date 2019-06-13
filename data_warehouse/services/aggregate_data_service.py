@@ -5,6 +5,7 @@ from django.utils.timezone import datetime
 from auth.models import Department, User
 from infra.exceptions import BadRequest
 from training_program.models import Program
+from training_event.services import EnrollmentService
 
 from data_warehouse.services import (
     UserCoreStatisticsService,
@@ -24,8 +25,6 @@ from data_warehouse.decorators import (
 )
 from data_warehouse.services.training_record_service import (
     TrainingRecordService)
-from data_warehouse.services.attendance_sheet_service import (
-    AttendanceSheetService)
 from data_warehouse.serializers import (
     CoverageStatisticsSerializer,
     TrainingFeedbackSerializer,
@@ -539,6 +538,7 @@ class AggregateDataService:
     def attendance_sheet(cls, context):
         '''签到表导出'''
         event_id = context.get('event_id')
-        enrollments = AttendanceSheetService.get_enrollment(event_id)
+        enrollments = EnrollmentService.get_enrollments(
+            event_id, context={'user': context['request'].user})
         file_path = TableExportService.export_attendance_sheet(enrollments)
         return file_path, '签到表.xls'

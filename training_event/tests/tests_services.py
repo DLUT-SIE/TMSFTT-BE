@@ -166,3 +166,15 @@ class TestEnrollmentService(TestCase):
                                 user=self.user, campus_event=self.event)
         EnrollmentService.delete_enrollment(enrollment)
         self.assertEqual(Enrollment.objects.count(), 0)
+
+    def test_get_enrollments(self):
+        '''Should get matched enrollments'''
+        event = mommy.make(CampusEvent, id=1, num_participants=10)
+        department = mommy.make(
+            Department, name='大连理工大学', id=1)
+        user = mommy.make(User, department=department)
+        mommy.make(Enrollment, user=user, campus_event=event)
+        assign_perm('training_event.change_campusevent', user, event)
+        count = EnrollmentService.get_enrollments(
+            1, context={'user': user}).count()
+        self.assertEqual(count, 1)

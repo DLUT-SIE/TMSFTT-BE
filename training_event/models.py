@@ -81,6 +81,7 @@ class Enrollment(models.Model):
         permissions = (
             ('add_enrollment', '允许添加活动报名记录'),
             ('delete_enrollment', '允许删除活动报名记录'),
+            ('view_enrollment', '允许查看活动报名记录'),
         )
 
     create_time = models.DateTimeField(verbose_name='创建时间',

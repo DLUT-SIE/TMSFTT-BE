@@ -183,3 +183,25 @@ class EnrollmentSerailizer(HumanReadableValidationErrorMixin,
         if existance:
             raise serializers.ValidationError('您已报名，请勿重复报名')
         return data
+
+
+class EnrollmentReadOnlySerailizer(HumanReadableValidationErrorMixin,
+                                   serializers.ModelSerializer):
+    '''To serializer enrollment instance.'''
+    user = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = training_event.models.Enrollment
+        fields = '__all__'
+
+    def get_user(self, obj):
+        '''Serialize necessary information about user.'''
+        user = obj.user
+        return {
+            'department_str': user.department.name,
+            'username': user.username,
+            'first_name': user.first_name,
+            'cell_phone_number': user.cell_phone_number,
+            'email': user.email,
+            'technical_title': user.technical_title,
+        }

@@ -420,8 +420,8 @@ class TestAggregateDataService(TestCase):
         )
         self.assertIsNotNone(file_path)
 
-    @patch('data_warehouse.services.attendance_sheet_service'
-           '.AttendanceSheetService')
+    @patch('data_warehouse.services.aggregate_data_service'
+           '.EnrollmentService')
     @patch('data_warehouse.services.aggregate_data_service'
            '.TableExportService')
     def test_attendance_sheet(self, mock_table_export_service,
@@ -430,6 +430,7 @@ class TestAggregateDataService(TestCase):
         event = mommy.make(CampusEvent, id=1, num_participants=10)
         context = {
             'event_id': 1,
+            'request': Mock(),
         }
         department = mommy.make(
             Department, name='大连理工大学', id=1,
@@ -440,8 +441,8 @@ class TestAggregateDataService(TestCase):
         mock_attendance_sheet_service.get_user.return_value = []
         mock_table_export_service.export_attendance_sheet.assert_called()
 
-    @patch('data_warehouse.services.attendance_sheet_service'
-           '.AttendanceSheetService')
+    @patch('data_warehouse.services.aggregate_data_service'
+           '.EnrollmentService')
     @patch('data_warehouse.services.aggregate_data_service'
            '.TableExportService')
     def test_attendance_sheet_no_enrolled(self, mock_table_export_service,
@@ -450,6 +451,7 @@ class TestAggregateDataService(TestCase):
         mommy.make(CampusEvent, id=1, num_participants=10)
         context = {
             'event_id': 1,
+            'request': Mock()
         }
         AggregateDataService.attendance_sheet(context)
         mock_attendance_sheet_service.get_user.return_value = []

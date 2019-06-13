@@ -471,7 +471,8 @@ if __name__ == '__main__':
         with transaction.atomic():
             if cmd == 'initial':
                 populate_initial_data()
-            elif cmd =='special_model_perms':
+            elif cmd == 'model_perms':
+                assign_model_perms()
                 assign_model_perms_for_special_groups()
     else:
         populate(sys.argv[1])

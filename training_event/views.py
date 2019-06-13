@@ -10,10 +10,11 @@ from training_event.services import EnrollmentService, CampusEventService
 from training_event.models import (
     CampusEvent, OffCampusEvent, Enrollment, EventCoefficient
 )
-from training_event.serializers import (ReadOnlyCampusEventSerializer,
-                                        CampusEventSerializer,
-                                        OffCampusEventSerializer,
-                                        EnrollmentSerailizer)
+from training_event.serializers import (
+    ReadOnlyCampusEventSerializer, CampusEventSerializer,
+    OffCampusEventSerializer, EnrollmentSerailizer,
+    EnrollmentReadOnlySerailizer,
+)
 import training_event.serializers
 import training_event.filters
 from infra.mixins import MultiSerializerActionClassMixin
@@ -80,10 +81,24 @@ class EnrollmentViewSet(DRFCacheMixin,
     permission_classes = (
         auth.permissions.DjangoObjectPermissions,
     )
+    filter_fields = ('campus_event',)
+    perms_map = {
+        'event_enrollments': ['training_event.view_enrollment'],
+    }
 
     def perform_destroy(self, instance):
         '''Use service to change num_enrolled and delete enrollment.'''
         EnrollmentService.delete_enrollment(instance)
+
+    @decorators.action(methods=['GET'], detail=False,
+                       url_path='event-enrollments')
+    def event_enrollments(self, request):
+        '''Return enrollments of campus event.'''
+        campus_event_id = request.GET.get('campus_event', None)
+        enrollments = EnrollmentService.get_enrollments(
+            campus_event_id, context={'user': request.user})
+        data = EnrollmentReadOnlySerailizer(enrollments, many=True).data
+        return Response(data)
 
 
 class RoundChoicesView(views.APIView):

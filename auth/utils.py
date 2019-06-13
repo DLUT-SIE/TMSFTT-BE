@@ -183,7 +183,7 @@ def get_model_perms():
             '专任教师': ['view'],
         },
         Enrollment: {
-            '管理员': [],
+            '管理员': ['view'],
             '专任教师': [],
         },
         # Record
