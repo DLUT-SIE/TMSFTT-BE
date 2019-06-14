@@ -73,6 +73,8 @@ class ActiveUserManager(UserManager):
         return super().get_queryset().exclude(
             models.Q(tenure_status='退休')
             | models.Q(tenure_status='离休')
+            | models.Q(tenure_status='离职')
+            | models.Q(tenure_status='死亡')
         )
 
 
