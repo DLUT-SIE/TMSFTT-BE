@@ -7,6 +7,22 @@ from training_event.models import CampusEvent, OffCampusEvent, EventCoefficient
 from training_record.utils import infer_attachment_type
 
 
+class ValidRecordManager(models.Manager):
+    '''
+    We take campus-event records and verified off-campus-event records as
+    valid records.
+    '''
+
+    def get_queryset(self):
+        '''Filter valid records.'''
+        queryset = super().get_queryset()
+        queryset = queryset.filter(
+            models.Q(campus_event__isnull=False)
+            | models.Q(status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
+        )
+        return queryset
+
+
 class Record(models.Model):
     '''Record records the attendance of users.'''
     STATUS_SUBMITTED = 1
@@ -62,6 +78,8 @@ class Record(models.Model):
                                           verbose_name='培训活动系数',
                                           related_name='records',
                                           on_delete=models.CASCADE)
+    objects = models.Manager()
+    valid_objects = ValidRecordManager()
 
     def __str__(self):
         return '{}({})'.format(

@@ -2,7 +2,7 @@
 from datetime import timedelta
 from django.core.cache import cache
 from django.db import models
-from django.db.models import Q, Count, functions
+from django.db.models import Count, functions
 from django.utils.timezone import now
 
 from training_event.models import CampusEvent
@@ -66,17 +66,11 @@ class SchoolCoreStatisticsService:
         current_time = now()
 
         # The total number of records
-        num_records = (
-            Record.objects
-            .filter(
-                Q(campus_event__isnull=False)
-                | Q(status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
-            ).count()
-        )
+        num_records = Record.valid_objects.count()
 
         # The number of records added in this month
         num_records_added_in_current_month = (
-            Record.objects
+            Record.valid_objects
             .filter(create_time__gte=current_time.replace(
                 day=1, hour=0, minute=0, second=0))
             .count()
@@ -122,11 +116,7 @@ class SchoolCoreStatisticsService:
             return cached_value
         current_time = now()
         grouped_counts = (
-            Record.objects
-            .filter(
-                Q(campus_event__isnull=False)
-                | Q(status=Record.STATUS_SCHOOL_ADMIN_APPROVED)
-            )
+            Record.valid_objects
             .filter(create_time__gte=current_time.replace(
                 month=1, day=1, hour=0, minute=0, second=0))
             .annotate(
@@ -177,7 +167,7 @@ class SchoolCoreStatisticsService:
             return dt_instance.strftime('%Y年%m月')
 
         monthly_records = {format_time(x['month']): x['count'] for x in (
-            Record.objects
+            Record.valid_objects
             .filter(create_time__gte=start_time)
             .annotate(
                 month=functions.TruncMonth('create_time'),

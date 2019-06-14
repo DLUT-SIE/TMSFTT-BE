@@ -55,7 +55,7 @@ class UserCoreStatisticsService:
         if cached_value:
             return cached_value
         competition_award_info = (
-            Record.objects
+            Record.valid_objects
             .filter(user=user)
             .filter(campus_event__name__regex=r'(校|市|省|国家)级(.*奖)')
             .filter(create_time__gte=start_time)
@@ -119,7 +119,7 @@ class UserCoreStatisticsService:
             return dt_instance.strftime('%Y年%m月')
 
         monthly_records = {format_time(x['month']): x for x in (
-            Record.objects
+            Record.valid_objects
             .filter(user=user)
             .filter(create_time__gte=start_time)
             .annotate(
@@ -192,14 +192,14 @@ class UserCoreStatisticsService:
         if cached_value:
             return cached_value
         num_campus_records = (
-            Record.objects
+            Record.valid_objects
             .filter(user=user, campus_event__isnull=False)
             .filter(create_time__gte=start_time)
             .filter(create_time__lte=end_time)
             .count()
         )
         num_off_campus_records = (
-            Record.objects
+            Record.valid_objects
             .filter(user=user, off_campus_event__isnull=False)
             .filter(create_time__gte=start_time)
             .filter(create_time__lte=end_time)
@@ -264,7 +264,7 @@ class UserCoreStatisticsService:
         if cached_value:
             return cached_value
         records = (
-            Record.objects
+            Record.valid_objects
             .filter(user=user, campus_event__isnull=False)
             .filter(create_time__gte=start_time)
             .filter(create_time__lte=end_time)
@@ -285,7 +285,7 @@ class UserCoreStatisticsService:
         num_enrolled_events = len(enrolled_events)
         # Not enrolled, but completed
         num_not_enrolled_events = (
-            Record.objects
+            Record.valid_objects
             .filter(user=user)
             .exclude(campus_event_id__in=enrolled_events)
             .filter(create_time__gte=start_time)
@@ -295,7 +295,7 @@ class UserCoreStatisticsService:
         num_enrolled_events += num_not_enrolled_events
 
         num_events_as_expert = (
-            Record.objects
+            Record.valid_objects
             .filter(user=user)
             .filter(event_coefficient__role=EventCoefficient.ROLE_EXPERT)
             .filter(create_time__gte=start_time)
@@ -348,7 +348,7 @@ class UserCoreStatisticsService:
         if cached_value:
             return cached_value
         program_names = (
-            Record.objects
+            Record.valid_objects
             .filter(user=user, campus_event__isnull=False)
             .select_related('campus_event__program')
             .filter(create_time__gte=start_time)

@@ -102,6 +102,7 @@ class TestUserCoreStatisticsService(TestCase):
                     Record,
                     user=self.user,
                     _fill_optional=['off_campus_event'],
+                    status=Record.STATUS_SCHOOL_ADMIN_APPROVED,
                     _quantity=idx // 2 + 1,
                     )
         mocked_service_now.return_value = current.replace(
@@ -144,6 +145,7 @@ class TestUserCoreStatisticsService(TestCase):
             Record,
             user=self.user,
             _fill_optional=['off_campus_event'],
+            status=Record.STATUS_SCHOOL_ADMIN_APPROVED,
             _quantity=expected_num_off_campus_records
         )
         context = {
