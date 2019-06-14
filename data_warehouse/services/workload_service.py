@@ -52,17 +52,25 @@ class WorkloadCalculationService:
             if administrative_department is not None:
                 teachers = teachers.filter(
                     administrative_department=administrative_department)
-        campus_records = Record.objects.select_related(
-            'event_coefficient', 'user',
-            'user__administrative_department').filter(
-                user__in=teachers, campus_event__time__gte=start_time,
-                campus_event__time__lte=end_time)
+        campus_records = (
+            Record.valid_objects
+            .select_related('event_coefficient', 'user',
+                            'user__administrative_department')
+            .filter(user__in=teachers,
+                    campus_event__isnull=False,
+                    campus_event__time__gte=start_time,
+                    campus_event__time__lte=end_time)
+        )
 
-        off_campus_records = Record.objects.select_related(
-            'event_coefficient', 'user',
-            'user__administrative_department').filter(
-                user__in=teachers, off_campus_event__time__gte=start_time,
-                off_campus_event__time__lte=end_time)
+        off_campus_records = (
+            Record.valid_objects
+            .select_related('event_coefficient', 'user',
+                            'user__administrative_department')
+            .filter(user__in=teachers,
+                    off_campus_event__isnull=False,
+                    off_campus_event__time__gte=start_time,
+                    off_campus_event__time__lte=end_time)
+        )
         result = {}
         for record in chain(campus_records, off_campus_records):
             user = record.user

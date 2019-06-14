@@ -39,6 +39,7 @@ class TestWorkloadCalculationService(TestCase):
 
         cls.off_campus_record = mommy.make(
             Record, event_coefficient=cls.event_coefficient,
+            status=Record.STATUS_SCHOOL_ADMIN_APPROVED,
             off_campus_event=cls.off_campus_event, user=cls.user)
         cls.workload = 100
         cls.workload_dict = {cls.user: cls.workload}
