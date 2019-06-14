@@ -27,10 +27,11 @@ rounds = []
 for row_idx in range(1, num_rows):
   row = sheet.row_values(row_idx)
   num_hours = int(row[9])
+  total_events = num_hours // 2
   length = len(rounds)
-  if length < num_hours:
-    rounds.extend([] for _ in range(num_hours - length))
-  for idx in range(num_hours):
+  if length < total_events:
+    rounds.extend([] for _ in range(total_events - length))
+  for idx in range(total_events):
     rounds[idx].append(row)
 
 program_category = '教学促进'
@@ -54,7 +55,7 @@ for idx, r in enumerate(rounds):
     department_name, user_name, username = record[5:8]
     row = (record_idx, event_name, program_category, program_name,
            event_time, department_name, user_name, username, role,
-           1, 1, 1)
+           2, 1, 1)
     ptr_r += 1
     write_row(sheet, ptr_r, row)
     record_idx += 1
