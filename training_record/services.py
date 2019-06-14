@@ -292,6 +292,8 @@ class RecordService:
                            + f'{campus_event.name}({campus_event.id})活动的培训记录')
                     prod_logger.info(msg)
 
+                    msg = '您有一条新的校内培训记录'
+                    NotificationService.send_system_notification(user, msg)
         except Exception as exc:
             if isinstance(exc, (BadRequest, IntegrityError)):
                 raise

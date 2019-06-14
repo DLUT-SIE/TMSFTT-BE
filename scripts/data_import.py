@@ -7,6 +7,7 @@ import os
 import os.path as osp
 import random
 from datetime import datetime
+from unittest.mock import patch, Mock
 
 import django
 
@@ -15,6 +16,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'TMSFTT.settings_dev')
 django.setup()
 
 import xlrd
+import pytz
 
 from faker import Faker
 from tqdm import tqdm
@@ -45,6 +47,8 @@ from secure_file.models import SecureFile
 faker = Faker('zh_CN')
 faker.seed(0)
 prod_logger.setLevel(logging.WARNING)
+manual_now = Mock()
+manual_now.return_value = now()
 
 
 
@@ -149,7 +153,7 @@ def get_or_create_user(username, first_name, **kwargs):
 
 
 def row_parser_2018(row):
-    return row[1:9]
+    return row[1:12]
 
 
 def row_parser_2017(row):
@@ -164,80 +168,98 @@ def read_workload_content(
     workbook = xlrd.open_workbook(fpath)
     sheet = workbook.sheet_by_index(0)
     num_rows = sheet.nrows
-    programs = make_programs()
-    event_to_program = {}
+    programs = {}
     events = {}
     coefficients = {}
     dlut_admin = get_dlut_admin()
+    dlut_department = get_dlut_department()
     users = {x.username: x for x in User.objects.all()}
-    event_time = now().replace(year=year, month=1, day=1,
-                               hour=0, minute=0, second=0)
     for idx in tqdm(range(start_row, num_rows)):
         row = sheet.row_values(idx)
         try:
-            (event_name, department_name, user_name, username,
+            (event_name, program_category, program_name, event_time,
+             _, user_name, username,
              role, num_hours, coef, workload) = row_parser(row)
-            if role == '参加':
-                role = '参与'
             role = EventCoefficient.ROLE_CHOICES_MAP[role.strip()]
             if not num_hours or not coef:
                 coef = '1'
                 num_hours = workload
             num_hours = int(num_hours)
             coef = int(coef)
+            event_time = (
+                datetime.strptime(f'{int(event_time)}', '%Y%m%d')
+                .replace(hour=12, tzinfo=pytz.timezone('Asia/Shanghai'))
+            )
         except ValueError:
             print(idx, row)
             raise
-        if not department_name:
-            continue
 
         if not username:
-            continue
-        username = f'{int(username)}'
+            related_users = User.objects.filter(first_name=user_name)
+            if len(related_users) != 1:
+                print(idx, row)
+                continue
+            username = related_users[0].username
+        else:
+            username = f'{int(username)}'
         user = users.get(username, None)
         if user is None:
             print(f'Unknown User at row {idx}: {user_name}({username})')
             continue
 
         # Program, Event and Coefficient
-        program = event_to_program.setdefault(
-            event_name, random.choice(programs))
-        event = events.get(event_name, None)
-        if (event is not None
-                and Enrollment.objects.filter(
-                    user=user, campus_event=event).exists()):
-            event_name = event_name + '1'
-            event = None
-        if event is None:
-            event = CampusEvent.objects.create(
+        program_key = (program_name, program_category)
+        if program_key not in programs:
+            programs[program_key] = Program.objects.create(
+                name=program_name,
+                department=dlut_department,
+                category=Program.PROGRAM_CATEGORY_CHOICES_MAP[program_category]
+            )
+            PermissionService.assign_object_permissions(
+                dlut_admin, programs[program_key])
+        program = programs[program_key]
+        event_key = (program_key, event_name, event_time)
+        manual_now.return_value = event_time
+        if event_key not in events:
+            events[event_key] = CampusEvent.objects.create(
                 name=event_name,
-                program=program,
                 time=event_time,
-                deadline=event_time,
                 location='大连理工大学',
                 num_hours=num_hours,
-                num_participants=random.randint(20, 100),
-                description=faker.text(100)
+                num_participants=0,
+                program=program,
+                deadline=event_time,
+                num_enrolled=0,
+                description='历史数据导入',
+                reviewed=True,
             )
-            PermissionService.assign_object_permissions(dlut_admin, event)
-            events[event_name] = event
+            PermissionService.assign_object_permissions(
+                dlut_admin, events[event_key])
+        event = events[event_key]
+        try:
+            Enrollment.objects.create(user=user, campus_event=event)
+        except Exception as e:
+            print(idx, row)
+            raise
+        event.num_participants += 1
+        event.num_enrolled += 1
+        event.save()
 
-        event = events[event_name]
-        Enrollment.objects.create(user=user, campus_event=event)
-        if (event.id, role) not in coefficients:
-            coefficients[(event.id, role)] = EventCoefficient.objects.create(
+        coefficient_key = (event.id, role)
+        if coefficient_key not in coefficients:
+            coefficients[coefficient_key] = EventCoefficient.objects.create(
                 campus_event=event,
                 role=role,
                 coefficient=coef
             )
-        event_coef = coefficients[(event.id, role)]
+        coefficient = coefficients[coefficient_key]
 
         # Record
         record = Record.objects.create(
             campus_event=event,
             user=user,
-            status=Record.STATUS_FEEDBACK_REQUIRED,
-            event_coefficient=event_coef,
+            status=Record.STATUS_FEEDBACK_SUBMITTED,
+            event_coefficient=coefficient,
         )
         PermissionService.assign_object_permissions(user, record)
 
@@ -463,16 +485,27 @@ def populate(base='~/Desktop/TMSFTT'):
     )
 
 
-if __name__ == '__main__':
+@patch('django.utils.timezone.now', manual_now)
+def main():
     if len(sys.argv) < 2:
         populate()
-    elif len(sys.argv) == 2:
-        cmd = sys.argv[1]
-        with transaction.atomic():
-            if cmd == 'initial':
-                populate_initial_data()
-            elif cmd == 'model_perms':
-                assign_model_perms()
-                assign_model_perms_for_special_groups()
-    else:
-        populate(sys.argv[1])
+        return
+    cmd = sys.argv[1]
+    if cmd == 'initial':
+        populate_initial_data()
+    elif cmd == 'model_perms':
+        assign_model_perms()
+        assign_model_perms_for_special_groups()
+    elif cmd == '2018':
+        path = sys.argv[2]
+        read_workload_content(
+           row_parser=row_parser_2018,
+           start_row=1,
+           year=2018,
+           fpath=path,
+        )
+
+
+if __name__ == '__main__':
+    with transaction.atomic():
+        main()

@@ -19,6 +19,7 @@ class Program(models.Model):
         (PROGRAM_CATEGORY_HELP_CLASS, '青年教师助课'),
         (PROGRAM_CATEGORY_OTHERS, '其他'),
     )
+    PROGRAM_CATEGORY_CHOICES_MAP = {v: k for k, v in PROGRAM_CATEGORY_CHOICES}
 
     class Meta:
         verbose_name = '培训项目'
