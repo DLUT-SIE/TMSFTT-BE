@@ -287,7 +287,9 @@ class TestRecordService(TestCase):
                 '第4行，不存在的参与形式'):
             RecordService.create_campus_records_from_excel(excel, context)
 
-    def test_create_campus_records(self):
+    @patch('training_record.services.NotificationService'
+           '.send_system_notification')
+    def test_create_campus_records(self, _):
         '''Should return the number of created records.'''
         tup = tempfile.mkstemp()
         work_book = xlwt.Workbook()

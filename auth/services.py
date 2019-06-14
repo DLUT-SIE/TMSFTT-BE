@@ -92,13 +92,12 @@ class DepartmentService:
         result: dict
             the dict of top_level_departments
         '''
-        departments = Department.objects.filter(name='大连理工大学')
-        top_department = []
-        if departments:
-            dlut_department = departments[0]
-            top_department = dlut_department.child_departments.all()
+        departments = Department.objects.filter(
+            name__in=('凌水主校区', '开发区校区', '盘锦校区')
+        )
         return Department.objects.all().filter(
-            super_department__in=top_department, department_type='T3')
+            super_department__in=departments,
+            department_type__in=('T3', 'T6', 'T7'))
 
 
 class GroupService:
