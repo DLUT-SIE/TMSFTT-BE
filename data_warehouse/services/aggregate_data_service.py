@@ -445,8 +445,21 @@ class AggregateDataService:
         event_location = context['event_location']
         start_time = context['start_time']
         end_time = context['end_time']
+        username = request.query_params.get('user__username', None)
+        if username is None or username == '':
+            user = request.user
+        else:
+            try:
+                user = User.objects.get(username=username)
+            except Exception:
+                raise BadRequest('该用户不存在')
+            if not (request.user.is_school_admin or (
+                    request.user.check_department_admin(
+                        user.department))):
+                raise BadRequest('您无权查看该用户的培训记录')
+
         matched_records = TrainingRecordService.get_records(
-            request.user, event_name, event_location, start_time, end_time)
+            user, event_name, event_location, start_time, end_time)
         matched_records = matched_records.select_related(
             'campus_event', 'off_campus_event', 'event_coefficient')
         # prepare data to be written in excel.

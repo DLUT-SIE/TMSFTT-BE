@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework_guardian import filters
 
 import auth.permissions
+from auth.models import User
 import training_record.models
 import training_record.filters
 from training_record.models import Record
@@ -18,6 +19,7 @@ from training_record.serializers import (CampusEventFeedbackSerializer,
                                          RecordWriteSerializer,
                                          ReadOnlyRecordSerializer)
 from infra.mixins import MultiSerializerActionClassMixin
+from infra.exceptions import BadRequest
 from drf_cache.mixins import DRFCacheMixin
 
 
@@ -73,8 +75,22 @@ class RecordViewSet(DRFCacheMixin,
         return Response(serializer.data)
 
     def list(self, request):
+
+        username = request.query_params.get('user__username', None)
+        if username is None or username == '':
+            user = request.user
+        else:
+            try:
+                user = User.objects.get(username=username)
+            except Exception:
+                raise BadRequest('该用户不存在')
+            if not (request.user.is_school_admin or (
+                    request.user.check_department_admin(
+                        user.department))):
+                raise BadRequest('您无权查看该用户的培训记录')
+
         queryset = self.filter_queryset(self.get_queryset()).filter(
-            user=request.user)
+            user=user)
         return self._get_paginated_response(queryset)
 
     @decorators.action(detail=False, methods=['GET'],

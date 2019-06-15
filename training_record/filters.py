@@ -46,6 +46,7 @@ class RecordFilter(filters.FilterSet):
         model = Record
         fields = {
             'off_campus_event': ['isnull'],
+            'user__username': ['exact']
         }
 
 
