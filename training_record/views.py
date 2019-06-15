@@ -80,11 +80,8 @@ class RecordViewSet(DRFCacheMixin,
         if username is None or username == '':
             user = request.user
         else:
-            try:
-                user = User.objects.get(username=username)
-            except Exception:
-                raise BadRequest('该用户不存在')
-            if not (request.user.is_school_admin or (
+            user = User.objects.filter(username=username).first()
+            if user and not (request.user.is_school_admin or (
                     request.user.check_department_admin(
                         user.department))):
                 raise BadRequest('您无权查看该用户的培训记录')
