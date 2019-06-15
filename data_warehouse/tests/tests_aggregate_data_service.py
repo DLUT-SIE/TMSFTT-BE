@@ -355,6 +355,7 @@ class TestAggregateDataService(TestCase):
         type(request).user = PropertyMock(return_value=self.user)
         context = {
             'request': request,
+            'user__username': None,
             'event_name': '1',
             'event_location': '2',
             'start_time': '2019-01-01',

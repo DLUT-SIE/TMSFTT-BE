@@ -31,7 +31,8 @@ from data_warehouse.serializers import (
     SummaryParametersSerializer,
     TrainingHoursSerializer,
     TableTrainingRecordsSerializer,
-    AttendanceSheetSerializer
+    AttendanceSheetSerializer,
+    TrainingSummarySerializer,
 )
 from data_warehouse.consts import EnumData
 
@@ -68,6 +69,7 @@ class AggregateDataService:
         TABLE_NAME_TRAINING_HOURS_SUMMARY: TrainingHoursSerializer,
         TABLE_NAME_TRAINING_RECORDS: TableTrainingRecordsSerializer,
         TABLE_NAME_ATTENDANCE_SHEET: AttendanceSheetSerializer,
+        TABLE_NAME_TRAINING_SUMMARY: TrainingSummarySerializer,
     }
 
     TITLES = (
@@ -445,8 +447,8 @@ class AggregateDataService:
         event_location = context['event_location']
         start_time = context['start_time']
         end_time = context['end_time']
-        username = request.query_params.get('user__username', None)
-        if username is None or username == '':
+        username = context['user__username']
+        if not username:
             user = request.user
         else:
             user = User.objects.filter(username=username).first()
