@@ -71,13 +71,14 @@ class TrainingHoursSerializer(BaseTableExportSerializer):
 
 class TableTrainingRecordsSerializer(BaseTableExportSerializer):
     '''Serialize parameters for training records.'''
+    user__username = serializers.CharField(required=False, default='')
     event_name = serializers.CharField(required=False, default='')
     event_location = serializers.CharField(required=False, default='')
     start_time = serializers.DateTimeField(
-        required=False, format=None,
+        required=False, format=None, input_formats=['%Y-%m-%d'],
         default=lambda: datetime.fromtimestamp(0, pytz.utc))
     end_time = serializers.DateTimeField(
-        required=False, format=None,
+        required=False, format=None, input_formats=['%Y-%m-%d'],
         default=lambda: now())  # pylint: disable=unnecessary-lambda
 
     def validate_start_time(self, data):
