@@ -264,8 +264,7 @@ def read_workload_content(
         PermissionService.assign_object_permissions(user, record)
 
         #Feedback
-        content = '历史培训记录导入。'
-        CampusEventFeedback.objects.create(record=record, content=content)
+        CampusEventFeedback.objects.create(record=record, content='')
 
 def converter_get_or_default(converter, key, default=None):
     try:
