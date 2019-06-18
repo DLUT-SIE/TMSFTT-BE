@@ -168,7 +168,7 @@ def read_workload_content(
     workbook = xlrd.open_workbook(fpath)
     sheet = workbook.sheet_by_index(0)
     num_rows = sheet.nrows
-    programs = {(p.name, p.category) for p in Program.objects.all()}
+    programs = {(p.name, p.category): p for p in Program.objects.all()}
     events = {}
     coefficients = {}
     dlut_admin = get_dlut_admin()
