@@ -1,6 +1,6 @@
 '''表格导出服务'''
 import tempfile
-from django.utils.timezone import now
+from django.utils.timezone import now, localtime
 import xlwt
 from infra.exceptions import BadRequest
 
@@ -498,6 +498,6 @@ class TableExportService:
     def __write_timestamp(sheet, row, col, lable='生成时间',
                           fmt='%Y-%m-%d %H:%M'):
         '''write current time into given sheet.'''
-        time_str = now().strftime(fmt)
+        time_str = localtime(now()).strftime(fmt)
         sheet.write(row, col, f'{lable}')
         sheet.write(row, col + 1, f'{time_str}')
