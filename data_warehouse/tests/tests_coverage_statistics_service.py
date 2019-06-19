@@ -116,12 +116,11 @@ class TestCoverageStatisticsService(TestCase):
         # 创新创业学运举办的培训项目的培训活动对应的所有培训记录
         cls.records_on_campus_event_sie_program = []
         for mock_user in cls.mock_users:
-            cls.records_on_campus_event_sie_program.extend(
+            cls.records_on_campus_event_sie_program.append(
                 mommy.make(
                     Record,
                     campus_event=cls.campus_event_sie_program,
                     user=mock_user,
-                    _quantity=10
                 )
             )
         # mock校级管理员 & 创新创业学院管理员
