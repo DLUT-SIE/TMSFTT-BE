@@ -18,7 +18,7 @@ User = get_user_model()
 class TestWorkloadCalculationService(TestCase):
     '''Test services provided by EnrollmentService.'''
     NUM_HOURS = 10
-    RECORDS_NUMS = 10
+    RECORDS_NUMS = 1
 
     @classmethod
     def setUpTestData(cls):
