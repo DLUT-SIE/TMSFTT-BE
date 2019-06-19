@@ -1,5 +1,5 @@
 '''Provide services of data aggregate.'''
-from django.utils.timezone import now
+from django.utils.timezone import now, localtime
 from django.utils.timezone import datetime
 
 from auth.models import Department, User
@@ -424,7 +424,8 @@ class AggregateDataService:
                     'campus_event_name': feedback.record.campus_event.name,
                     'feedback_content': feedback.content,
                     'feedback_time': (
-                        feedback.create_time.strftime('%Y-%m-%d %H:%M:%S')
+                        localtime(feedback.create_time).strftime(
+                            '%Y-%m-%d %H:%M:%S')
                         ),
                     'feedback_user_name': feedback.record.user.first_name,
                     'feedback_user_email': feedback.record.user.email,
@@ -470,8 +471,9 @@ class AggregateDataService:
                     record.campus_event.name
                     if record.campus_event else record.off_campus_event.name,
                     'event_time':
-                    record.campus_event.time
-                    if record.campus_event else record.off_campus_event.time,
+                    localtime(record.campus_event.time)
+                    if record.campus_event else localtime(
+                        record.off_campus_event.time),
                     'event_location':
                     record.campus_event.location
                     if record.campus_event
@@ -480,7 +482,7 @@ class AggregateDataService:
                     record.campus_event.num_hours
                     if record.campus_event
                     else record.off_campus_event.num_hours,
-                    'create_time': record.create_time,
+                    'create_time': localtime(record.create_time),
                     'role': record.event_coefficient.get_role_display(),
                     'status': record.get_status_display(),
                 }
