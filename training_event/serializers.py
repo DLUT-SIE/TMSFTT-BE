@@ -7,6 +7,8 @@ from training_event.services import EnrollmentService, CampusEventService
 from infra.mixins import HumanReadableValidationErrorMixin
 from training_program.serializers import ReadOnlyProgramSerializer
 
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 class EventCoefficientSerializer(HumanReadableValidationErrorMixin,
                                  serializers.ModelSerializer):
@@ -172,7 +174,19 @@ class EnrollmentSerailizer(HumanReadableValidationErrorMixin,
         return EnrollmentService.create_enrollment(validated_data)
 
     def validate(self, data):
-        data['user'] = self.context['request'].user
+        current_user = self.context['request'].user
+        request_data = self.context['request'].data
+        if 'user' not in request_data:
+            data['user'] = current_user
+        else:
+            user_id = request_data['user']
+            user = User.objects.get(pk=user_id)
+            if not (current_user.is_school_admin or (
+                current_user.check_department_admin(
+                    current_user.department))):
+                    raise serializers.ValidationError(
+                        '您无权查看该用户的培训记录')
+            data['user'] = user
         if not data['campus_event'].reviewed:
             raise serializers.ValidationError('不能报名未经审核的培训活动')
         existance = (
