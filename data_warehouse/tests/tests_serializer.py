@@ -63,17 +63,6 @@ class TestSummaryParametersSerializer(TestCase):
         self.assertEqual(validated.second, 0)
         self.assertEqual(validated.microsecond, 0)
 
-    def test_validate_end_time(self):
-        '''Should round to nearest hour.'''
-        current_time = now()
-        serializer = SummaryParametersSerializer()
-
-        validated = serializer.validate_end_time(current_time)
-
-        self.assertEqual(validated.minute, 0)
-        self.assertEqual(validated.second, 0)
-        self.assertEqual(validated.microsecond, 0)
-
     def test_validate(self):
         '''Should raise error if end_time is before start_time.'''
         end_time = now()
