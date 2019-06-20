@@ -293,3 +293,32 @@ class DepartmentInformation(models.Model):
 
     def delete(self, *args, **kwargs):
         raise Exception('该表状态为只读')
+
+
+class DepartmentAdminInformation(models.Model):
+    '''Raw data of department-admin information.
+
+    From our backend's view, this table is READ-ONLY. Its data is maintained
+    by DLUT-ITS.
+    '''
+    class Meta:
+        verbose_name = '学部管理人员基本信息'
+        verbose_name_plural = '学部管理人员基本信息'
+        db_table = 'TBL_XBGL_INFO'
+        default_permissions = ()
+        ordering = ['dwid']
+
+    zgh = models.CharField(verbose_name='职工号', max_length=20,
+                           db_column='ZGH', primary_key=True)
+    jsxm = models.CharField(verbose_name='教师姓名', max_length=100,
+                            db_column='JSXM', blank=True, null=True)
+    dwid = models.CharField(verbose_name='单位ID', max_length=20,
+                            db_column='DWID')
+    dwmc = models.CharField(verbose_name='单位名称', max_length=100,
+                            db_column='DWMC', blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        raise Exception('该表状态为只读')
+
+    def delete(self, *args, **kwargs):
+        raise Exception('该表状态为只读')

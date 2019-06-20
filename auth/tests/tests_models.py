@@ -5,7 +5,8 @@ from model_mommy import mommy
 
 from auth.models import (
     User, Department, GroupPermission,
-    TeacherInformation, DepartmentInformation
+    TeacherInformation, DepartmentInformation,
+    DepartmentAdminInformation,
 )
 
 import auth.models
@@ -165,6 +166,23 @@ class TestDepartmentInformation(TestCase):
     def test_delete_should_be_disallowed(self):
         '''Should raise error if trying to save model.'''
         info = DepartmentInformation()
+
+        with self.assertRaisesMessage(Exception, '该表状态为只读'):
+            info.delete()
+
+
+class TestDepartmentAdminInformation(TestCase):
+    '''Unit tests for DepartmentAdminInformation.'''
+    def test_save_should_be_disallowed(self):
+        '''Should raise error if trying to save model.'''
+        info = DepartmentAdminInformation()
+
+        with self.assertRaisesMessage(Exception, '该表状态为只读'):
+            info.save()
+
+    def test_delete_should_be_disallowed(self):
+        '''Should raise error if trying to save model.'''
+        info = DepartmentAdminInformation()
 
         with self.assertRaisesMessage(Exception, '该表状态为只读'):
             info.delete()
