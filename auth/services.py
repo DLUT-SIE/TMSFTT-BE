@@ -2,6 +2,7 @@
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Group
 from django.db import transaction
+from django.db.models import Q
 
 from auth.utils import assign_perm
 from auth.models import Department, UserGroup, User
@@ -96,8 +97,9 @@ class DepartmentService:
             name__in=('凌水主校区', '开发区校区', '盘锦校区')
         )
         return Department.objects.all().filter(
-            super_department__in=departments,
-            department_type__in=('T3', 'T6', 'T7'))
+            Q(super_department__in=departments,
+              department_type__in=('T3', 'T6', 'T7')) |
+            Q(raw_department_id='000133'))
 
 
 class GroupService:
