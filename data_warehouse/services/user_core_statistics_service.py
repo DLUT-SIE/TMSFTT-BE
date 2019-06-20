@@ -5,7 +5,7 @@ from datetime import timedelta
 from django.core.cache import cache
 from django.db import models
 from django.db.models import functions
-from django.utils.timezone import now
+from django.utils.timezone import now, localtime
 
 from training_event.models import Enrollment, EventCoefficient
 from training_record.models import Record
@@ -73,7 +73,7 @@ class UserCoreStatisticsService:
         else:
             res = None
         res = {
-            'timestamp': now(),
+            'timestamp': localtime(now()),
             'start_time': start_time_key,
             'end_time': end_time_key,
             'data': res,
@@ -145,7 +145,7 @@ class UserCoreStatisticsService:
             monthly_records.get(x, {'off_campus_count': 0})['off_campus_count']
             for x in months]
         res = {
-            'timestamp': now(),
+            'timestamp': localtime(now()),
             'months': months,
             'campus_data': campus_data,
             'off_campus_data': off_campus_data,
@@ -215,7 +215,7 @@ class UserCoreStatisticsService:
         campus_records_ratio = f'{campus_records_ratio:.0%}'
         off_campus_records_ratio = f'{off_campus_records_ratio:.0%}'
         res = {
-            'timestamp': now(),
+            'timestamp': localtime(now()),
             'start_time': start_time_key,
             'end_time': end_time_key,
             'num_campus_records': num_campus_records,
@@ -303,7 +303,7 @@ class UserCoreStatisticsService:
             .count()
         )
         res = {
-            'timestamp': now(),
+            'timestamp': localtime(now()),
             'start_time': start_time_key,
             'end_time': end_time_key,
             'num_enrolled_events': num_enrolled_events,
@@ -361,7 +361,7 @@ class UserCoreStatisticsService:
         for name in program_names:
             programs[name] += 1
         res = {
-            'timestamp': now(),
+            'timestamp': localtime(now()),
             'start_time': start_time_key,
             'end_time': end_time_key,
             'data': [{'name': key, 'value': value}

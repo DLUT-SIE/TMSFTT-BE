@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.core.cache import cache
 from django.db import models
 from django.db.models import Count, functions
-from django.utils.timezone import now
+from django.utils.timezone import now, localtime
 
 from training_event.models import CampusEvent
 from training_record.models import Record
@@ -30,7 +30,7 @@ class SchoolCoreStatisticsService:
         cached_value = cache.get(cache_key)
         if cached_value:
             return cached_value
-        current_time = now()
+        current_time = localtime(now())
         res = {
             'timestamp': current_time,
             'available_to_enroll': (
@@ -63,7 +63,7 @@ class SchoolCoreStatisticsService:
         cached_value = cache.get(cache_key)
         if cached_value:
             return cached_value
-        current_time = now()
+        current_time = localtime(now())
 
         # The total number of records
         num_records = Record.valid_objects.count()
@@ -114,7 +114,7 @@ class SchoolCoreStatisticsService:
         cached_value = cache.get(cache_key)
         if cached_value:
             return cached_value
-        current_time = now()
+        current_time = localtime(now())
         grouped_counts = (
             Record.valid_objects
             .filter(create_time__gte=current_time.replace(

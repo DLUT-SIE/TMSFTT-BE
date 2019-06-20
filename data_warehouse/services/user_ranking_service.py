@@ -5,7 +5,7 @@ from collections import defaultdict
 from django.core.cache import cache
 from django.db import models, transaction
 from django.db.models.functions import Coalesce
-from django.utils.timezone import now
+from django.utils.timezone import now, localtime
 
 from auth.models import Department
 from auth.services import UserService
@@ -70,7 +70,7 @@ class UserRankingService:
             Ranking.RANKING_BY_TOTAL_TRAINING_HOURS
         )
         res = {
-            'timestamp': now(),
+            'timestamp': localtime(now()),
             'ranking': ranking,
         }
         cache.set(cache_key, res, 8 * 3600)  # Cache for 8 hours
@@ -111,7 +111,7 @@ class UserRankingService:
             Ranking.RANKING_BY_TOTAL_TRAINING_HOURS
         )
         res = {
-            'timestamp': now(),
+            'timestamp': localtime(now()),
             'ranking': ranking,
         }
         cache.set(cache_key, res, 8 * 3600)  # Cache for 8 hours
