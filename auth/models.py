@@ -310,12 +310,8 @@ class DepartmentAdminInformation(models.Model):
 
     zgh = models.CharField(verbose_name='职工号', max_length=20,
                            db_column='ZGH', primary_key=True)
-    jsxm = models.CharField(verbose_name='教师姓名', max_length=100,
-                            db_column='JSXM', blank=True, null=True)
     dwid = models.CharField(verbose_name='单位ID', max_length=20,
                             db_column='DWID')
-    dwmc = models.CharField(verbose_name='单位名称', max_length=100,
-                            db_column='DWMC', blank=True, null=True)
 
     def save(self, *args, **kwargs):
         raise Exception('该表状态为只读')

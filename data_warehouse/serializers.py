@@ -3,7 +3,7 @@ from datetime import datetime
 
 import pytz
 from rest_framework import serializers
-from django.utils.timezone import now
+from django.utils.timezone import now, localtime
 
 from infra.mixins import HumanReadableValidationErrorMixin
 
@@ -46,13 +46,9 @@ class SummaryParametersSerializer(HumanReadableValidationErrorMixin,
         default=lambda: datetime.fromtimestamp(0, pytz.utc))
     end_time = serializers.DateTimeField(
         required=False, format=None,
-        default=lambda: now())  # pylint: disable=unnecessary-lambda
+        default=lambda: localtime(now()))  # pylint: disable=unnecessary-lambda
 
     def validate_start_time(self, data):
-        '''Round to nearest hour.'''
-        return data.replace(minute=0, second=0, microsecond=0)
-
-    def validate_end_time(self, data):
         '''Round to nearest hour.'''
         return data.replace(minute=0, second=0, microsecond=0)
 
@@ -79,7 +75,7 @@ class TableTrainingRecordsSerializer(BaseTableExportSerializer):
         default=lambda: datetime.fromtimestamp(0, pytz.utc))
     end_time = serializers.DateTimeField(
         required=False, format=None, input_formats=['%Y-%m-%d'],
-        default=lambda: now())  # pylint: disable=unnecessary-lambda
+        default=lambda: localtime(now()))  # pylint: disable=unnecessary-lambda
 
     def validate_start_time(self, data):
         '''Round to nearest hour.'''
