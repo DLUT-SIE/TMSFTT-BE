@@ -90,14 +90,6 @@ class EnrollmentViewSet(DRFCacheMixin,
         '''Use service to change num_enrolled and delete enrollment.'''
         EnrollmentService.delete_enrollment(instance)
 
-    def create(self, request):
-        # print(request.data)
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
     @decorators.action(methods=['GET'], detail=False,
                        url_path='event-enrollments')
     def event_enrollments(self, request):
