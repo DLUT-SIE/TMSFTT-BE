@@ -42,7 +42,7 @@ INTERNAL_IPS = ['127.0.0.1']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DATABASE_NAME', 'TMSFTT'),
+        'NAME': os.environ.get('DATABASE_NAME', 'TMSFTT-prod'),
         'USER': os.environ.get('DATABASE_USER', 'root'),
         'PASSWORD': get_secret_from_file('DATABASE_PASSWORD_FILE'),
         'HOST': os.environ.get('DATABASE_HOST', 'tmsftt-db'),
@@ -169,15 +169,15 @@ CELERY_BEAT_SCHEDULE = {
     }
 }
 
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis:6379/1",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
-    }
-}
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://redis:6379/1",
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         }
+#     }
+# }
 
 # Email settings
 
