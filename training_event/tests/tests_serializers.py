@@ -3,6 +3,7 @@ from unittest.mock import patch, Mock
 
 from django.test import TestCase
 from django.utils.timezone import now
+from django.contrib.auth.models import Group
 from rest_framework import serializers
 
 from model_mommy import mommy
@@ -13,6 +14,7 @@ from training_event.serializers import (
     ReadOnlyCampusEventSerializer)
 from training_event.models import CampusEvent
 from training_program.models import Program
+import auth.models
 
 
 class TestCampusEventSerializer(TestCase):
@@ -225,3 +227,32 @@ class TestEnrollmentSerializer(TestCase):
         data = {'user': 123}
         serializer.create(data)
         mocked_service.create_enrollment.assert_called_with(data)
+
+    def test_validate_create_with_user_with_permission(self):
+        '''
+        Should raise ValidationError when update if program is wrong
+        '''
+        program = mommy.make(Program, name="名师讲坛")
+        event = mommy.make(CampusEvent, program=program, reviewed=True)
+        request = Mock()
+        user1 = mommy.make(auth.models.User)
+        group1 = mommy.make(Group, name="大连理工大学-10141-管理员")
+        user1.groups.add(group1)
+        user2 = mommy.make(auth.models.User)
+        group2 = mommy.make(Group, name="创新创业学院-专任教师")
+        user2.groups.add(group2)
+        request.user = user1
+        request.data = {
+            'campus_event': event.id,
+            'user': user1.id
+        }
+        context = {
+            'request': request
+        }
+        enroll_data = {
+            'campus_event': event,
+            'user': user2,
+        }
+        serializer = EnrollmentSerailizer(enroll_data, context=context)
+        data = serializer.validate(enroll_data)
+        self.assertEqual(data['campus_event'].program.name, "名师讲坛")

@@ -1,5 +1,6 @@
 '''Define how to serialize our models.'''
 from django.utils.timezone import now
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 import training_event.models
@@ -7,8 +8,8 @@ from training_event.services import EnrollmentService, CampusEventService
 from infra.mixins import HumanReadableValidationErrorMixin
 from training_program.serializers import ReadOnlyProgramSerializer
 
-from django.contrib.auth import get_user_model
 User = get_user_model()
+
 
 class EventCoefficientSerializer(HumanReadableValidationErrorMixin,
                                  serializers.ModelSerializer):
@@ -182,10 +183,10 @@ class EnrollmentSerailizer(HumanReadableValidationErrorMixin,
             user_id = request_data['user']
             user = User.objects.get(pk=user_id)
             if not (current_user.is_school_admin or (
-                current_user.check_department_admin(
-                    current_user.department))):
-                    raise serializers.ValidationError(
-                        '您无权查看该用户的培训记录')
+                    current_user.check_department_admin(
+                        current_user.department))):
+                raise serializers.ValidationError(
+                    '您无权报名培训活动')
             data['user'] = user
         if not data['campus_event'].reviewed:
             raise serializers.ValidationError('不能报名未经审核的培训活动')
