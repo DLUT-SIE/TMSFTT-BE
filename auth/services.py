@@ -99,7 +99,8 @@ class DepartmentService:
         return Department.objects.all().filter(
             Q(super_department__in=departments,
               department_type__in=('T3', 'T6', 'T7')) |
-            Q(raw_department_id='000133'))
+            Q(raw_department_id='000133') |
+            Q(raw_department_id='000216'))
 
 
 class GroupService:
