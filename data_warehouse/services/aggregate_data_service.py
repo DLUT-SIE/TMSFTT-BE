@@ -430,7 +430,8 @@ class AggregateDataService:
                     'feedback_user_name': feedback.record.user.first_name,
                     'feedback_user_email': feedback.record.user.email,
                     'feedback_user_department': (
-                        feedback.record.user.administrative_department.name)
+                        feedback.record.user.administrative_department.name if
+                        feedback.record.user.administrative_department else '')
                 }
             )
         file_path = TableExportService.export_training_feedback(data)
