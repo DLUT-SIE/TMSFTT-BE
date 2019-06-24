@@ -57,6 +57,7 @@ class RecordViewSet(DRFCacheMixin,
             ['%(app_label)s.view_%(model_name)s'],
         'get_role_choices': ['%(app_label)s.view_%(model_name)s'],
         'list_records_for_review': ['%(app_label)s.view_%(model_name)s'],
+        'list_records_by_event': ['%(app_label)s.view_%(model_name)s'],
     }
     filter_backends = (filters.DjangoObjectPermissionsFilter,
                        django_filters.rest_framework.DjangoFilterBackend,)
@@ -88,6 +89,21 @@ class RecordViewSet(DRFCacheMixin,
 
         queryset = self.filter_queryset(self.get_queryset()).filter(
             user=user)
+        return self._get_paginated_response(queryset)
+
+    @decorators.action(detail=False, methods=['GET'],
+                       url_path='list-records-by-event')
+    def list_records_by_event(self, request):
+        '''Return records in certain campus_event.'''
+        campus_event = request.query_params.get('campus_event')
+        if not (request.user.is_school_admin or (
+                request.user.check_department_admin(
+                    campus_event.program.department))):
+            raise BadRequest('您无权查看该活动下的培训记录')
+
+        queryset = self.filter_queryset(self.get_queryset()).filter(
+            campus_event=campus_event, off_campus_event__isnull=True,
+        )
         return self._get_paginated_response(queryset)
 
     @decorators.action(detail=False, methods=['GET'],
