@@ -52,6 +52,7 @@ class RecordViewSet(DRFCacheMixin,
         'department_admin_review': ['%(app_label)s.review_%(model_name)s'],
         'school_admin_review': ['%(app_label)s.review_%(model_name)s'],
         'close_record': ['%(app_label)s.change_%(model_name)s'],
+        'force_close_record': ['%(app_label)s.change_%(model_name)s'],
         'batch_submit': ['%(app_label)s.batchadd_%(model_name)s'],
         'get_number_of_records_without_feedback':
             ['%(app_label)s.view_%(model_name)s'],
@@ -184,6 +185,21 @@ class RecordViewSet(DRFCacheMixin,
     def close_record(self, request, pk):
         '''Close the record which should not be changed any more.'''
         RecordService.close_record(pk,
+                                   request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @decorators.action(detail=False, methods=['POST'],
+                       url_path='force-close')
+    def force_close_record(self, request):
+        '''Close the record which should not be changed any more.'''
+        campus_event = request.query_params.get('campus_event')
+        user = request.query_params.get('user_id')
+        try:
+            record = Record.objects.get(campus_event=campus_event,
+                                        user=user)
+        except Exception:
+            raise BadRequest('要关闭的记录不存在')
+        RecordService.close_record(record.id,
                                    request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 

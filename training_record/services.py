@@ -423,7 +423,7 @@ class RecordService:
             record = (Record
                       .objects
                       .select_for_update()
-                      .filter(pk=record_id, campus_event__isnull=True))
+                      .filter(pk=record_id))
             if not record:
                 raise BadRequest('无此培训记录')
             record = record[0]
