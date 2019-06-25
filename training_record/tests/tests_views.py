@@ -117,6 +117,7 @@ class TestRecordViewSet(APITestCase):
             off_campus_event = mommy.make(training_event.models.OffCampusEvent)
             record = mommy.make(
                 Record,
+                user=self.user,
                 off_campus_event=off_campus_event,
                 status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED,
                 )
