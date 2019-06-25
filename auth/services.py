@@ -100,7 +100,15 @@ class DepartmentService:
             Q(super_department__in=departments,
               department_type__in=('T3', 'T6', 'T7')) |
             Q(raw_department_id='000133') |
-            Q(raw_department_id='000216'))
+            Q(raw_department_id='000216') |
+            Q(raw_department_id='000360') |
+            Q(raw_department_id='000340') |
+            Q(raw_department_id='000356') |
+            Q(raw_department_id='000329') |
+            Q(raw_department_id='000308') |
+            Q(raw_department_id='001325')).exclude(
+                raw_department_id='000355'
+            )
 
 
 class GroupService:

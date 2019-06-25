@@ -182,11 +182,9 @@ class EnrollmentSerailizer(HumanReadableValidationErrorMixin,
         else:
             user_id = request_data['user']
             user = User.objects.get(pk=user_id)
-            if not (current_user.is_school_admin or (
-                    current_user.check_department_admin(
-                        user.department))):
+            if not current_user.is_school_admin:
                 raise serializers.ValidationError(
-                    '您无权报名培训活动')
+                    '您没有权限为用户报名该活动')
             data['user'] = user
         if not data['campus_event'].reviewed:
             raise serializers.ValidationError('不能报名未经审核的培训活动')
