@@ -86,6 +86,7 @@ class ReadOnlyRecordSerializer(HumanReadableValidationErrorMixin,
         serializers.SerializerMethodField(read_only=True))
     off_campus_event = OffCampusEventSerializer(read_only=True)
     campus_event = BasicReadOnlyCampusEventSerializer(read_only=True)
+    user = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Record
@@ -101,6 +102,18 @@ class ReadOnlyRecordSerializer(HumanReadableValidationErrorMixin,
     def get_allow_actions_from_admin(self, obj):
         '''Get status of whether department admin can review or not.'''
         return is_admin_allowed_operating(self.context['request'].user, obj)
+
+    def get_user(self, obj):
+        '''Serialize necessary information about user.'''
+        user = obj.user
+        return {
+            'department_str': user.department.name,
+            'username': user.username,
+            'first_name': user.first_name,
+            'cell_phone_number': user.cell_phone_number,
+            'email': user.email,
+            'technical_title': user.technical_title,
+        }
 
 
 class RecordWriteSerializer(HumanReadableValidationErrorMixin,
