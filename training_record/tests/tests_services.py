@@ -437,13 +437,14 @@ class TestRecordService(TestCase):
     def test_close_record_no_record(self):
         '''Should raise BadRequest if no such record.'''
         campus_event = mommy.make(CampusEvent)
+        user = mommy.make(get_user_model())
         record = mommy.make(Record,
+                            user=user,
                             campus_event=campus_event,
                             status=Record.STATUS_DEPARTMENT_ADMIN_APPROVED)
-        user = mommy.make(get_user_model())
         with self.assertRaisesMessage(
                 BadRequest, '无此培训记录'):
-            RecordService.close_record(record.id, user)
+            RecordService.close_record(record.id+10086, user)
 
     @patch('training_record.services.NotificationService'
            '.send_system_notification')

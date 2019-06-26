@@ -192,8 +192,8 @@ class RecordViewSet(DRFCacheMixin,
                        url_path='force-close')
     def force_close_record(self, request):
         '''Close the record which should not be changed any more.'''
-        campus_event = request.query_params.get('campus_event')
-        user = request.query_params.get('user_id')
+        campus_event = request.data.get('campus_event')
+        user = request.data.get('user_id')
         try:
             record = Record.objects.get(campus_event=campus_event,
                                         user=user)
