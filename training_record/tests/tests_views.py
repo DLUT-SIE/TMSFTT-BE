@@ -255,6 +255,35 @@ class TestRecordViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+    @patch('training_record.services.NotificationService'
+           '.send_system_notification')
+    def test_force_close_record(self, _):
+        '''Should force close campus record.'''
+        campus_event = mommy.make(training_event.models.CampusEvent)
+        user = mommy.make(User)
+        record = mommy.make(training_record.models.Record,
+                            campus_event=campus_event,
+                            user=user,
+                            status=Record.STATUS_FEEDBACK_SUBMITTED)
+        group = mommy.make(Group, name="创新创业学院-管理员")
+        user.groups.add(group)
+        type(user).is_school_admin = PropertyMock(return_value=True)
+        assign_perm('training_record.change_record', group)
+        PermissionService.assign_object_permissions(self.user, record)
+
+        data = {
+            'campus_event': campus_event.id,
+            'user_id': user.id,
+        }
+
+        url = reverse('record-force-close-record')
+
+        self.client.force_authenticate(user)
+
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
     @patch('training_record.views.RecordService')
     def test_batch_submit(self, mocked_service):
         '''Should batch create records according to request.'''
