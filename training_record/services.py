@@ -4,7 +4,7 @@ import xlrd
 
 from django.db import transaction, IntegrityError
 from django.contrib.auth import get_user_model
-from django.utils.timezone import now
+from django.utils.timezone import now, localtime
 
 from auth.services import PermissionService
 from infra.utils import prod_logger
@@ -447,6 +447,20 @@ class RecordService:
         count = Record.objects.filter(
             user=user, off_campus_event__isnull=True, feedback=None).count()
         return count
+
+    @staticmethod
+    def get_recent_events_of_import_records():
+        '''Get the recent events which has records.'''
+        events = set()
+        current_time = localtime(now())
+        records = Record.objects.filter(
+            create_time__gte=current_time.replace(hour=0, minute=0, second=0),
+            off_campus_event__isnull=True,
+        )
+        for record in records:
+            events.add(record.campus_event)
+
+        return list(events)
 
 
 class CampusEventFeedbackService:

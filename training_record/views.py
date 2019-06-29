@@ -18,6 +18,7 @@ from training_record.services import RecordService
 from training_record.serializers import (CampusEventFeedbackSerializer,
                                          RecordWriteSerializer,
                                          ReadOnlyRecordSerializer)
+from training_event.serializers import CampusEventSerializer
 from infra.mixins import MultiSerializerActionClassMixin
 from infra.exceptions import BadRequest
 from drf_cache.mixins import DRFCacheMixin
@@ -59,6 +60,7 @@ class RecordViewSet(DRFCacheMixin,
         'get_role_choices': ['%(app_label)s.view_%(model_name)s'],
         'list_records_for_review': ['%(app_label)s.view_%(model_name)s'],
         'list_records_by_event': ['%(app_label)s.view_%(model_name)s'],
+        'get_recent_events': ['%(app_label)s.view_%(model_name)s'],
     }
     filter_backends = (filters.DjangoObjectPermissionsFilter,
                        django_filters.rest_framework.DjangoFilterBackend,)
@@ -222,6 +224,14 @@ class RecordViewSet(DRFCacheMixin,
         count = RecordService.get_number_of_records_without_feedback(
             request.user)
         return Response({'count': count}, status=status.HTTP_200_OK)
+
+    @decorators.action(detail=False, methods=['GET'],
+                       url_path='recent-events')
+    def get_recent_events(self, request):
+        '''Get the recent events which has records.'''
+        events = RecordService.get_recent_events_of_import_records()
+        data = CampusEventSerializer(events, many=True).data
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class RecordContentViewSet(DRFCacheMixin,
