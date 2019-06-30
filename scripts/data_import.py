@@ -157,8 +157,8 @@ def row_parser_2018(row):
 
 
 def row_parser_2017(row):
-    coef = 4 if row[5] == '专家' else 1
-    return row[4], row[2], row[1], row[3], row[5], row[6], coef, 0
+    coef = 4 if row[8] == '专家' else 1
+    return row[4], row[5], row[6], row[7], row[2], row[1], row[3], row[8], row[9], coef, 0
 
 
 def read_workload_content(
@@ -505,6 +505,14 @@ def main():
            start_row=1,
            year=2018,
            fpath=path,
+        )
+    elif cmd == '2017':
+        path = sys.argv[2]
+        read_workload_content(
+            row_parser=row_parser_2017,
+            start_row=2,
+            year=2017,
+            fpath=path,
         )
 
 
