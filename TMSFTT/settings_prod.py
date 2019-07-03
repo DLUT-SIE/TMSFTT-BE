@@ -159,6 +159,10 @@ CELERY_BEAT_SCHEDULE = {
         # Every year
         'schedule': crontab(minute=0, hour=1, day_of_month=1, month_of_year=1)
     }
+    'send_mail_to_users_with_events_next_day': {
+        'task': 'data_warehouse.tasks.send_mail_to_users_with_events_next_day',
+        'schedule': crontab(minute=0, hour=7)  # Daily at moring.
+    }
 }
 
 CACHES = {

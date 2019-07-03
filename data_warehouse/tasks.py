@@ -3,7 +3,7 @@ import smtplib
 
 from celery import shared_task
 from django.db import transaction
-from django.utils.timezone import now
+from django.utils.timezone import now, localtime
 from django.template.loader import render_to_string
 from django.core.mail import send_mass_mail
 from django.contrib.sites.models import Site
@@ -15,6 +15,7 @@ from data_warehouse.services import (
     UserRankingService, AggregateDataService,
 )
 from infra.utils import prod_logger
+from training_event.models import CampusEvent, Enrollment
 
 
 @shared_task
@@ -106,6 +107,42 @@ def send_mail_to_inactive_users(skip_users=None):
     except smtplib.SMTPException as exc:
         msg = (
             '系统在为每位教师发送年度报告邮件时发生错误，'
+            f'部分邮件可能未成功发送，错误信息为：{exc}'
+        )
+        prod_logger.error(msg)
+
+
+@shared_task
+def send_mail_to_users_with_events_next_day():
+    '''send mail to users who will attend events tomorrow'''
+    current_time = localtime(now())
+    start_time = current_time.replace(day=current_time.day+1,
+                                      hour=0, minute=0, second=0)
+    end_time = current_time.replace(day=current_time.day+2,
+                                    hour=0, minute=0, second=0)
+
+    events = CampusEvent.objects.filter(time__gte=start_time,
+                                        time__lt=end_time)
+    enrollments = []
+    for event in events:
+        enrollments.extend(Enrollment.objects.filter(campus_event=event))
+
+    mails = []
+    for enrollment in enrollments:
+        user = enrollment.user
+        msg = '您报名的活动{}将在明天举办，请按时参加。'.format(enrollment.campus_event.name)
+        mail = (
+            '培训活动提醒',
+            msg,
+            'TMSFTT',
+            user.email,
+        )
+        mails.append(mail)
+    try:
+        send_mass_mail(mails, fail_silently=False)
+    except smtplib.SMTPException as exc:
+        msg = (
+            '系统在提醒教师参加活动时发生错误，'
             f'部分邮件可能未成功发送，错误信息为：{exc}'
         )
         prod_logger.error(msg)
