@@ -3,11 +3,14 @@ from unittest.mock import patch
 
 from model_mommy import mommy
 from django.test import TestCase
+from django.utils.timezone import now, localtime
 
 from auth.models import User
 from data_warehouse.tasks import (
-    generate_user_rankings, send_mail_to_inactive_users
+    generate_user_rankings, send_mail_to_inactive_users,
+    send_mail_to_users_with_events_next_day
 )
+from training_event.models import CampusEvent, Enrollment
 
 
 class TestTasks(TestCase):
@@ -63,4 +66,27 @@ class TestTasks(TestCase):
         (mails,), kwargs = mocked_send_mail.call_args
         fail_silently = kwargs['fail_silently']
         self.assertEqual(len(mails), len(users) - len(skip_users))
+        self.assertFalse(fail_silently)
+
+    @patch('data_warehouse.tasks.send_mass_mail')
+    def test_send_mail_to_users_with_events_next_day(self, mocked_send_mail):
+        '''should send mail to users who will attend events tomorrow'''
+        current_time = localtime(now())
+        event0 = mommy.make(CampusEvent,
+                            time=current_time.replace(day=current_time.day+1),
+                            name='0')
+        event1 = mommy.make(CampusEvent,
+                            time=current_time.replace(day=current_time.day+1),
+                            name='1')
+
+        for _ in range(10):
+            mommy.make(Enrollment, campus_event=event0, user=mommy.make(User))
+        for _ in range(10):
+            mommy.make(Enrollment, campus_event=event1, user=mommy.make(User))
+
+        send_mail_to_users_with_events_next_day()
+        mocked_send_mail.assert_called()
+        (mails,), kwargs = mocked_send_mail.call_args
+        fail_silently = kwargs['fail_silently']
+        self.assertEqual(len(mails), 20)
         self.assertFalse(fail_silently)
