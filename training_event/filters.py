@@ -23,4 +23,6 @@ class CampusEventFilter(filters.FilterSet):
             'program': ['exact'],
             'id': ['in'],
             'reviewed': ['exact'],
+            'name': ['icontains'],
+            
         }
