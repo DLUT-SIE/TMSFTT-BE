@@ -104,10 +104,9 @@ class SOAPSMSService:
             'interface_method': 'sms',
 
             # Business-related
-            # NOTE: recieve_person_info is the correct parameter name,
+            # NOTE: person_info is the correct parameter name,
             # I know it's a typo but it's required by the interface
-            'recieve_person_info': '',  # Required
-            # NOTE: Again, emial_title is the correct parameter name
+            'person_info': '',  # Required
             'sms_info': '',  # Required
             'send_priority': '3',  # Send now
             'templet_id': '0',
@@ -119,7 +118,7 @@ class SOAPSMSService:
             phone_number = sms.get('user_phone')
             sms_info = sms.get('sms_info')
             payload = default_payload.copy()
-            payload['recieve_person_info'] = self.format_recipients(
+            payload['person_info'] = self.format_recipients(
                 phone_number)
             payload['sms_info'] = sms_info
             sms_info = json.dumps(payload)
