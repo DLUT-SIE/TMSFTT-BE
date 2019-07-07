@@ -68,7 +68,8 @@ class NotificationService:  # pylint: disable=R0903
 
 class SOAPSMSService:
     '''Provide service for sending sms.'''
-    def send_sms(self, smses):
+    @staticmethod
+    def send_sms(smses):
         '''Send sms to user.
 
         Parameters
@@ -118,8 +119,8 @@ class SOAPSMSService:
             phone_number = sms.get('user_phone')
             sms_info = sms.get('sms_info')
             payload = default_payload.copy()
-            payload['person_info'] = self.format_recipients(
-                phone_number)
+            phone_number = f'||||{phone_number}'
+            payload['person_info'] = phone_number
             payload['sms_info'] = sms_info
             sms_info = json.dumps(payload)
             try:
@@ -137,18 +138,3 @@ class SOAPSMSService:
                     f'消息ID: {resp["msg_id"]}'
                 )
                 prod_logger.info(msg)
-
-    def format_recipients(self, recipients):
-        '''Format recipients to string.
-
-        Recipient is formatted into
-        "Name|ID|DepartmentID|DepartmentName|Email",
-        fields are optional but vertical bar is required, multiple recipients
-        are separated by "^@^".
-        '''
-        res = ''
-        for recipient in recipients:
-            if res != '':
-                res += '^@^'
-            res += f'||||{recipient}'
-        return res
