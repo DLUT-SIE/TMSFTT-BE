@@ -187,6 +187,7 @@ class SOAPMSGService:
             'msg_title': '',  # Required
             'msg_info': '',  # Required
             'send_priority': '3',  # Send now
+            'operator_unit_id': '2376405414313985',
             'templet_id': '0',
             'receipt_id': '0',
             'send_sys_id': '1',
