@@ -6,6 +6,8 @@ from auth.models import Department, User
 from infra.exceptions import BadRequest
 from training_program.models import Program
 from training_event.services import EnrollmentService
+from training_event.models import CampusEvent
+from training_record.models import Record
 
 from data_warehouse.services import (
     UserCoreStatisticsService,
@@ -170,6 +172,7 @@ class AggregateDataService:
         '''get group users data'''
         group_by = context.get('group_by', '')
         department_id = context.get('department_id', '')
+        program_id = context.get('program_id', None)
         if not (group_by.isdigit() and department_id.isdigit()):
             raise BadRequest("错误的参数")
         group_by = int(group_by)
@@ -181,6 +184,12 @@ class AggregateDataService:
         users = users.filter(
             teaching_type__in=('专任教师', '实验技术')
         )
+        if program_id:
+            program_id = int(program_id)
+            events = CampusEvent.objects.filter(program=program_id)
+            records = Record.objects.filter(campus_event__in=events)
+            users_in_program_id = {record.user.id for record in records}
+            users = users.filter(id__in=users_in_program_id)
         group_users = (
             TeachersStatisticsService.teachers_statistics_group_dispatch(
                 users, group_by, count_only=True))
@@ -202,6 +211,7 @@ class AggregateDataService:
                                  datetime.now().replace(year=2016))
         end_time = context.get('end_time', datetime.now())
         department_id = context.get('department_id', '')
+        program_id = context.get('program_id', None)
         if not (group_by.isdigit() and department_id.isdigit()):
             raise BadRequest("错误的参数")
         group_by = int(group_by)
@@ -211,6 +221,13 @@ class AggregateDataService:
         time = {'start_time': start_time, 'end_time': end_time}
         records = RecordsStatisticsService.get_records_by_time_department(
             context['request'].user, department_id, time)
+        if program_id:
+            program_id = int(program_id)
+            records['campus_records'] = records['campus_records'].filter(
+                campus_event__program=program_id)
+            records['off_campus_records'] = (
+                records['off_campus_records'].filter(
+                    off_campus_event__isnull=True))
         group_records = {}
         group_records['campus_records'] = (
             RecordsStatisticsService.records_statistics_group_dispatch(
@@ -408,7 +425,7 @@ class AggregateDataService:
         request = context.get('request')
         program_id = context.get('program_id', None)
         department_id = context.get('department_id', None)
-        if not department_id:
+        if program_id:
             program_ids = [program_id]
         else:
             program_ids = Program.objects.filter(
@@ -521,6 +538,7 @@ class AggregateDataService:
         '''培训总体情况表导出'''
         # adapt to @wangyang's code
         request = context.get('request')
+        context['program_id'] = request.query_params.get('program_id', None)
         user = request.user
         department_id = '0' if user.is_school_admin else str(
             user.administrative_department.id)
