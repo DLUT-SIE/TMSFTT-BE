@@ -395,7 +395,10 @@ class TestAggregateDataService(TestCase):
     def test_table_teacher_statistics(self, mock_table_export_service):
         '''Should 正确的导出专任教师表'''
         context = {}
-        context['request'] = self.request
+        request = Mock()
+        type(request).query_params = PropertyMock(
+            return_value={'program_id': '1'})
+        context['request'] = request
         context['department_id'] = '0'
         context['group_by'] = '3'
         file_path, _ = AggregateDataService.table_teacher_statistics(
@@ -408,7 +411,10 @@ class TestAggregateDataService(TestCase):
     def test_table_training_summary(self, mock_table_export_service):
         '''Should 正确的导出专任教师表'''
         context = {}
-        context['request'] = self.request
+        request = Mock()
+        type(request).query_params = PropertyMock(
+            return_value={'program_id': '1'})
+        context['request'] = request
         context['department_id'] = '0'
         context['group_by'] = '3'
         context['start_time'] = now()
