@@ -227,7 +227,7 @@ class CampusEventFeedback(models.Model):
     record = models.OneToOneField(Record, verbose_name='培训记录',
                                   related_name='feedback',
                                   on_delete=models.CASCADE)
-    content = models.CharField(verbose_name='反馈内容', max_length=120)
+    content = models.CharField(verbose_name='反馈内容', max_length=500)
 
     def __str__(self):
         return '反馈内容({})'.format(self.record_id)
