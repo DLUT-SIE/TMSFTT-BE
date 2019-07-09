@@ -145,7 +145,6 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Shanghai'
-CELERY_BEAT_SCHEDULER = 'celery.schedulers.DatabaseScheduler'
 CELERY_BEAT_SCHEDULE = {
     'update_teachers_and_departments_information': {
         'task': 'auth.tasks.update_teachers_and_departments_information',
