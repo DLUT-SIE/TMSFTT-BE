@@ -31,7 +31,7 @@ SECRET_KEY = get_secret_from_file('SECRET_KEY_FILE')
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False 
 
 ALLOWED_HOSTS = ['localhost', 'tmsftt.local', '10.7.23.14', '127.0.0.1']
 INTERNAL_IPS = ['127.0.0.1']
@@ -169,15 +169,15 @@ CELERY_BEAT_SCHEDULE = {
     }
 }
 
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django_redis.cache.RedisCache",
-#         "LOCATION": "redis://redis:6379/1",
-#         "OPTIONS": {
-#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-#         }
-#     }
-# }
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
 
 # Email settings
 
