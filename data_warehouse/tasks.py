@@ -15,6 +15,7 @@ from data_warehouse.services import (
     UserRankingService, AggregateDataService,
 )
 from infra.utils import prod_logger
+from infra.services import SOAPMSGService, SOAPSMSService
 from training_event.models import CampusEvent, Enrollment
 
 
@@ -112,6 +113,7 @@ def send_mail_to_inactive_users(skip_users=None):
         prod_logger.error(msg)
 
 
+# pylint: disable=too-many-locals
 @shared_task
 def send_mail_to_users_with_events_next_day():
     '''send mail to users who will attend events tomorrow'''
@@ -128,9 +130,18 @@ def send_mail_to_users_with_events_next_day():
         enrollments.extend(Enrollment.objects.filter(campus_event=event))
 
     mails = []
+    smses = []
+    msges = []
     for enrollment in enrollments:
         user = enrollment.user
-        msg = '您报名的活动{}将在明天举办，请按时参加。'.format(enrollment.campus_event.name)
+        msg = ('老师，您好！{}定于{}月{}日(星期{})，在{}，如期组织{}活动。'
+               '清您准时参加，谢谢！').format(
+                   enrollment.campus_event.program.department,
+                   enrollment.campus_event.time.month,
+                   enrollment.campus_event.time.day,
+                   enrollment.campus_event.time.weekday(),
+                   enrollment.campus_event.location,
+                   enrollment.campus_event)
         mail = (
             '培训活动提醒',
             msg,
@@ -138,11 +149,32 @@ def send_mail_to_users_with_events_next_day():
             user.email,
         )
         mails.append(mail)
+        sms = {
+            'user_phone_number': user.cell_phone_number,
+            'sms_info': msg,
+        }
+        smses.append(sms)
+        msg_info = {
+            'user_username': user.username,
+            'msg_title': '培训活动提醒',
+            'msg_info': msg,
+        }
+        msges.append(msg_info)
     try:
         send_mass_mail(mails, fail_silently=False)
     except smtplib.SMTPException as exc:
         msg = (
             '系统在提醒教师参加活动时发生错误，'
             f'部分邮件可能未成功发送，错误信息为：{exc}'
+        )
+        prod_logger.error(msg)
+
+    try:
+        SOAPSMSService.send_sms(smses)
+        SOAPMSGService.send_msg(msges)
+    except Exception as exc:
+        msg = (
+            '系统在提醒教师参加活动时发生错误，'
+            f'部分信息可能未成功发送，错误信息为：{exc}'
         )
         prod_logger.error(msg)

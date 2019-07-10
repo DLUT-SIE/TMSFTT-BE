@@ -68,8 +68,11 @@ class TestTasks(TestCase):
         self.assertEqual(len(mails), len(users) - len(skip_users))
         self.assertFalse(fail_silently)
 
+    @patch('infra.services.SOAPSMSService.send_sms')
+    @patch('infra.services.SOAPMSGService.send_msg')
     @patch('data_warehouse.tasks.send_mass_mail')
-    def test_send_mail_to_users_with_events_next_day(self, mocked_send_mail):
+    def test_send_mail_to_users_with_events_next_day(
+            self, mocked_send_mail, mocked_send_msg, mocked_send_sms):
         '''should send mail to users who will attend events tomorrow'''
         current_time = localtime(now())
         event0 = mommy.make(CampusEvent,
@@ -86,6 +89,8 @@ class TestTasks(TestCase):
 
         send_mail_to_users_with_events_next_day()
         mocked_send_mail.assert_called()
+        mocked_send_msg.assert_called()
+        mocked_send_sms.assert_called()
         (mails,), kwargs = mocked_send_mail.call_args
         fail_silently = kwargs['fail_silently']
         self.assertEqual(len(mails), 20)
