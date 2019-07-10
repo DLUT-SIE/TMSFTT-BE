@@ -1,14 +1,19 @@
 '''Provide services of training record module.'''
 import tempfile
+import smtplib
 import xlrd
 
 from django.db import transaction, IntegrityError
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now, localtime
+from django.core.mail import send_mass_mail
 
 from auth.services import PermissionService
 from infra.utils import prod_logger
-from infra.services import NotificationService
+from infra.services import (
+    NotificationService,
+    SOAPMSGService,
+    SOAPSMSService)
 from infra.exceptions import BadRequest
 from training_record.models import (
     Record, RecordContent, RecordAttachment,
@@ -298,6 +303,51 @@ class RecordService:
             if isinstance(exc, (BadRequest, IntegrityError)):
                 raise
             raise BadRequest('无效的表格')
+
+        mails = []
+        smses = []
+        msges = []
+        msg = ('老师，您好！您参加{}活动的培训记录已录入教学培训管理系统，'
+               '提醒您及时登录系统填写培训反馈。'
+               '谢谢！').format(campus_event.name)
+        for user in users:
+            mail = (
+                '培训记录已录入',
+                msg,
+                'TMSFTT',
+                user.email,
+            )
+            mails.append(mail)
+            sms = {
+                'user_phone_number': user.cell_phone_number,
+                'sms_info': msg,
+            }
+            smses.append(sms)
+            msg_info = {
+                'user_username': user.username,
+                'msg_title': '培训活动提醒',
+                'msg_info': msg,
+            }
+            msges.append(msg_info)
+
+        try:
+            send_mass_mail(mails, fail_silently=False)
+        except smtplib.SMTPException as exc:
+            msg = (
+                '系统在提醒教师参加活动时发生错误，'
+                f'部分邮件可能未成功发送，错误信息为：{exc}'
+            )
+            prod_logger.error(msg)
+
+        try:
+            SOAPSMSService.send_sms(smses)
+            SOAPMSGService.send_msg(msges)
+        except Exception as exc:
+            msg = (
+                '系统在提醒教师参加活动时发生错误，'
+                f'部分信息可能未成功发送，错误信息为：{exc}'
+            )
+            prod_logger.error(msg)
 
         return len(records)
 

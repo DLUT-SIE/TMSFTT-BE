@@ -289,7 +289,10 @@ class TestRecordService(TestCase):
 
     @patch('training_record.services.NotificationService'
            '.send_system_notification')
-    def test_create_campus_records(self, _):
+    @patch('infra.services.SOAPSMSService.send_sms')
+    @patch('infra.services.SOAPMSGService.send_msg')
+    def test_create_campus_records(self,
+                                   mocked_send_msg, mocked_send_sms, _):
         '''Should return the number of created records.'''
         tup = tempfile.mkstemp()
         work_book = xlwt.Workbook()
@@ -298,7 +301,7 @@ class TestRecordService(TestCase):
         sheet.write(3, 2, self.user.username)
         sheet.write(3, 7, '参与')
         sheet.write(3, 8, '6')
-        user = mommy.make(User)
+        user = mommy.make(User, email='1')
         context = {
             'user': user,
         }
@@ -315,6 +318,8 @@ class TestRecordService(TestCase):
             excel = work_book.read()
 
         count = RecordService.create_campus_records_from_excel(excel, context)
+        mocked_send_msg.assert_called()
+        mocked_send_sms.assert_called()
         self.assertEqual(count, 1)
 
     def test_department_admin_review_no_record(self):
