@@ -100,7 +100,7 @@ def send_mail_to_inactive_users(skip_users=None):
                 '大连理工大学专任教师教学培训管理系统年度报告',
                 msg,
                 'TMSFTT',
-                user.email,
+                [user.email],
             )
             mails.append(mail)
     try:
@@ -146,7 +146,7 @@ def send_mail_to_users_with_events_next_day():
             '培训活动提醒',
             msg,
             'TMSFTT',
-            user.email,
+            [user.email],
         )
         mails.append(mail)
         sms = {
