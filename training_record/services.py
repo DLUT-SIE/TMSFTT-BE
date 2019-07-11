@@ -315,7 +315,7 @@ class RecordService:
                 '培训记录已录入',
                 msg,
                 'TMSFTT',
-                user.email,
+                [user.email],
             )
             mails.append(mail)
             sms = {
