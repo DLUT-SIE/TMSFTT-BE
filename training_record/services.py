@@ -21,6 +21,7 @@ from training_record.models import (
 )
 from training_record.utils import is_admin_allowed_operating
 from training_event.models import OffCampusEvent, CampusEvent, EventCoefficient
+from tiny_url.services import TinyURLService
 
 
 User = get_user_model()
@@ -222,6 +223,10 @@ class RecordService:
 
         records = set()
         users = set()
+        mails = []  # mail: 邮件内容
+        smses = []  # sms: 短信内容
+        msges = []  # msg_info: 门户消息
+        base_url = 'http://ctfdpeixun.dlut.edu.cn/tiny/'
 
         try:
             # get information
@@ -299,36 +304,37 @@ class RecordService:
 
                     msg = '您有一条新的校内培训记录'
                     NotificationService.send_system_notification(user, msg)
+
+                    tiny_url = TinyURLService.generate_tiny_url(
+                        'records/{}'.format(record.id))
+                    url = base_url + tiny_url.short_url
+                    msg = ('老师，您好！您参加{}活动的培训记录已录入教学培训管理系统，'
+                           '提醒您及时登录系统填写培训反馈。'
+                           '谢谢！'
+                           '网页链接: {}').format(campus_event.name, url)
+                    mail = (
+                        '培训记录已录入',
+                        msg,
+                        'TMSFTT',
+                        [user.email],
+                    )
+                    mails.append(mail)
+                    sms = {
+                        'user_phone_number': user.cell_phone_number,
+                        'sms_info': msg,
+                    }
+                    smses.append(sms)
+                    msg_info = {
+                        'user_username': user.username,
+                        'msg_title': '培训活动提醒',
+                        'msg_info': msg,
+                    }
+                    msges.append(msg_info)
+
         except Exception as exc:
             if isinstance(exc, (BadRequest, IntegrityError)):
                 raise
             raise BadRequest('无效的表格')
-
-        mails = []
-        smses = []
-        msges = []
-        msg = ('老师，您好！您参加{}活动的培训记录已录入教学培训管理系统，'
-               '提醒您及时登录系统填写培训反馈。'
-               '谢谢！').format(campus_event.name)
-        for user in users:
-            mail = (
-                '培训记录已录入',
-                msg,
-                'TMSFTT',
-                [user.email],
-            )
-            mails.append(mail)
-            sms = {
-                'user_phone_number': user.cell_phone_number,
-                'sms_info': msg,
-            }
-            smses.append(sms)
-            msg_info = {
-                'user_username': user.username,
-                'msg_title': '培训活动提醒',
-                'msg_info': msg,
-            }
-            msges.append(msg_info)
 
         try:
             send_mass_mail(mails, fail_silently=False)

@@ -17,6 +17,8 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 
+from tiny_url.views import redirect_url
+
 
 API_URLPATTERNS = [
     path('', include('auth.urls')),
@@ -30,6 +32,7 @@ API_URLPATTERNS = [
 
 urlpatterns = [
     path('api/', include(API_URLPATTERNS)),
+    path('tiny/<str:short_url>', redirect_url),
     path('', include('secure_file.urls')),
 ]
 
