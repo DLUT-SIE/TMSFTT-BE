@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'training_record',
     'training_review',
     'data_warehouse',
+    'tiny_url',
 ]
 
 MIDDLEWARE = [
