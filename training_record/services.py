@@ -347,11 +347,19 @@ class RecordService:
 
         try:
             SOAPSMSService.send_sms(smses)
+        except Exception as exc:
+            msg = (
+                '系统在提醒教师参加活动时发生错误，'
+                f'部分短信可能未成功发送，错误信息为：{exc}'
+            )
+            prod_logger.error(msg)
+
+        try:
             SOAPMSGService.send_msg(msges)
         except Exception as exc:
             msg = (
                 '系统在提醒教师参加活动时发生错误，'
-                f'部分信息可能未成功发送，错误信息为：{exc}'
+                f'部分门户信息可能未成功发送，错误信息为：{exc}'
             )
             prod_logger.error(msg)
 
