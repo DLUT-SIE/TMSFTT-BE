@@ -12,4 +12,4 @@ class TinyURL(models.Model):
 
     def get_absolute_url(self):
         '''return true url'''
-        return '/api/{}'.format(self.url)
+        return '/user/{}'.format(self.url)
