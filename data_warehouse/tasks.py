@@ -132,14 +132,15 @@ def send_mail_to_users_with_events_next_day():
     mails = []
     smses = []
     msges = []
+    weekday = ['一', '二', '三', '四', '五', '六', '日']
     for enrollment in enrollments:
         user = enrollment.user
         msg = ('老师，您好！{}定于{}月{}日(星期{})，在{}，如期组织{}活动。'
-               '清您准时参加，谢谢！').format(
+               '请您准时参加，谢谢！').format(
                    enrollment.campus_event.program.department,
                    enrollment.campus_event.time.month,
                    enrollment.campus_event.time.day,
-                   enrollment.campus_event.time.weekday(),
+                   weekday[enrollment.campus_event.time.weekday()],
                    enrollment.campus_event.location,
                    enrollment.campus_event)
         mail = (
