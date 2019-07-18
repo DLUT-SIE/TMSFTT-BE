@@ -90,7 +90,8 @@ class TestAggregateDataService(TestCase):
         self.assertEqual(
             {'programs_statistics', 'events_statistics', 'records_statistics',
              'competition_award_info', 'monthly_added_records',
-             'ranking_in_department', 'ranking_in_school'},
+             'ranking_in_department', 'ranking_in_school',
+             'personal_workload'},
             set(res.keys())
         )
         (
