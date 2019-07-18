@@ -156,6 +156,14 @@ class AggregateDataService:
                 UserRankingService
                 .get_total_training_hours_ranking_in_school(user, context)
             ),
+            'personal_workload': {
+                'timestamp': localtime(now()),
+                'workload': (
+                    WorkloadCalculationService
+                    .calculate_workload_by_query(teachers=[user])
+                    .get(user)
+                ),
+            },
         }
         return res
 
