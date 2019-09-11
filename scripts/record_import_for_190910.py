@@ -79,7 +79,12 @@ def read_workload_content(
             PermissionService.assign_object_permissions(user, record)
 
 def main():
-    read_workload_content()
+    path = sys.argv[1]
+    read_workload_content(
+        row_parser=row_parser0,
+        start_row=2,
+        fpath=path,
+    )
 
 if __name__ == '__main__':
     with transaction.atomic():
