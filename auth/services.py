@@ -96,19 +96,15 @@ class DepartmentService:
         departments = Department.objects.filter(
             name__in=('凌水主校区', '开发区校区', '盘锦校区')
         )
+        include_departments = {'000133', '000216', '000360', '000340',
+                               '000356', '000329', '000308', '000301',
+                               '000339'}
+        exclude_departments = {'000355', '000354'}
         return Department.objects.all().filter(
             Q(super_department__in=departments,
               department_type__in=('T3', 'T6', 'T7')) |
-            Q(raw_department_id='000133') |
-            Q(raw_department_id='000216') |
-            Q(raw_department_id='000360') |
-            Q(raw_department_id='000340') |
-            Q(raw_department_id='000356') |
-            Q(raw_department_id='000329') |
-            Q(raw_department_id='000308') |
-            Q(raw_department_id='001325')).exclude(
-                raw_department_id='000355'
-            )
+            Q(raw_department_id__in=include_departments)).exclude(
+                raw_department_id__in=exclude_departments)
 
 
 class GroupService:

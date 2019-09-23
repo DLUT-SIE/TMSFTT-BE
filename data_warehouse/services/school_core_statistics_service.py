@@ -7,7 +7,7 @@ from django.utils.timezone import now, localtime
 
 from training_event.models import CampusEvent
 from training_record.models import Record
-from auth.services import UserService
+from auth.services import UserService, DepartmentService
 
 
 class SchoolCoreStatisticsService:
@@ -118,10 +118,12 @@ class SchoolCoreStatisticsService:
         grouped_counts = (
             Record.valid_objects
             .filter(create_time__gte=current_time.replace(
-                month=1, day=1, hour=0, minute=0, second=0))
+                month=1, day=1, hour=0, minute=0, second=0),
+                    user__department__in=DepartmentService
+                    .get_top_level_departments())
             .annotate(
                 department_name=models.F(
-                    'user__administrative_department__name'
+                    'user__department__name'
                 )
             )
             .values('department_name')
@@ -131,7 +133,7 @@ class SchoolCoreStatisticsService:
         grouped_users = {x['department_name']: x['count'] for x in (
             UserService.get_full_time_teachers()
             .annotate(
-                department_name=models.F('administrative_department__name'))
+                department_name=models.F('department__name'))
             .values('department_name')
             .annotate(count=Count('id'))
         )}
