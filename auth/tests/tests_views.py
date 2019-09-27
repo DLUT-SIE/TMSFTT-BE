@@ -54,13 +54,13 @@ class TestUserViewSet(APITestCase):
         cls.user = mommy.make(User, is_staff=True)
 
     def test_list_user(self):
-        '''Should return all users if user is admin.'''
+        '''Should raise badrequest if username is none.'''
         url = reverse('user-list')
 
         self.client.force_authenticate(self.user)
         response = self.client.get(url)
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class TestGroupViewSet(APITestCase):
