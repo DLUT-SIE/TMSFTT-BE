@@ -47,7 +47,24 @@ class UserViewSet(DRFCacheMixin, viewsets.ReadOnlyModelViewSet):
     permission_classes = (
         auth.permissions.SchoolAdminOnlyPermission,
     )
-    filter_fields = ('username',)
+
+    def _get_paginated_response(self, queryset):
+        '''Return paginated response'''
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def list(self, request):
+        username = request.query_params.get('username', None)
+        if username is None or username == '':
+            raise BadRequest('请输入要查询的用户职工号')
+        queryset = self.filter_queryset(self.get_queryset()).filter(
+            username=username)
+        return self._get_paginated_response(queryset)
 
 
 class GroupViewSet(DRFCacheMixin, viewsets.ReadOnlyModelViewSet):
