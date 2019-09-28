@@ -1,6 +1,7 @@
 '''Provide services of training record module.'''
 import tempfile
 import smtplib
+import re
 import xlrd
 
 from django.db import transaction, IntegrityError
@@ -59,6 +60,10 @@ class RecordService:
             role = data['role']
         except Exception:
             raise BadRequest('数据格式无效')
+
+        if re.search(r'[\'\"%()<>;+-]|script|meta',
+                     off_campus_event['name'], re.I):
+            raise BadRequest('培训名称中含有特殊符号或者脚本关键字！')
 
         with transaction.atomic():
             off_campus_event = OffCampusEvent.objects.create(
