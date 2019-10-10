@@ -1,4 +1,5 @@
 '''Provide services of training event module.'''
+import re
 from django.db import transaction
 from django.utils.timezone import now
 from infra.utils import prod_logger
@@ -37,6 +38,9 @@ class CampusEventService:
         -------
         campus_event: CampusEvent
         '''
+        if re.search(r'[\'\"%()<>;+-]|script|meta',
+                     validated_data['name'], re.I):
+            raise BadRequest('活动名称中含有特殊符号或者脚本关键字！')
         with transaction.atomic():
             campus_event = CampusEvent.objects.create(**validated_data)
             PermissionService.assign_object_permissions(
@@ -69,6 +73,11 @@ class CampusEventService:
         -------
         event: CampusEvent
         '''
+        event_name = event_data.get('name', None)
+        if event_name is not None:
+            if re.search(r'[\'\"%()<>;+-]|script|meta',
+                         event_name, re.I):
+                raise BadRequest('活动名称中含有特殊符号或者脚本关键字！')
         with transaction.atomic():
             # update the event coefficient
             for data in coefficients:
