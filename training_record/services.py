@@ -142,6 +142,10 @@ class RecordService:
         except Exception:
             raise BadRequest('数据格式无效')
 
+        if re.search(r'[\'\"%()<>;+-]|script|meta',
+                     off_campus_event['name'], re.I):
+            raise BadRequest('培训名称中含有特殊符号或者脚本关键字！')
+
         off_campus_event_data = off_campus_event
 
         with transaction.atomic():

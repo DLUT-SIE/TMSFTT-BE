@@ -1,9 +1,11 @@
 '''Provide services of training program module.'''
+import re
 from collections import defaultdict
 from django.db import transaction
 
 from training_program.models import Program
 from infra.utils import prod_logger
+from infra.exceptions import BadRequest
 from auth.models import Department
 from auth.services import PermissionService, DepartmentService
 
@@ -26,6 +28,10 @@ class ProgramService:
         -------
         program: Program
         '''
+
+        if re.search(r'[\'\"%()<>;+-]|script|meta',
+                     program_data['name'], re.I):
+            raise BadRequest('项目名称中含有特殊符号或者脚本关键字！')
 
         with transaction.atomic():
             program = Program.objects.create(**program_data)
@@ -54,6 +60,11 @@ class ProgramService:
         program: Program
         '''
 
+        program_name = validated_data.get('name', None)
+        if program_name is not None:
+            if re.search(r'[\'\"%()<>;+-]|script|meta',
+                         program_name, re.I):
+                raise BadRequest('项目名称中含有特殊符号或者脚本关键字！')
         # update the program
         for attr, value in validated_data.items():
             setattr(program, attr, value)
