@@ -145,10 +145,12 @@ class TestSchoolCoreStatisticsService(TestCase):
             mocked_now.return_value = fake_current_time
             months.append(fake_current_time.strftime('%Y年%m月'))
 
+            campus_event = mommy.make(CampusEvent, time=mocked_now())
+
             mommy.make(
                 Record,
                 status=Record.STATUS_SCHOOL_ADMIN_APPROVED,
-                _fill_optional=['off_campus_event'],
+                campus_event=campus_event,
                 _quantity=records[-1]
             )
 
