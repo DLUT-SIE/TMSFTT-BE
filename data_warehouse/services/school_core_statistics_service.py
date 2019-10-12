@@ -170,9 +170,9 @@ class SchoolCoreStatisticsService:
 
         monthly_records = {format_time(x['month']): x['count'] for x in (
             Record.valid_objects
-            .filter(create_time__gte=start_time)
+            .filter(campus_event__time__gte=start_time)
             .annotate(
-                month=functions.TruncMonth('create_time'),
+                month=functions.TruncMonth('campus_event__time'),
             )
             .values('month')
             .annotate(count=Count('id'))
