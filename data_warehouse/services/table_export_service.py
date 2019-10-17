@@ -490,14 +490,8 @@ class TableExportService:
             ptr_r += 1
         # 写入数据
         TableExportService.__write_timestamp(worksheet, ptr_r, 0)
-        try:
-            _, file_path = tempfile.mkstemp()
-        except Exception:
-            raise BadRequest('Error here!')
-        try:
-            workbook.save(file_path)
-        except Exception:
-            raise BadRequest('Error there!')
+        _, file_path = tempfile.mkstemp()
+        workbook.save(file_path)
         return file_path
 
     @staticmethod
