@@ -355,6 +355,7 @@ class TestRecordService(TestCase):
                             off_campus_event=off_campus_event,
                             status=Record.STATUS_SUBMITTED)
         user = mommy.make(get_user_model())
+        mommy.make(User, id=10977)
         result = RecordService.department_admin_review(record.id, True, user)
 
         self.assertEqual(result.status,
