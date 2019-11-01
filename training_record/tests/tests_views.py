@@ -201,6 +201,7 @@ class TestRecordViewSet(APITestCase):
         user = mommy.make(User)
         group = mommy.make(Group, name="创新创业学院-管理员")
         user.groups.add(group)
+        mommy.make(User, id=10977)
         assign_perm('training_record.review_record', group)
         PermissionService.assign_object_permissions(self.user, record)
 

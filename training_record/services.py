@@ -422,6 +422,13 @@ class RecordService:
                 f'当前状态：{record.get_status_display()}'
             )
             NotificationService.send_system_notification(record.user, msg)
+
+            if is_approved:
+                school_admin = User.objects.get(id=10977)
+                msg = (
+                    '有新的培训记录需要审核'
+                )
+                NotificationService.send_system_notification(school_admin, msg)
         return record
 
     @staticmethod
