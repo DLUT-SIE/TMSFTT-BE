@@ -3,6 +3,8 @@ import tempfile
 from django.utils.timezone import now, localtime
 import xlwt
 from infra.exceptions import BadRequest
+from training_event.models import CampusEvent
+from training_record.models import Record
 
 
 class TableExportService:
@@ -489,6 +491,78 @@ class TableExportService:
             worksheet.write(ptr_r, 6, item.user.technical_title, style_value)
             ptr_r += 1
         # 写入数据
+        TableExportService.__write_timestamp(worksheet, ptr_r, 0)
+        _, file_path = tempfile.mkstemp()
+        workbook.save(file_path)
+        return file_path
+
+    @staticmethod
+    def export_event_attendance_summary(programs, start_time, end_time):
+        '''Export attendance sheet of all needed events in programs for admin.
+        Parameters
+        ------
+        programs: events included.
+        start_time:
+        end_time:
+        Returns
+        ------
+        string
+            导出的excel文件路径
+        '''
+        if len(programs) == 0:
+            raise BadRequest("导出内容不存在!")
+        events = CampusEvent.objects.filter(program__in=programs)
+        if len(events) == 0:
+            raise BadRequest("导出内容不存在!")
+        # 初始化excel
+        workbook = xlwt.Workbook()
+        worksheet = workbook.add_sheet("培训活动出席表")
+        style = xlwt.easyxf(('font: bold on; '
+                             'align: wrap on, vert centre, horiz center'))
+
+        # 生成表头
+        ptr_r = 0
+        worksheet.write(ptr_r, 0, '培训项目', style)
+        worksheet.write(ptr_r, 1, '培训活动', style)
+        worksheet.write(ptr_r, 2, '培训时间', style)
+        worksheet.write(ptr_r, 3, '培训地点', style)
+        worksheet.write(ptr_r, 4, '活动学时', style)
+        worksheet.write(ptr_r, 5, '教师姓名', style)
+        worksheet.write(ptr_r, 6, '教师职工号', style)
+        worksheet.write(ptr_r, 7, '职称', style)
+        ptr_r += 1
+
+        # 数据
+        for program in programs:
+            # get events in program
+            events = CampusEvent.objects.filter(
+                program=program, time__range=(start_time, end_time))
+            if len(events) == 0:
+                continue
+            worksheet.write(ptr_r, 0, program.name, style)
+            # process events
+            for event in events:
+                worksheet.write(ptr_r, 1, event.name, style)
+                worksheet.write(ptr_r, 2,
+                                localtime(event.time).strftime('%m月%d日'),
+                                style)
+                worksheet.write(ptr_r, 3, event.location, style)
+                worksheet.write(ptr_r, 4, event.num_hours, style)
+                # get records in event
+                records = Record.objects.filter(campus_event=event)
+                if len(records) == 0:
+                    worksheet.write(ptr_r, 5, '尚无参加教师', style)
+                else:
+                    for record in records:
+                        worksheet.write(ptr_r, 5,
+                                        record.user.first_name, style)
+                        worksheet.write(ptr_r, 6, record.user.username, style)
+                        worksheet.write(ptr_r, 7,
+                                        record.user.technical_title, style)
+                        ptr_r += 1
+                ptr_r += 1
+
+        # write timestamp and return path
         TableExportService.__write_timestamp(worksheet, ptr_r, 0)
         _, file_path = tempfile.mkstemp()
         workbook.save(file_path)

@@ -101,3 +101,9 @@ class TrainingSummarySerializer(BaseTableExportSerializer):
 class AttendanceSheetSerializer(BaseTableExportSerializer):
     '''Serialize parameters for user.'''
     event_id = serializers.IntegerField(required=True)
+
+
+class EventAttendanceSummarySerializer(BaseTableExportSerializer):
+    '''培训活动出席表的序列化器'''
+    start_time = serializers.DateTimeField(required=False)
+    end_time = serializers.DateTimeField(required=False)

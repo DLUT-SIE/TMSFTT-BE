@@ -35,6 +35,7 @@ from data_warehouse.serializers import (
     TableTrainingRecordsSerializer,
     AttendanceSheetSerializer,
     TrainingSummarySerializer,
+    EventAttendanceSummarySerializer,
 )
 from data_warehouse.consts import EnumData
 
@@ -51,6 +52,7 @@ class AggregateDataService:
     TABLE_NAME_WORKLOAD_CALCULATION = 7
     TABLE_NAME_TRAINING_RECORDS = 8
     TABLE_NAME_ATTENDANCE_SHEET = 9
+    TABLE_NAME_EVENT_ATTENDANCE_SUMMARY = 10
 
     TABLE_NAME_CHOICES = {
         TABLE_NAME_STAFF: '教职工表',
@@ -61,7 +63,8 @@ class AggregateDataService:
         TABLE_NAME_TRAINING_FEEDBACK: '培训反馈表',
         TABLE_NAME_WORKLOAD_CALCULATION: '工作量计算表',
         TABLE_NAME_TRAINING_RECORDS: '个人培训记录',
-        TABLE_NAME_ATTENDANCE_SHEET: '签到表'
+        TABLE_NAME_ATTENDANCE_SHEET: '签到表',
+        TABLE_NAME_EVENT_ATTENDANCE_SUMMARY: '培训活动出席表'
     }
 
     # 校验http请求参数的序列化器配置
@@ -72,6 +75,7 @@ class AggregateDataService:
         TABLE_NAME_TRAINING_RECORDS: TableTrainingRecordsSerializer,
         TABLE_NAME_ATTENDANCE_SHEET: AttendanceSheetSerializer,
         TABLE_NAME_TRAINING_SUMMARY: TrainingSummarySerializer,
+        TABLE_NAME_EVENT_ATTENDANCE_SUMMARY: EventAttendanceSummarySerializer,
     }
 
     TITLES = (
@@ -321,6 +325,8 @@ class AggregateDataService:
             cls.TABLE_NAME_TRAINING_RECORDS: 'table_training_records',
             cls.TABLE_NAME_TEACHER: 'table_teacher_statistics',
             cls.TABLE_NAME_ATTENDANCE_SHEET: 'attendance_sheet',
+            cls.TABLE_NAME_EVENT_ATTENDANCE_SUMMARY:
+            'table_event_attendance_summary',
         }
         table_type = context.get('table_type')
         handler = handlers.get(table_type, None)
@@ -583,3 +589,30 @@ class AggregateDataService:
             event_id, context={'user': context['request'].user})
         file_path = TableExportService.export_attendance_sheet(enrollments)
         return file_path, '签到表.xls'
+
+    # pylint: disable=R0914
+    @classmethod
+    @admin_required()
+    def table_event_attendance_summary(cls, context):
+        '''培训总体情况表导出'''
+        request = context.get('request')
+        program_id = request.query_params.get('program_id', None)
+        user = request.user
+        department_id = '0' if user.is_school_admin else str(
+            user.administrative_department.id)
+        start_time = context.get('start_time',
+                                 localtime(now()).replace(year=2016))
+        end_time = context.get('end_time', localtime(now()))
+        if program_id is None:
+            programs = Program.objects.all()
+        else:
+            programs = Program.objects.filter(id=program_id)
+
+        file_path = TableExportService.export_event_attendance_summary(
+            programs, start_time, end_time)
+        __department_name = '大连理工大学' if department_id == 0 else (
+            user.administrative_department.name)
+        __end_time = end_time if end_time is not None else now()
+        __start_time = start_time if start_time is not None else now()
+        prefix = f'{__start_time.year}至{__end_time.year}-{__department_name}'
+        return file_path, f'{prefix}-培训总体情况表.xls'
