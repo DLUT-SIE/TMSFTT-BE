@@ -40,6 +40,7 @@ from data_warehouse.serializers import (
 from data_warehouse.consts import EnumData
 
 
+# pylint: disable=R0904
 class AggregateDataService:
     '''provide services for getting data'''
     WORKLOAD_FILE_NAME_TEMPLATE = '{}至{}教师工作量导出表.xls'
