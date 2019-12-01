@@ -509,10 +509,10 @@ class TableExportService:
         string
             导出的excel文件路径
         '''
-        if len(programs) == 0:
+        if not programs:
             raise BadRequest("导出内容不存在!")
         events = CampusEvent.objects.filter(program__in=programs)
-        if len(events) == 0:
+        if not events:
             raise BadRequest("导出内容不存在!")
         # 初始化excel
         workbook = xlwt.Workbook()
@@ -537,7 +537,7 @@ class TableExportService:
             # get events in program
             events = CampusEvent.objects.filter(
                 program=program, time__range=(start_time, end_time))
-            if len(events) == 0:
+            if not events:
                 continue
             worksheet.write(ptr_r, 0, program.name, style)
             # process events
@@ -550,7 +550,7 @@ class TableExportService:
                 worksheet.write(ptr_r, 4, event.num_hours, style)
                 # get records in event
                 records = Record.objects.filter(campus_event=event)
-                if len(records) == 0:
+                if not records:
                     worksheet.write(ptr_r, 5, '尚无参加教师', style)
                 else:
                     for record in records:
