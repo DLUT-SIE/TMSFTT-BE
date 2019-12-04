@@ -19,6 +19,7 @@ from training_record.serializers import (CampusEventFeedbackSerializer,
                                          RecordWriteSerializer,
                                          ReadOnlyRecordSerializer)
 from training_event.serializers import CampusEventSerializer
+from training_event.models import CampusEvent
 from infra.mixins import MultiSerializerActionClassMixin
 from infra.exceptions import BadRequest
 from drf_cache.mixins import DRFCacheMixin
@@ -98,7 +99,8 @@ class RecordViewSet(DRFCacheMixin,
                        url_path='list-records-by-event')
     def list_records_by_event(self, request):
         '''Return records in certain campus_event.'''
-        campus_event = request.query_params.get('campus_event')
+        campus_event_id = request.query_params.get('campus_event')
+        campus_event = CampusEvent.objects.get(id=campus_event_id)
         if not (request.user.is_school_admin or (
                 request.user.check_department_admin(
                     campus_event.program.department))):
