@@ -65,7 +65,7 @@ class TestWorkloadCalculationService(TestCase):
                 WorkloadCalculationService.WORKLOAD_SHEET_TITLE):
             self.assertEqual(title, sheet.cell_value(row, col))
         row += 1
-        self.assertEqual(sheet.cell_value(row, 0), row)
-        self.assertEqual(sheet.cell_value(row, 1), self.user.department.name)
+        self.assertEqual(sheet.cell_value(row, 0), self.user.department.name)
+        self.assertEqual(sheet.cell_value(row, 1), self.user.username)
         self.assertEqual(sheet.cell_value(row, 2), self.user.first_name)
         self.assertEqual(sheet.cell_value(row, 3), self.workload)
