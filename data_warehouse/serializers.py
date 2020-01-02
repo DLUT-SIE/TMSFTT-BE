@@ -107,3 +107,9 @@ class EventAttendanceSummarySerializer(BaseTableExportSerializer):
     '''培训活动出席表的序列化器'''
     start_time = serializers.DateTimeField(required=False)
     end_time = serializers.DateTimeField(required=False)
+
+
+class WorkloadCalculationSerializer(BaseTableExportSerializer):
+    '''工作量计算表的序列化器'''
+    start_time = serializers.DateTimeField(required=False)
+    end_time = serializers.DateTimeField(required=False)
