@@ -18,7 +18,7 @@ class TestSchoolCoreStatisticsService(TestCase):
     def test_get_events_statistics(self):
         '''Should return statistics data for events.'''
         num_events = 10
-        mommy.make(CampusEvent, deadline=now().replace(year=2020),
+        mommy.make(CampusEvent, deadline=now().replace(year=now().year + 1),
                    reviewed=True,
                    _quantity=num_events)
         mommy.make(CampusEvent, deadline=now().replace(year=2020),

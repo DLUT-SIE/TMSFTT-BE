@@ -530,6 +530,7 @@ class TableExportService:
         worksheet.write(ptr_r, 5, '教师姓名', style)
         worksheet.write(ptr_r, 6, '教师职工号', style)
         worksheet.write(ptr_r, 7, '职称', style)
+        worksheet.write(ptr_r, 8, '学院', style)
         ptr_r += 1
 
         # 数据
@@ -559,6 +560,8 @@ class TableExportService:
                         worksheet.write(ptr_r, 6, record.user.username, style)
                         worksheet.write(ptr_r, 7,
                                         record.user.technical_title, style)
+                        worksheet.write(ptr_r, 8,
+                                        record.user.department.name, style)
                         ptr_r += 1
                 ptr_r += 1
 
