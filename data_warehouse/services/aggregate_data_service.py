@@ -36,6 +36,7 @@ from data_warehouse.serializers import (
     AttendanceSheetSerializer,
     TrainingSummarySerializer,
     EventAttendanceSummarySerializer,
+    WorkloadCalculationSerializer
 )
 from data_warehouse.consts import EnumData
 
@@ -65,7 +66,7 @@ class AggregateDataService:
         TABLE_NAME_WORKLOAD_CALCULATION: '工作量计算表',
         TABLE_NAME_TRAINING_RECORDS: '个人培训记录',
         TABLE_NAME_ATTENDANCE_SHEET: '签到表',
-        TABLE_NAME_EVENT_ATTENDANCE_SUMMARY: '培训活动出席表'
+        TABLE_NAME_EVENT_ATTENDANCE_SUMMARY: '培训活动出席表',
     }
 
     # 校验http请求参数的序列化器配置
@@ -77,6 +78,7 @@ class AggregateDataService:
         TABLE_NAME_ATTENDANCE_SHEET: AttendanceSheetSerializer,
         TABLE_NAME_TRAINING_SUMMARY: TrainingSummarySerializer,
         TABLE_NAME_EVENT_ATTENDANCE_SUMMARY: EventAttendanceSummarySerializer,
+        TABLE_NAME_WORKLOAD_CALCULATION: WorkloadCalculationSerializer,
     }
 
     TITLES = (
@@ -359,8 +361,8 @@ class AggregateDataService:
         # 生成excel文件
         request = context.get('request', None)
         data = request.GET
-        start_time = data.get('start_time')
-        end_time = data.get('end_time')
+        start_time = context.get('start_time', None)
+        end_time = context.get('end_time', None)
 
         if end_time is None:
             end_time = now()
@@ -385,7 +387,7 @@ class AggregateDataService:
         )
 
         # 拼接文件名
-        file_name = cls.FILE_NAME_TEMPLATE.format(
+        file_name = cls.WORKLOAD_FILE_NAME_TEMPLATE.format(
             start_time.strftime('%Y-%m-%d'), end_time.strftime('%Y-%m-%d'))
         return file_path, file_name
 

@@ -13,7 +13,7 @@ class WorkloadCalculationService:
     '''Provide workload calculation method .'''
 
     WORKLOAD_SHEET_NAME = '工作量汇总统计'
-    WORKLOAD_SHEET_TITLE = ['序号', '学部（学院）', '教师姓名', '工作量']
+    WORKLOAD_SHEET_TITLE = ['学部（学院）', '教师工号', '教师姓名', '工作量']
     WORKLOAD_SHEET_TITLE_STYLE = ('font: bold on; '
                                   'align: wrap on, vert centre, horiz center'
                                   )
@@ -112,9 +112,9 @@ class WorkloadCalculationService:
             key=lambda item: item[0].administrative_department.name)
         # 写数据
         for row, teacher in enumerate(workload_list):
-            worksheet.write(row + 1, 0, row + 1)
-            worksheet.write(row + 1, 1,
+            worksheet.write(row + 1, 0,
                             teacher[0].administrative_department.name)
+            worksheet.write(row + 1, 1, teacher[0].username)
             worksheet.write(row + 1, 2, teacher[0].first_name)
             worksheet.write(row + 1, 3, teacher[1])
 
