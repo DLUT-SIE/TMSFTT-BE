@@ -51,7 +51,11 @@ def read_workload_content(
 
         if username:
             username = str(int(username))
-            user = User.objects.get(username=username)
+            try:
+                user = User.objects.get(username=username)
+            except Exception:
+                print('学号为{}的老师不存在!'.format(username))
+                raise
         else:
             users = User.objects.filter(first_name=first_name)
             user = None
