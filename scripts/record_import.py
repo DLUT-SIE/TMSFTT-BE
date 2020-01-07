@@ -1,4 +1,3 @@
-
 '''Generate training records from xlsx file 190910.'''
 # pylint: disable=wrong-import-position,ungrouped-imports,invalid-name
 # pylint: disable=missing-docstring
