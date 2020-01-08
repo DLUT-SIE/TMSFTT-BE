@@ -199,7 +199,7 @@ class AggregateDataService:
         users = users.filter(
             teaching_type__in=('专任教师', '实验技术')
         )
-        if program_id:
+        if program_id and program_id != '0':
             program_id = int(program_id)
             events = CampusEvent.objects.filter(program=program_id)
             records = Record.objects.filter(campus_event__in=events)
@@ -236,7 +236,7 @@ class AggregateDataService:
         time = {'start_time': start_time, 'end_time': end_time}
         records = RecordsStatisticsService.get_records_by_time_department(
             context['request'].user, department_id, time)
-        if program_id:
+        if program_id and program_id != '0':
             program_id = int(program_id)
             records['campus_records'] = records['campus_records'].filter(
                 campus_event__program=program_id)
