@@ -85,7 +85,7 @@ class ProgramService:
         if not admin_departments:
             return []
         admin_departments = set(
-            map(lambda x: x.replace('-管理员', ''), admin_departments))
+            map(lambda x: x.replace('-管理员', '')[0: -7], admin_departments))
         top_departments = {
             x['id']: x['name'] for x in
             DepartmentService.get_top_level_departments()

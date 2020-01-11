@@ -47,7 +47,7 @@ class TestProgramService(APITestCase):
     def test_group_program(self):
         '''Should get group programs by department'''
         user = mommy.make(User)
-        group = mommy.make(Group, name='大连理工大学-管理员')
+        group = mommy.make(Group, name='大连理工大学-000000-管理员')
         user.groups.add(group)
         department = mommy.make(Department, id=1, name='大连理工大学')
         program = mommy.make(Program, department=department)
