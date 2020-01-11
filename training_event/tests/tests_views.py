@@ -1,4 +1,5 @@
 '''Unit tests for training_event views.'''
+from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.urls import reverse
@@ -51,12 +52,15 @@ class TestCampusEventViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(event.reviewed)
 
-    def test_create_campus_event(self):
+    @patch('training_event.serializers.NotificationService'
+           '.send_system_notification')
+    def test_create_campus_event(self, _):
         '''CampusEvent should be created by POST request.'''
         program = mommy.make(training_program.models.Program)
         group = mommy.make(Group, name="创建权限")
         user = self.user
         user.groups.add(group)
+        mommy.make(User, id=10977)
         assign_perm('training_program.change_program', group)
         assign_perm('training_program.change_program', group, program)
         url = reverse('campusevent-list')
