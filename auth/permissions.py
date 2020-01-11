@@ -31,6 +31,19 @@ class DepartmentAdminOnlyPermission(permissions.BasePermission):
         )
 
 
+class AdminPermission(permissions.BasePermission):
+    '''Department admin and school admin have access to resources.'''
+    message = '需要拥有管理员身份才能访问。'
+
+    def has_permission(self, request, view):
+        '''Check admin role'''
+        return (
+            request.user.is_authenticated
+            and (request.user.is_department_admin
+                 or request.user.is_school_admin)
+        )
+
+
 class DjangoModelPermissions(permissions.DjangoModelPermissions):
     '''Require model permissions for resources.
 

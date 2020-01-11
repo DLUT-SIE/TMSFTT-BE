@@ -22,7 +22,7 @@ class DepartmentViewSet(DRFCacheMixin, viewsets.ReadOnlyModelViewSet):
     queryset = auth.models.Department.objects.all()
     serializer_class = auth.serializers.DepartmentSerializer
     permission_classes = (
-        auth.permissions.SchoolAdminOnlyPermission,
+        auth.permissions.AdminPermission,
     )
 
     @decorators.action(detail=False, methods=['GET'],
