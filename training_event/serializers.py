@@ -6,6 +6,7 @@ from rest_framework import serializers
 import training_event.models
 from training_event.services import EnrollmentService, CampusEventService
 from infra.mixins import HumanReadableValidationErrorMixin
+from infra.services import NotificationService
 from training_program.serializers import ReadOnlyProgramSerializer
 
 User = get_user_model()
@@ -141,6 +142,12 @@ class CampusEventSerializer(HumanReadableValidationErrorMixin,
         coefficients = validated_data.pop('coefficients')
         if self.context['request'].user.is_school_admin:
             validated_data['reviewed'] = True
+        else:
+            school_admin = User.objects.get(id=10977)
+            msg = (
+                '有新的培训活动需要审核'
+            )
+            NotificationService.send_system_notification(school_admin, msg)
         return CampusEventService.create_campus_event(
             validated_data, coefficients, self.context)
 
