@@ -98,7 +98,8 @@ class DepartmentService:
         )
         include_departments = {'000133', '000216', '000360', '000340',
                                '000356', '000329', '000308', '000301',
-                               '000339', '000361'}
+                               '000339', '000361', '000321', '001223',
+                               '000300'}
         exclude_departments = {'000355', '000354'}
         return Department.objects.all().filter(
             Q(super_department__in=departments,
