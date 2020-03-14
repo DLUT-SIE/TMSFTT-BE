@@ -560,8 +560,11 @@ class TableExportService:
                         worksheet.write(ptr_r, 6, record.user.username, style)
                         worksheet.write(ptr_r, 7,
                                         record.user.technical_title, style)
-                        worksheet.write(ptr_r, 8,
-                                        record.user.department.name, style)
+                        try:
+                            worksheet.write(ptr_r, 8,
+                                            record.user.department.name, style)
+                        except Exception:
+                            pass
                         ptr_r += 1
                 ptr_r += 1
 
