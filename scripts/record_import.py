@@ -55,7 +55,7 @@ def read_workload_content(
             except Exception:
                 print('学号为{}的老师不存在!'.format(username))
                 raise
-        else:
+        elif department_name:
             users = User.objects.filter(first_name=first_name)
             user = None
             if len(users) == 1:
@@ -67,6 +67,12 @@ def read_workload_content(
                             (_user.department.name,
                             _user.department.super_department.name)):
                             user = _user
+        else:
+            users = User.objects.filter(first_name=first_name)
+            user = None
+            if len(users) > 0:
+                user = users[0]
+
         if user is None:
             print(f'Unknown User at row {idx}: {username}({username})')
             continue
