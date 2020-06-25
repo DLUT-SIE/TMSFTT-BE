@@ -71,7 +71,7 @@ class SchoolCoreStatisticsService:
         # The number of records added in this month
         num_records_added_in_current_month = (
             Record.valid_objects
-            .filter(create_time__gte=current_time.replace(
+            .filter(campus_event__time__gte=current_time.replace(
                 day=1, hour=0, minute=0, second=0))
             .count()
         )
@@ -161,7 +161,7 @@ class SchoolCoreStatisticsService:
         cached_value = cache.get(cache_key)
         if cached_value:
             return cached_value
-        current_time = now().replace(day=30)
+        current_time = localtime(now())
         start_time = current_time.replace(year=current_time.year-1, day=1,
                                           hour=0, minute=0, second=0)
 
