@@ -6,7 +6,7 @@ from django.utils.timezone import now
 from model_mommy import mommy
 
 from auth.models import User, Department
-from training_event.models import CampusEvent
+from training_event.models import CampusEvent, OffCampusEvent
 from training_record.models import Record
 from data_warehouse.services.school_core_statistics_service import (
     SchoolCoreStatisticsService
@@ -37,7 +37,7 @@ class TestSchoolCoreStatisticsService(TestCase):
         '.UserService.get_full_time_teachers')
     def test_get_records_statistics(self, mocked_get_teachers, mocked_now):
         '''Should return statistics data for records.'''
-        num_records = 100
+        num_records = 51
         num_campus_records = 20
         num_reviewed_off_campus_records = 30
         num_records_added_in_current_month = (
@@ -48,7 +48,7 @@ class TestSchoolCoreStatisticsService(TestCase):
         mommy.make(
             Record,
             status=Record.STATUS_SCHOOL_ADMIN_APPROVED,
-            _fill_optional=['off_campus_event'],
+            off_campus_event=mommy.make(OffCampusEvent, time=mocked_now()),
             _quantity=num_records - num_records_added_in_current_month)
         mocked_now.return_value = now()
         # Off-campus records, approved, were added in this month
