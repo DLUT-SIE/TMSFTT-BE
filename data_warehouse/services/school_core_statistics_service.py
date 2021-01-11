@@ -73,6 +73,10 @@ class SchoolCoreStatisticsService:
             Record.valid_objects
             .filter(campus_event__time__gte=current_time.replace(
                 day=1, hour=0, minute=0, second=0))
+            .count() +
+            Record.valid_objects
+            .filter(off_campus_event__time__gte=current_time.replace(
+                day=1, hour=0, minute=0, second=0))
             .count()
         )
 
