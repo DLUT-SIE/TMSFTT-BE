@@ -531,6 +531,7 @@ class TableExportService:
         worksheet.write(ptr_r, 6, '教师职工号', style)
         worksheet.write(ptr_r, 7, '职称', style)
         worksheet.write(ptr_r, 8, '学院', style)
+        worksheet.write(ptr_r, 9, '工作量', style)
         ptr_r += 1
 
         # 数据
@@ -565,6 +566,10 @@ class TableExportService:
                                             record.user.department.name, style)
                         except Exception:
                             pass
+                        workload = (record
+                                    .event_coefficient
+                                    .calculate_event_workload(record))
+                        worksheet.write(ptr_r, 9, workload, style)
                         ptr_r += 1
                 ptr_r += 1
 
