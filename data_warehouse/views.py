@@ -2,7 +2,7 @@
 import os
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, views
 
 from data_warehouse.services.aggregate_data_service import (
     AggregateDataService
@@ -10,11 +10,15 @@ from data_warehouse.services.aggregate_data_service import (
 from data_warehouse.services.canvas_options_service import (
     CanvasOptionsService
 )
+from data_warehouse.services.log_service import (
+    LogService
+)
 from data_warehouse.serializers import (
     BaseTableExportSerializer
 )
 from infra.exceptions import BadRequest
 from secure_file.models import SecureFile
+import auth.permissions
 
 
 class AggregateDataViewSet(viewsets.ViewSet):
@@ -82,3 +86,18 @@ class AggregateDataViewSet(viewsets.ViewSet):
         serializer = serializer_cls(data=params)
         serializer.is_valid(raise_exception=True)
         return serializer.validated_data
+
+
+class LogPerformView(views.APIView):
+    '''Create API view for get tail of logs.'''
+
+    permission_classes = (
+        auth.permissions.SchoolAdminOnlyPermission,
+    )
+
+    def get(self, request, format=None):  # pylint: disable=redefined-builtin
+        '''define how to get logs.'''
+        n_line = request.GET.get('n_line', 100)
+        data = LogService.get_tail_n_logs(int(n_line))
+        data.reverse()
+        return Response({'results': data}, status=status.HTTP_200_OK)
