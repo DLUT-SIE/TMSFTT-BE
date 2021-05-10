@@ -1,12 +1,16 @@
 '''Define how to serialize our models.'''
+import smtplib
+
 from django.utils.timezone import now
 from django.contrib.auth import get_user_model
+from django.core.mail import send_mass_mail
 from rest_framework import serializers
 
 import training_event.models
 from training_event.services import EnrollmentService, CampusEventService
 from infra.mixins import HumanReadableValidationErrorMixin
-from infra.services import NotificationService
+from infra.utils import prod_logger
+from infra.services import NotificationService, SOAPSMSService
 from training_program.serializers import ReadOnlyProgramSerializer
 
 User = get_user_model()
@@ -144,10 +148,46 @@ class CampusEventSerializer(HumanReadableValidationErrorMixin,
             validated_data['reviewed'] = True
         else:
             school_admin = User.objects.get(id=10977)
+            mails = []
+            smses = []
             msg = (
                 '有新的培训活动需要审核'
             )
+
+            mail = (
+                '培训活动审核提醒',
+                msg,
+                'TMSFTT',
+                [school_admin.email],
+            )
+            mails.append(mail)
+
+            sms = {
+                'user_phone_number': school_admin.cell_phone_number,
+                'sms_info': msg,
+            }
+            smses.append(sms)
+
             NotificationService.send_system_notification(school_admin, msg)
+
+            try:
+                send_mass_mail(mails, fail_silently=False)
+            except smtplib.SMTPException as exc:
+                msg = (
+                    '系统在提醒管理员审批活动时发生错误，'
+                    f'邮件可能未成功发送，错误信息为：{exc}'
+                )
+                prod_logger.error(msg)
+
+            try:
+                SOAPSMSService.send_sms(smses)
+            except Exception as exc:
+                msg = (
+                    '系统在提醒管理员审批活动时发生错误，'
+                    f'短信可能未成功发送，错误信息为：{exc}'
+                )
+                prod_logger.error(msg)
+
         return CampusEventService.create_campus_event(
             validated_data, coefficients, self.context)
 
