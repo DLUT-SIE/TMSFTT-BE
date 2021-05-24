@@ -420,6 +420,11 @@ class TestCampusEventFeedbackViewSet(APITestCase):
         data = {
             'record': record.id,
             'content': '1',
+            'inspiring_level': 0,
+            'inspiring_less_reason': "1",
+            'profits': "1-2",
+            'profit_other': "yi",
+            'willingness_level': 0,
         }
         assign_perm('training_record.change_record', self.user, record)
         PermissionService.assign_object_permissions(self.user, record)

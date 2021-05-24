@@ -214,6 +214,39 @@ class StatusChangeLog(models.Model):
 
 class CampusEventFeedback(models.Model):
     '''CampusEventFeedback stores text-like feedback for records.'''
+    INSPIRING_LEVEL_HUGE = 0
+    INSPIRING_LEVEL_GREAT = 1
+    INSPIRING_LEVEL_LESS = 2
+    INSPIRING_LEVEL_CHOICES = (
+        (INSPIRING_LEVEL_HUGE, '有启发，帮助很大'),
+        (INSPIRING_LEVEL_GREAT, '启发帮助较大'),
+        (INSPIRING_LEVEL_LESS, '启发帮助不大'),
+    )
+
+    WILLINGNESS_LEVEL_HIGH = 0
+    WILLINGNESS_LEVEL_GENERAL = 1
+    WILLINGNESS_LEVEL_LOW = 2
+    WILLINGNESS_LEVEL_CHOICES = (
+        (WILLINGNESS_LEVEL_HIGH, '非常愿意'),
+        (WILLINGNESS_LEVEL_GENERAL, '一般'),
+        (WILLINGNESS_LEVEL_LOW, '不愿意'),
+    )
+
+    PROFIT_DUI = 0
+    PROFIT_TONG = 1
+    PROFIT_HUO = 2
+    PROFIT_LI = 3
+    PROFIT_CHONG = 4
+    PROFIT_OTHER = 5
+    PROFIT_CHOICES = (
+        (PROFIT_DUI, '对高等教育形势政策的理解得到更新'),
+        (PROFIT_TONG, '通过交流接触到一些适用的教育教学新理念'),
+        (PROFIT_HUO, '获得一些可以直接用在教学上的教学方式方法及教育技术'),
+        (PROFIT_LI, '理清教师教学发展前景与规划'),
+        (PROFIT_CHONG, '重新审视教师教书育人的重要使命'),
+        (PROFIT_OTHER, '有其他收益')
+    )
+
     class Meta:
         verbose_name = '培训活动反馈'
         verbose_name_plural = '培训活动反馈'
@@ -228,6 +261,25 @@ class CampusEventFeedback(models.Model):
                                   related_name='feedback',
                                   on_delete=models.CASCADE)
     content = models.CharField(verbose_name='反馈内容', max_length=500)
+
+    inspiring_level = models.PositiveSmallIntegerField(
+        verbose_name='启发度', choices=INSPIRING_LEVEL_CHOICES,
+        blank=True, null=True)
+    inspiring_less_reason = models.CharField(
+        verbose_name='启发不大原因', max_length=200,
+        blank=True, null=True)
+
+    profits = models.CharField(
+        verbose_name='获得收益', max_length=20,
+        blank=True, null=True)
+
+    profit_other = models.CharField(
+        verbose_name='其他收益', max_length=200,
+        blank=True, null=True)
+
+    willingness_level = models.PositiveSmallIntegerField(
+        verbose_name='意愿度', choices=INSPIRING_LEVEL_CHOICES,
+        blank=True, null=True)
 
     def __str__(self):
         return '反馈内容({})'.format(self.record_id)

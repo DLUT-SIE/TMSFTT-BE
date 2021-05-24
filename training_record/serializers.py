@@ -55,11 +55,13 @@ class CampusEventFeedbackSerializer(HumanReadableValidationErrorMixin,
     '''Indicate how to serialize CampusEventFeedback instance.'''
     class Meta:
         model = CampusEventFeedback
-        fields = ('id', 'create_time', 'record', 'content')
+        fields = ('id', 'create_time', 'record', 'content', 'inspiring_level',
+                  'inspiring_less_reason', 'profits', 'profit_other',
+                  'willingness_level')
 
     def create(self, validated_data):
         return CampusEventFeedbackService.create_feedback(
-            **validated_data, context=self.context)
+            validated_data, context=self.context)
 
     def validate(self, data):
         record = data.get('record')

@@ -546,13 +546,27 @@ class RecordService:
 class CampusEventFeedbackService:
     '''Provide services for CampusEventFeedback.'''
     @staticmethod
-    def create_feedback(record, content, context):
+    def create_feedback(data, context):
         '''Create feedback for campus-event and update the status
         of the related-record to be STATUS_FEEDBACK_SUBMITTED.'''
+        record = data['record']
+        content = data['content']
+        inspiring_level = data['inspiring_level']
+        inspiring_less_reason = data.get('inspiring_less_reason', '')
+        profits = data['profits']
+        profit_other = data.get('profit_other', '')
+        willingness_level = data['willingness_level']
+
         related_record = Record.objects.get(pk=record.id)
         with transaction.atomic():
-            feedback = CampusEventFeedback.objects.create(record=record,
-                                                          content=content)
+            feedback = CampusEventFeedback.objects.create(
+                record=record,
+                content=content,
+                inspiring_level=inspiring_level,
+                inspiring_less_reason=inspiring_less_reason,
+                profits=profits,
+                profit_other=profit_other,
+                willingness_level=willingness_level)
             related_record.status = Record.STATUS_FEEDBACK_SUBMITTED
             related_record.save()
 
