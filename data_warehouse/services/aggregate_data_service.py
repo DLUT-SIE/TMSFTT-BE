@@ -373,9 +373,7 @@ class AggregateDataService:
             start_time = end_time.replace(year=end_time.year - 1,
                                           month=12, day=31, hour=16, minute=0,
                                           second=0)
-        if request.user.is_school_admin:
-            administrative_department = Department.objects.get(id='0')
-        else:
+        if not request.user.is_school_admin:
             administrative_department = request.user.administrative_department
 
         workload_dict = (
@@ -614,7 +612,7 @@ class AggregateDataService:
         '''培训活动出席表导出'''
         request = context.get('request')
         program_id = request.query_params.get('program_id', None)
-        department_id = context.get('department_id', None)
+        department_id = request.query_params.get('department_id', None)
         user = request.user
         if department_id is not None:
             department = Department.objects.filter(id=department_id)
@@ -626,7 +624,9 @@ class AggregateDataService:
         start_time = context.get('start_time',
                                  localtime(now()).replace(year=2016))
         end_time = context.get('end_time', localtime(now()))
-        if program_id is None:
+        if user.is_school_admin:
+            programs = Program.objects.filter()
+        elif program_id is None:
             programs = Program.objects.filter(department_id=department_id)
         else:
             programs = Program.objects.filter(id=program_id)
