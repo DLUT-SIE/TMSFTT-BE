@@ -343,6 +343,8 @@ class AggregateDataService:
     def table_training_hours_statistics(cls, context):
         '''培训学时与工作量'''
         request = context.get('request')
+        if not request.user.is_school_admin:
+            raise BadRequest('你不是校级管理员。')
         start_time = context.get('start_time')
         end_time = context.get('end_time')
         data = TrainingHoursStatisticsService.get_training_hours_data(
@@ -363,6 +365,7 @@ class AggregateDataService:
         data = request.GET
         start_time = context.get('start_time', None)
         end_time = context.get('end_time', None)
+        administrative_department = None
 
         if end_time is None:
             end_time = now()
@@ -370,11 +373,14 @@ class AggregateDataService:
             start_time = end_time.replace(year=end_time.year - 1,
                                           month=12, day=31, hour=16, minute=0,
                                           second=0)
+        if request.user.is_school_admin:
+            administrative_department = Department.objects.get(id='0')
+        else:
+            administrative_department = request.user.administrative_department
 
         workload_dict = (
             WorkloadCalculationService.calculate_workload_by_query(
-                administrative_department=data.get(
-                    'administrative_department'),
+                administrative_department=administrative_department,
                 start_time=start_time,
                 end_time=end_time,
                 teachers=data.get('teachers')
@@ -442,6 +448,14 @@ class AggregateDataService:
         request = context.get('request')
         program_id = context.get('program_id', None)
         department_id = context.get('department_id', None)
+        user = request.user
+        if department_id is not None:
+            department = Department.objects.filter(id=department_id)
+            if not department:
+                raise BadRequest('部门不存在。')
+            if not (user.is_school_admin or user.check_department_admin(
+                    department[0])):
+                raise BadRequest('你不是该院系的管理员，无权操作。')
         if program_id:
             program_ids = [program_id]
         else:
@@ -597,17 +611,23 @@ class AggregateDataService:
     @classmethod
     @admin_required()
     def table_event_attendance_summary(cls, context):
-        '''培训总体情况表导出'''
+        '''培训活动出席表导出'''
         request = context.get('request')
         program_id = request.query_params.get('program_id', None)
+        department_id = context.get('department_id', None)
         user = request.user
-        department_id = '0' if user.is_school_admin else str(
-            user.administrative_department.id)
+        if department_id is not None:
+            department = Department.objects.filter(id=department_id)
+            if not department:
+                raise BadRequest('部门不存在。')
+            if not (user.is_school_admin or user.check_department_admin(
+                    department[0])):
+                raise BadRequest('你不是该院系的管理员，无权操作。')
         start_time = context.get('start_time',
                                  localtime(now()).replace(year=2016))
         end_time = context.get('end_time', localtime(now()))
         if program_id is None:
-            programs = Program.objects.all()
+            programs = Program.objects.filter(department_id=department_id)
         else:
             programs = Program.objects.filter(id=program_id)
 
