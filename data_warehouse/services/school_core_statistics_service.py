@@ -1,5 +1,4 @@
 '''school core statistics service'''
-from datetime import timedelta
 from django.core.cache import cache
 from django.db import models
 from django.db.models import Count, functions
@@ -186,7 +185,12 @@ class SchoolCoreStatisticsService:
         tmp_time = start_time
         while tmp_time <= current_time:
             months.append(format_time(tmp_time))
-            tmp_time += timedelta(days=31)
+            if tmp_time.month == 12:
+                tmp_time = tmp_time.replace(year=tmp_time.year+1,
+                                            month=1, day=1, hour=0,
+                                            minute=0, second=0)
+            else:
+                tmp_time = tmp_time.replace(month=tmp_time.month+1)
         res = {
             'timestamp': current_time,
             'months': months,

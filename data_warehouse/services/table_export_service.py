@@ -541,21 +541,29 @@ class TableExportService:
                 program=program, time__range=(start_time, end_time))
             if not events:
                 continue
-            worksheet.write(ptr_r, 0, program.name, style)
             # process events
             for event in events:
-                worksheet.write(ptr_r, 1, event.name, style)
-                worksheet.write(ptr_r, 2,
-                                localtime(event.time).strftime('%m月%d日'),
-                                style)
-                worksheet.write(ptr_r, 3, event.location, style)
-                worksheet.write(ptr_r, 4, event.num_hours, style)
                 # get records in event
                 records = Record.objects.filter(campus_event=event)
                 if not records:
+                    worksheet.write(ptr_r, 0, program.name, style)
+                    worksheet.write(ptr_r, 1, event.name, style)
+                    worksheet.write(ptr_r, 2,
+                                    localtime(event.time).strftime('%m月%d日'),
+                                    style)
+                    worksheet.write(ptr_r, 3, event.location, style)
+                    worksheet.write(ptr_r, 4, event.num_hours, style)
                     worksheet.write(ptr_r, 5, '尚无参加教师', style)
                 else:
                     for record in records:
+                        worksheet.write(ptr_r, 0, program.name, style)
+                        worksheet.write(ptr_r, 1, event.name, style)
+                        worksheet.write(ptr_r, 2,
+                                        localtime(
+                                            event.time).strftime('%m月%d日'),
+                                        style)
+                        worksheet.write(ptr_r, 3, event.location, style)
+                        worksheet.write(ptr_r, 4, event.num_hours, style)
                         worksheet.write(ptr_r, 5,
                                         record.user.first_name, style)
                         worksheet.write(ptr_r, 6, record.user.username, style)
